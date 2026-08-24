@@ -53,8 +53,8 @@ import { Git } from '@daemon/utils/git'
 import { expandHome } from '@daemon/utils/fs'
 import { SyncLoop } from '@daemon/services/SyncLoop'
 import { GitService } from '@daemon/services/GitService'
-import { AgentService } from '@daemon/services/AgentService'
-import type { AgentStates } from '@daemon/types/api/agents'
+import { ActivityService } from '@daemon/services/ActivityService'
+import type { ActivityStates } from '@daemon/types/api/activity'
 import { migrate } from '@daemon/utils/migrate'
 import { listRepos, repoCheckouts } from '@daemon/utils/repo'
 import {
@@ -128,7 +128,7 @@ export class AppContext {
   readonly relay: Relay
   readonly terminals: Terminals
   readonly tasks: Tasks
-  readonly agents: AgentService
+  readonly activityService: ActivityService
   readonly chats: Chats
   readonly coworkers: Coworkers
   readonly branches: BranchService
@@ -170,7 +170,7 @@ export class AppContext {
       config: () => this.config,
       save: (config) => this.store.save(config),
       reopen: (projectPath) => this.useProject(projectPath),
-      followAgents: () => this.followAgents(),
+      followActivity: () => this.followActivity(),
       project: () => this.project,
     })
     this.branches = new BranchService({
@@ -190,9 +190,9 @@ export class AppContext {
     // The root the shell was opened from, then the project, then the home — which is only
     // where you stand on first run, when there is nothing to stand in yet.
     this.terminals = new Terminals((root) => this.session(root))
-    this.agents = new AgentService(
+    this.activityService = new ActivityService(
       () => this.terminals.foreground(),
-      (agents) => this.broadcast({ type: 'agents', agents }),
+      (activity) => this.broadcast({ type: 'activity', activity }),
     )
     // Sync is the project's alone: committing markdown you are typing is what it is for, and
     // committing a code repository nobody asked it to would be a different program.
@@ -502,13 +502,13 @@ export class AppContext {
     return this.rootOf(root).git.checkAccess()
   }
 
-  private async followAgents(): Promise<void> {
+  private async followActivity(): Promise<void> {
     const dir = this.profiles.active?.claudeCfgDir
-    await this.agents.follow(dir ? expandHome(dir) : null).catch(() => null)
+    await this.activityService.follow(dir ? expandHome(dir) : null).catch(() => null)
   }
 
-  get agentStates(): AgentStates {
-    return this.agents.agents
+  get activity(): ActivityStates {
+    return this.activityService.activity
   }
 
   /** The checkout the scope is standing in — a repo's, or the project's, or the home on a
@@ -582,7 +582,7 @@ export class AppContext {
     this.chatStore.close()
     this.relay.close()
     this.terminals.close()
-    await this.agents.close()
+    await this.activityService.close()
     await this.projectOpen?.close()
     for (const repo of this.reposOpen.values()) {
       await repo.treeService?.close()

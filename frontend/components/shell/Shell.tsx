@@ -469,7 +469,7 @@ export function Shell({ children }: { children: ReactNode }) {
               branches={app.branches}
               active={app.branch}
               live={liveBranches}
-              agents={app.agents}
+              activity={app.activity}
               onSelect={(name) => void app.openBranch(app.scope, name)}
               onCreate={(name) => app.addBranch(app.scope, name)}
               onDelete={(name) => void app.deleteBranch(app.scope, name)}

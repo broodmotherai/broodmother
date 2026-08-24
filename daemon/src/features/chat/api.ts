@@ -27,7 +27,7 @@ const ALLOWED = new Set([
   'GET /api/task/log',
   'GET /api/diagrams',
   'GET /api/personas',
-  'GET /api/agents',
+  'GET /api/activity',
   'GET /api/diff',
   'GET /api/diff/file',
   // Writing: documents, the folders holding them, branches, sync, and the task runner.

@@ -1,9 +1,9 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { afterAll, expect, it } from 'vitest'
-import type { AgentStates } from '@daemon/types/api/agents'
+import type { ActivityStates } from '@daemon/types/api/activity'
 import { cleanup, tempDir, until } from '@daemon/test'
-import { AgentService } from '@daemon/services/AgentService'
+import { ActivityService } from '@daemon/services/ActivityService'
 
 afterAll(cleanup)
 
@@ -50,8 +50,8 @@ async function harness({
   dead?: Set<number>
 } = {}) {
   const claude = await configDir()
-  const seen: AgentStates[] = []
-  const service = new AgentService(ptys, (agents) => seen.push(agents), {
+  const seen: ActivityStates[] = []
+  const service = new ActivityService(ptys, (activity) => seen.push(activity), {
     pollMs: 20,
     shell: '/bin/zsh',
     processes: async () => table(),
@@ -61,9 +61,9 @@ async function harness({
   const latest = () => seen[seen.length - 1] ?? {}
   // By path, not by the order they were found in: which checkout answered first is not
   // something any caller reads.
-  const canonical = (states: AgentStates) =>
+  const canonical = (states: ActivityStates) =>
     JSON.stringify(Object.entries(states).sort(([a], [b]) => a.localeCompare(b)))
-  const settled = (want: AgentStates) =>
+  const settled = (want: ActivityStates) =>
     until(() => canonical(latest()) === canonical(want))
   return { claude, service, seen, latest, settled }
 }
@@ -233,7 +233,7 @@ it('publishes only when the picture moves', async () => {
 it('asks the process table only when something is actually running', async () => {
   let asked = 0
   const ptys: Pty[] = [{ pid: 600, cwd: '/v/handbook/local', process: 'zsh' }]
-  const service = new AgentService(() => ptys, () => null, {
+  const service = new ActivityService(() => ptys, () => null, {
     pollMs: 20,
     shell: '/bin/zsh',
     processes: async () => {

@@ -18,7 +18,7 @@ import {
 } from '@broodmother/types/api/chat'
 import type { TerminalServerMessage } from '@broodmother/types/api/terminal'
 import type { ServerMessage } from '@broodmother/types/api/ws'
-import type { AgentStates } from '@broodmother/types/api/agents'
+import type { ActivityStates } from '@broodmother/types/api/activity'
 import { basename } from '@broodmother/path'
 import {
   repoOf,
@@ -138,7 +138,7 @@ export function createMockClient(
     config?: BroodmotherConfig
     sync?: SyncStatus
     /** What is at work in which checkout, by path — what the branch menu's dots read. */
-    agents?: AgentStates
+    activity?: ActivityStates
     home?: string
     projects?: ProjectSummary[]
     profiles?: Profile[]
@@ -900,7 +900,7 @@ export function createMockClient(
       },
 
       'GET /api/sync': async () => sync,
-      'GET /api/agents': async () => ({ agents: { ...(seed.agents ?? {}) } }),
+      'GET /api/activity': async () => ({ activity: { ...(seed.activity ?? {}) } }),
       'POST /api/sync/now': async () => {
         sync = {
           state: 'idle',

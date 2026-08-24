@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { Branch } from '@broodmother/types/branch'
-import type { AgentStates } from '@broodmother/types/api/agents'
+import type { ActivityStates } from '@broodmother/types/api/activity'
 import { BranchMenu } from '@/components/layout/track/BranchMenu'
 
 const branches: Branch[] = [
@@ -15,7 +15,7 @@ function show(
   active: string | null = 'main',
   list = branches,
   live: string[] = [],
-  agents: AgentStates = {},
+  activity: ActivityStates = {},
 ) {
   const onSelect = vi.fn()
   const onCreate = vi.fn(async () => null)
@@ -26,7 +26,7 @@ function show(
       branches={list}
       active={active}
       live={live}
-      agents={agents}
+      activity={activity}
       onSelect={onSelect}
       onCreate={onCreate}
       onDelete={onDelete}

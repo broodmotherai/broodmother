@@ -1,7 +1,7 @@
 import type { Hono } from 'hono'
 import type { ApiRoute } from '@daemon/types/api/routes'
 import type { AppContext } from '../context'
-import { agents } from './agents'
+import { activity } from './activity'
 import { branches } from './branches'
 import { chat } from './chat'
 import { coworkers } from './coworkers'
@@ -16,7 +16,7 @@ import type { Handler } from './route'
 import { tasks } from './tasks'
 
 const TABLES = [
-  agents,
+  activity,
   branches,
   chat,
   coworkers,
@@ -31,7 +31,7 @@ const TABLES = [
 ]
 
 type Registered =
-  | keyof typeof agents
+  | keyof typeof activity
   | keyof typeof branches
   | keyof typeof chat
   | keyof typeof coworkers

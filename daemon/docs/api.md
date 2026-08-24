@@ -77,7 +77,7 @@ turns one into a status code. The body is `{ error: string }`.
 | `DELETE` | `/api/coworker` | Remove one |
 | `POST` | `/api/coworker/clear` | Clear its state |
 | `GET` | `/api/personas` | The project's `.personas/` |
-| `GET` | `/api/agents` | What each checkout is doing |
+| `GET` | `/api/activity` | What each checkout is doing |
 | `GET` | `/api/tasks` | Every task |
 | `POST` | `/api/task/run` | Run one |
 | `POST` | `/api/task/stop` | Stop it |

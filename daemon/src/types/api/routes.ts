@@ -16,7 +16,7 @@ import type {
   PostCoworkers,
 } from './coworkers'
 import type { GetDiagrams } from './canvas'
-import type { GetAgents } from './agents'
+import type { GetActivity } from './activity'
 import type { GetPersonas } from './personas'
 import type { DeleteTerminal } from './terminal'
 import type {
@@ -110,7 +110,7 @@ interface ApiRoutes {
   'POST /api/coworker/clear': PostCoworkerClear
   'POST /api/coworker/model': PostCoworkerModel
   'GET /api/diagrams': GetDiagrams
-  'GET /api/agents': GetAgents
+  'GET /api/activity': GetActivity
   'GET /api/personas': GetPersonas
   'GET /api/file': GetFile
   'GET /api/doc': GetDoc

@@ -15,7 +15,7 @@
 - [Brief](#brief)
 - [Tasks](#tasks)
 - [Terminals](#terminals)
-- [Agents](#agents)
+- [Activity](#activity)
 - [Service Layer](#service-layer)
 
 ---
@@ -163,9 +163,9 @@ of them is somebody's work.
 `DELETE /api/terminal` ends one. That is said by whoever is finished with it, which is not
 the same as whoever stopped watching.
 
-## Agents
+## Activity
 
-`src/services/AgentService.ts`
+`src/services/ActivityService.ts`
 
 What is going on in each checkout — at work, wants somebody, or sitting at a prompt — folded
 into one answer per checkout from two sources:

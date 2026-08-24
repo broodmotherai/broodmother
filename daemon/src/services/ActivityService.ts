@@ -33,7 +33,7 @@ import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { execa } from 'execa'
 import { watch, type FSWatcher } from 'chokidar'
-import type { AgentState, AgentStates } from '@daemon/types/api/agents'
+import type { ActivityState, ActivityStates } from '@daemon/types/api/activity'
 
 /** How the pty side is asked: every shell, its pid, where it is, what it says is in front. */
 export type ForegroundIO = () => { pid: number; cwd: string; process: string }[]
@@ -41,7 +41,7 @@ export type ForegroundIO = () => { pid: number; cwd: string; process: string }[]
 /** The process table, as much of it as this needs. Handed in by the tests. */
 export type ProcessIO = () => Promise<{ pid: number; ppid: number; comm: string }[]>
 
-export interface AgentServiceOptions {
+export interface ActivityServiceOptions {
   /** How often the ptys are asked. The probe files arrive as events and cost nothing. */
   pollMs?: number
   /** A shell name other than the one `$SHELL` says — a test's, mostly. */
@@ -64,28 +64,28 @@ const SELF_REPORTING = new Set(['claude'])
 /** How Claude's own words map onto the three states the app draws. `shell` is Claude running
  *  a command on your behalf, which is Claude at work; `waiting` is Claude wanting you, which
  *  is a stopping point and reads like a prompt. */
-const CLAUDE_STATUS: Record<string, AgentState> = {
+const CLAUDE_STATUS: Record<string, ActivityState> = {
   busy: 'busy',
   shell: 'busy',
   waiting: 'waiting',
   idle: 'idle',
 }
 
-const RANK: Record<AgentState, number> = { idle: 0, waiting: 1, busy: 2 }
+const RANK: Record<ActivityState, number> = { idle: 0, waiting: 1, busy: 2 }
 
 interface Probe {
   pid: number
   cwd: string
-  state: AgentState
+  state: ActivityState
 }
 
-export class AgentService {
+export class ActivityService {
   private readonly probes = new Map<string, Probe>()
   private readonly shell: string
   private readonly processes: ProcessIO
   private readonly alive: (pid: number) => boolean
   /** What the ptys were doing when they were last asked, by checkout. */
-  private shells: { cwd: string; state: AgentState }[] = []
+  private shells: { cwd: string; state: ActivityState }[] = []
   private watcher: FSWatcher | null = null
   private timer: NodeJS.Timeout | null = null
   private last = ''
@@ -93,8 +93,8 @@ export class AgentService {
 
   constructor(
     private readonly foreground: ForegroundIO,
-    private readonly onChange: (agents: AgentStates) => void,
-    options: AgentServiceOptions = {},
+    private readonly onChange: (activity: ActivityStates) => void,
+    options: ActivityServiceOptions = {},
   ) {
     this.shell = path.basename(options.shell ?? process.env.SHELL ?? 'sh')
     this.processes = options.processes ?? processTable
@@ -141,7 +141,7 @@ export class AgentService {
     this.publish()
   }
 
-  get agents(): AgentStates {
+  get activity(): ActivityStates {
     return this.fold()
   }
 
@@ -174,7 +174,7 @@ export class AgentService {
     await this.watcher?.close()
   }
 
-  private async readShells(): Promise<{ cwd: string; state: AgentState }[]> {
+  private async readShells(): Promise<{ cwd: string; state: ActivityState }[]> {
     const ptys = this.foreground()
     if (ptys.length === 0) return []
     // The title answers the common case without spawning anything: every shell sitting at
@@ -240,9 +240,9 @@ export class AgentService {
     }
   }
 
-  private fold(): AgentStates {
-    const states: AgentStates = {}
-    const raise = (cwd: string, state: AgentState) => {
+  private fold(): ActivityStates {
+    const states: ActivityStates = {}
+    const raise = (cwd: string, state: ActivityState) => {
       const known = states[cwd]
       if (!known || RANK[state] > RANK[known]) states[cwd] = state
     }
@@ -257,11 +257,11 @@ export class AgentService {
   /** Only when the picture has moved: this is asked every beat, and a client told the same
    *  thing every beat would re-render on nothing. */
   private publish(): void {
-    const agents = this.fold()
-    const text = JSON.stringify(agents)
+    const activity = this.fold()
+    const text = JSON.stringify(activity)
     if (text === this.last) return
     this.last = text
-    this.onChange(agents)
+    this.onChange(activity)
   }
 }
 

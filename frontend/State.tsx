@@ -10,7 +10,7 @@ import {
 } from 'react'
 import type { GithubDevice, GithubRepo } from '@broodmother/types/github'
 import type { SyncStatus } from '@broodmother/types/sync'
-import type { AgentStates } from '@broodmother/types/api/agents'
+import type { ActivityStates } from '@broodmother/types/api/activity'
 import {
   repoOf,
   repoRoot,
@@ -49,7 +49,7 @@ export interface App {
   sync: SyncStatus
   /** What is at work in each checkout, by its path: Claude by its own account, a command by
    *  the shell's foreground. The branch menu reads it for its dots. */
-  agents: AgentStates
+  activity: ActivityStates
   /** Which coworkers have a reply on the way, by id — the rail's presence dots, kept here so
    *  they move while some other thread is on screen. What the socket has said since the page
    *  loaded; the list itself says where each stood when it was asked for. */
@@ -221,7 +221,7 @@ export function AppProvider({
   const [entries, setEntries] = useState(EMPTY_TREES)
   const [changes, setChanges] = useState(NO_CHANGES)
   const [sync, setSync] = useState<SyncStatus>(idleSync)
-  const [agents, setAgents] = useState<AgentStates>({})
+  const [activity, setActivity] = useState<ActivityStates>({})
   const [coworkersWorking, setCoworkersWorking] = useState<Record<string, boolean>>({})
   const [ready, setReady] = useState(false)
   const [config, setConfig] = useState<BroodmotherConfig | null>(null)
@@ -377,8 +377,8 @@ export function AppProvider({
     ]).then(() => setReady(true))
     void client.request('GET /api/sync', null).then(setSync)
     void client
-      .request('GET /api/agents', null)
-      .then((result) => setAgents(result.agents))
+      .request('GET /api/activity', null)
+      .then((result) => setActivity(result.activity))
       .catch(() => null)
 
     let dropped = false
@@ -394,8 +394,8 @@ export function AppProvider({
           case 'sync':
             setSync(message.status)
             break
-          case 'agents':
-            setAgents(message.agents)
+          case 'activity':
+            setActivity(message.activity)
             break
           case 'coworker':
             setCoworkersWorking((held) => ({ ...held, [message.id]: message.working }))
@@ -417,8 +417,8 @@ export function AppProvider({
         void loadConfig().then((config) => loadPlace(config))
         void client.request('GET /api/sync', null).then(setSync)
         void client
-          .request('GET /api/agents', null)
-          .then((result) => setAgents(result.agents))
+          .request('GET /api/activity', null)
+          .then((result) => setActivity(result.activity))
           .catch(() => null)
       },
     )
@@ -477,7 +477,7 @@ export function AppProvider({
     entries,
     changes,
     sync,
-    agents,
+    activity,
     coworkersWorking,
     ready,
     config,

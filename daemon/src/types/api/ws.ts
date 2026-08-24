@@ -1,6 +1,6 @@
 import type { SyncStatus } from '../sync'
 import type { DocRoot, TreeEvent } from '../doc'
-import type { AgentStates } from './agents'
+import type { ActivityStates } from './activity'
 
 export type WsRoute = '/ws' | '/terminal' | '/kernel' | '/chat'
 
@@ -9,7 +9,7 @@ export type ServerMessage =
   | { type: 'sync'; status: SyncStatus }
   /** The whole picture each time, not a delta: it is a handful of paths, and a client that
    *  missed one message would otherwise carry a state nothing corrects. */
-  | { type: 'agents'; agents: AgentStates }
+  | { type: 'activity'; activity: ActivityStates }
   /** A coworker's reply starting or landing, so the rail's presence dot moves while you are
    *  in some other thread. */
   | { type: 'coworker'; id: string; working: boolean }

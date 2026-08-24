@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react'
 import type { Branch } from '@broodmother/types/branch'
-import type { AgentStates } from '@broodmother/types/api/agents'
+import type { ActivityStates } from '@broodmother/types/api/activity'
 import { Button } from '@/components/core/Button'
 import { Confirm } from '@/components/core/Confirm'
 import { Icon } from '@/components/core/Icons'
@@ -23,8 +23,8 @@ const DOTS: Record<Standing, { color: string; hollow?: boolean; label: string }>
   quiet: { color: 'var(--faint)', hollow: true, label: 'no terminals' },
 }
 
-function standing(branch: Branch, live: string[], agents: AgentStates): Standing {
-  const state = agents[branch.path]
+function standing(branch: Branch, live: string[], activity: ActivityStates): Standing {
+  const state = activity[branch.path]
   if (state === 'busy') return 'busy'
   if (state !== undefined || live.includes(branch.name)) return 'live'
   return 'quiet'
@@ -35,7 +35,7 @@ export function BranchMenu({
   branches,
   active,
   live = [],
-  agents = {},
+  activity = {},
   onSelect,
   onCreate,
   onDelete,
@@ -44,7 +44,7 @@ export function BranchMenu({
   branches: Branch[]
   active: string | null
   live?: string[]
-  agents?: AgentStates
+  activity?: ActivityStates
   onSelect: (name: string) => void
   onCreate: (name: string) => Promise<string | null>
   onDelete: (name: string) => void
@@ -53,7 +53,7 @@ export function BranchMenu({
   const [adding, setAdding] = useState(false)
   const [dropping, setDropping] = useState<Branch | null>(null)
 
-  const rank = (branch: Branch) => RANK[standing(branch, live, agents)]
+  const rank = (branch: Branch) => RANK[standing(branch, live, activity)]
   const listed = [...branches].sort((a, b) => rank(b) - rank(a))
 
   const sections: MenuSection[] = [
@@ -66,7 +66,7 @@ export function BranchMenu({
         id: branch.name,
         label: branch.name,
         selected: branch.name === active,
-        dot: DOTS[standing(branch, live, agents)],
+        dot: DOTS[standing(branch, live, activity)],
         onSelect: () => {
           setOpen(false)
           if (branch.name !== active) onSelect(branch.name)
