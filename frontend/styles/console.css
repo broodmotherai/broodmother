@@ -1,0 +1,113 @@
+/* ---------------------------------------------------------------------------
+   The console chrome: the sand palette, the surfaces built on it, and the base
+   layer that dresses a bare document in them.
+
+   auth and Pheno are one product either side of a sign-in, so they are one
+   surface and share this whole file. The marketing site is not, and imports
+   only tokens.css.
+
+   Requires tokens.css to have been imported first — the semantic colours here
+   are named in terms of the opal hues it defines.
+--------------------------------------------------------------------------- */
+@theme {
+  /* palette */
+  --color-white: #fffeee;
+  --color-dark: #0f0f0f;
+  --color-cream: #fffef9;
+  --color-cream-text: #f8f6ec;
+  --color-sand: #e2dbc7;
+  --color-charcoal: #434343;
+  --color-gray: #666666;
+
+  --color-pastel-lavender: #cdcee6;
+  --color-pastel-violet: #d9d2e9;
+  --color-pastel-cyan: #b3eef3;
+  --color-pastel-mint: #d2f3ee;
+  --color-pastel-gold: #fff2cb;
+  --color-pastel-lilac: #dec2f1;
+  --color-pastel-red: #fdd9d9;
+
+  /* semantic */
+  --color-background: var(--color-cream);
+  --color-foreground: var(--color-black);
+  --color-accent: var(--color-opal-violet);
+  --color-link: var(--color-opal-indigo);
+  --color-link-hover: var(--color-opal-cyan);
+  --color-muted: var(--color-gray);
+
+  /* the three sand surfaces every element uses: rest, hover, selected */
+  --color-surface: rgba(226, 219, 199, 0.18);
+  --color-surface-hover: rgba(226, 219, 199, 0.5);
+  --color-surface-active: var(--color-sand);
+  /* opaque equivalent for layers that must not blend with what is beneath them */
+  --color-surface-solid: color-mix(in srgb, #e2dbc7 18%, #fffef9);
+  --color-surface-hover-solid: color-mix(in srgb, #e2dbc7 50%, #fffef9);
+  /* the shade the hover sweep settles at */
+  --color-surface-settled: color-mix(in srgb, #e2dbc7 90%, #fffef9);
+
+  --color-state-ok: var(--color-opal-mint);
+  --color-state-ok-bg: var(--color-pastel-mint);
+  --color-state-busy: var(--color-opal-gold);
+  --color-state-busy-bg: var(--color-pastel-gold);
+  --color-state-bad: var(--color-opal-red);
+  --color-state-bad-bg: var(--color-pastel-red);
+}
+
+/* Contextual control colours: resolved where they are used (inline), so a container can override them (see @layer base). */
+@theme inline {
+  --color-field: var(--field-bg);
+  --color-edge: var(--edge-color);
+}
+
+@layer base {
+  :root {
+    --field-bg: var(--color-surface);
+    --edge-color: var(--color-sand);
+  }
+
+  html {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+
+  h1 {
+    font-size: 2em;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  a {
+    color: var(--color-link);
+  }
+
+  a:hover {
+    color: var(--color-link-hover);
+  }
+
+  /* native <dialog> is used for modals: lock page scroll while one is open */
+  body:has(dialog[open]) {
+    overflow: hidden;
+  }
+
+  ::selection {
+    background: var(--color-sand);
+    color: var(--color-foreground);
+  }
+}
+
+/* The floating surface every popup, menu and pinned card sits on. A utility
+   rather than a shared string in a module: it is styling, and it now travels
+   with the rest of the styling instead of being imported into the markup. */
+@utility popup-surface {
+  @apply rounded-md border border-sand/55 bg-background/85 shadow-[0_2px_10px_rgba(31,31,31,0.05)] backdrop-blur-lg;
+}
+
+@utility focus-ring {
+  @apply focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-link;
+}

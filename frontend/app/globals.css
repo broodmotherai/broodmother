@@ -1,0 +1,5218 @@
+/* ---------------------------------------------------------------------------
+   Two layers, in this order on purpose.
+
+   1. Tailwind's theme and utilities, then proprium's tokens — what
+      `components/ui/core/` is written against. Preflight is deliberately NOT
+      imported: `@import "tailwindcss"` would pull in a reset, and everything
+      below this header is a 5,460-line stylesheet that was written without one.
+      Theme + utilities is all the kit needs.
+
+   2. broodmother's own stylesheet, unchanged, last — so where the two ever name
+      the same thing, the app's own rule is the one that wins.
+
+   The two token sets do not collide: proprium's 37 custom properties and
+   broodmother's 42 share no name.
+--------------------------------------------------------------------------- */
+@import 'tailwindcss/theme.css';
+@import 'tailwindcss/utilities.css';
+@source '../components';
+
+@import '../styles/tokens.css';
+@import '../styles/console.css';
+
+/* ---------------------------------------------------------------------------
+   The sandy scheme. One scale, and both token systems point at it — proprium's
+   `@theme` colours (what `components/ui/` is written against) and broodmother's
+   own (what the stylesheet below is written against). Change a step here and
+   both move together.
+
+   Semi-high contrast by design, measured: ink on the page ground is 13.5:1,
+   secondary ink 8.7:1, muted 5.3:1; on a floating surface ink is 15.0:1. The
+   warmth is what keeps that off the glare of near-black on near-white — the hue
+   carries the character, and the lightness carries the contrast.
+
+   The page sits at 200 and every floating surface above it at 50, so a menu, the
+   tree and the account centre lift off the page rather than sinking into it.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-sand-50: #fefcf8;
+  --color-sand-100: #fbf7ef;
+  --color-sand-200: #f6f0e4;
+  --color-sand-300: #ede4d3;
+  --color-sand-400: #dfd2bb;
+  --color-sand-500: #c4b394;
+  --color-sand-600: #8c7a5c;
+
+  --color-ink: #2b2419;
+  --color-ink-soft: #4c4234;
+  --color-ink-faint: #6e624e;
+
+  /* proprium's semantics, re-pointed. The names stay so `bg-background`,
+     `text-charcoal`, `border-edge` and the rest keep working unchanged. */
+  --color-background: var(--color-sand-200);
+  --color-foreground: var(--color-ink);
+  --color-white: var(--color-sand-50);
+  --color-cream: var(--color-sand-50);
+  --color-cream-text: var(--color-sand-100);
+  --color-sand: var(--color-sand-400);
+  --color-charcoal: var(--color-ink-soft);
+  --color-gray: var(--color-ink-faint);
+  --color-muted: var(--color-ink-faint);
+
+  --color-surface: color-mix(in srgb, var(--color-sand-600) 14%, transparent);
+  --color-surface-hover: color-mix(in srgb, var(--color-sand-600) 26%, transparent);
+  --color-surface-active: var(--color-sand-300);
+  --color-surface-solid: var(--color-sand-100);
+  --color-surface-hover-solid: var(--color-sand-200);
+  --color-surface-settled: var(--color-sand-300);
+
+  /* A field is the lightest step, so an input reads as somewhere to write. */
+  --color-field: var(--color-sand-50);
+  --color-edge: var(--color-sand-400);
+}
+
+
+@import 'katex/dist/katex.min.css';
+
+/* The chrome. `--chrome-gap` is the one inset the app floats things by: it is a track's own
+   gap — which is what holds the account centre off the window's edge and sets the distance
+   from one control in the row to the next — and it is the margin the tree floats in. One
+   token, so the gap around the side menu and the gap around the account centre cannot drift
+   apart.
+
+   `--track-control` is how tall everything standing in a track is: a tab, the plus at the
+   end of the strip, the branch selector, the compare toggle, the account centre's card. It
+   is derived rather than stated — what the rail leaves after the same inset above and below
+   it — so the row stays level whatever the gap or the rail's height is set to, and no
+   control can be given a height of its own that is a pixel out. */
+:root {
+  --chrome-gap: 0.5rem;
+  --track-height: var(--head);
+  --track-control: calc(var(--track-height) - 2 * var(--chrome-gap));
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-latin.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: block;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-latin-ext.woff2') format('woff2');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: block;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Funnel Display';
+  src: url('/fonts/funnel-display-latin.woff2') format('woff2');
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Seti UI, the pack VS Code draws its file icons from. Only woff is published; every glyph
+   sits in the private use area, so nothing here falls back to a letter. */
+@font-face {
+  font-family: 'Seti';
+  src: url('/fonts/seti.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  unicode-range: U+E000-F8FF;
+}
+
+:root {
+  /* The ink. Was `--white` at #fffeee, over a black ground; the app reads on proprium's
+     cream now, so it is proprium's foreground and the name says which role it plays. Every
+     `color-mix(… var(--ink) N%, transparent)` below derives from it and flips with it. */
+  --ink: var(--color-ink);
+  --black: #1f1f1f;
+  --dark: #0f0f0f;
+  --opal-violet: #c084fc;
+  --opal-indigo: #818cf8;
+  --opal-cyan: #22d3ee;
+  --opal-mint: #34d399;
+  --opal-gold: #b39051;
+  --opal-rose: #f472b6;
+  --opal-navy: #051e39;
+
+  /* Red is not one of the opals, and nothing in the palette stands in for it: it is the one
+     colour that only ever means what is about to happen cannot be undone. */
+  --danger: #f85149;
+
+  /* Not ours — Anthropic's, and the mark is only itself in it. */
+  --claude: #d97757;
+
+  /* Not ours — Meta's blue, so the spark reads as theirs. */
+  --muse: #0866ff;
+
+  /* Whoever you are showing up as tints the one button that commits a screen. */
+  --accent: var(--opal-violet);
+
+  --ground: var(--color-sand-200);
+  /* The ground every floating surface shares — the account centre's, which is proprium's
+     `popup-surface`: the page colour at 85% with the blur behind it. Named here so the
+     button and the dropdown read as the same material rather than three near-misses. */
+  --raised-bg: color-mix(in srgb, var(--color-sand-50) 88%, transparent);
+  --raised-blur: blur(16px);
+  --panel: var(--color-sand-100);
+  /* One ground under every document, prose or source: switching between a note and a
+     source file must not change the colour of the page. */
+  /* One ground under every document, prose or source — and the same one the app is on, so
+     opening a file does not change the colour of the page. */
+  --editor-ground: var(--ground);
+  --raised: color-mix(in srgb, var(--ink) 6%, transparent);
+  --active: color-mix(in srgb, var(--ink) 10%, transparent);
+  --muted: color-mix(in srgb, var(--ink) 45%, transparent);
+  --faint: color-mix(in srgb, var(--ink) 28%, transparent);
+  --line: color-mix(in srgb, var(--ink) 10%, transparent);
+  --line-hover: color-mix(in srgb, var(--ink) 20%, transparent);
+
+  /* Apple's own type, everywhere: SF Pro for text, SF Mono where it must be fixed-width. */
+  --sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', ui-sans-serif,
+    system-ui, sans-serif;
+  --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
+  --display: var(--sans);
+
+  --radius: 0;
+  --radius-sm: 0;
+
+  /* Floating surfaces are the one place the app is not square: a menu or a modal reads as
+     a sheet lifted off the chrome, and the corner is what says so.
+
+     The surface's corner is its rows' corner plus the room it holds them in, which is the
+     only ratio that keeps the two curves parallel — pick the outer one freehand and the
+     highlight inside it reads as a different shape sitting in a rounded box. */
+  --row-radius: 6px;
+  --surface-inset: 4px;
+  /* One radius for the whole app now — the chips', 6px — so a surface's corner is its
+     rows' corner and a field's is the same. `--surface-radius` and `--field-radius` are
+     kept as names for the places that read as one, and both resolve to it. */
+  --surface-radius: var(--row-radius);
+  --field-radius: var(--row-radius);
+  --surface-shadow: 0 8px 24px -4px rgb(31 31 31 / 10%), 0 2px 6px rgb(31 31 31 / 6%);
+  /* Where a page's content starts below the tab bar — the same line for a note, a source
+     file, the settings and the tasks, so moving between them does not move your eye. The
+     prose editor states the same distance in pixels, since Monaco pads in them. */
+  --page-top: 4.5rem;
+  /* How wide a page's column is, padding included: the settings and the tasks read at one
+     measure, and settings hangs its rail off the left of that column rather than inside it. */
+  --page-width: 60rem;
+  --gutter: 0.5rem;
+  --head: 2.6rem;
+  --measure: 50rem;
+  --pad: 0.625rem;
+
+  color-scheme: dark;
+  accent-color: var(--opal-violet);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Next's dev overlay ignores `devIndicators: false` once there is an error to badge, and
+   the badge sits exactly where the status line lives. The overlay mounts as this one
+   element, so hiding it is the whole fix; errors still land in the console. Production
+   never renders the element, so the rule matches nothing there. */
+nextjs-portal {
+  display: none;
+}
+
+/* Nothing in the app draws a scrollbar: the document, the tree, the palette, a modal, a code
+   block, the terminal all scroll without one. Set on `*` rather than per pane because the
+   list of things that scroll is not a list anyone can keep up to date, and one pane left on
+   the platform default is exactly the inconsistency this exists to stop. Monaco draws its
+   own rather than the browser's, so `editor/core.tsx` hides that one where it is set.
+
+   The standard property only — Chromium ignores `::-webkit-scrollbar` rules once
+   `scrollbar-width` is set, so styling it both ways styles it neither. */
+* {
+  scrollbar-width: none;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 400 14px/1.55 var(--sans);
+  letter-spacing: -0.006em;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  font-size: 1.375rem;
+}
+h2 {
+  font-size: 1.15rem;
+}
+h3 {
+  font-size: 1rem;
+}
+
+code,
+kbd,
+pre,
+.mono {
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+
+/* One button in the app, the one that creates a profile on first run, and every other
+   takes its shape from it: same corner, same padding, same answer to the cursor. What a
+   button says it will do is left to whoever placed it. */
+button {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--ink);
+  background: var(--raised-bg);
+  backdrop-filter: var(--raised-blur);
+  border: 1px solid var(--line);
+  border-radius: var(--field-radius);
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+button:hover {
+  background: var(--active);
+  border-color: var(--line-hover);
+}
+
+button:focus-visible {
+  outline: none;
+}
+
+/* What cannot be undone says so before it is clicked, not after. */
+button.danger {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+  color: var(--danger);
+}
+
+button.danger:hover {
+  background: color-mix(in srgb, var(--danger) 26%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 60%, transparent);
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 4%, var(--ground));
+  border: 1px solid var(--line);
+  border-radius: var(--field-radius);
+  padding: 0.35rem 0.55rem;
+  transition: border-color 120ms ease;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--line-hover);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+/* The caret says where you are in a field; a select has one to itself and does not. */
+input:focus-visible,
+textarea:focus-visible {
+  border-color: var(--opal-indigo);
+}
+
+/* ---------- frame ---------- */
+
+/* The sidebar runs the full height; the terminal panel takes a row off the document. */
+.shell {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--sidebar, 17rem) 1fr;
+  grid-template-rows: 1fr auto auto;
+  height: 100dvh;
+}
+
+.tree {
+  grid-row: 1 / -1;
+}
+
+.main {
+  grid-column: 2;
+}
+
+/* Straddles the border between the two panes it divides, over neither. */
+.resizer {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  touch-action: none;
+}
+
+/* Shape and cursor by the line it draws; where it sits is per edge, below. A seam between
+   two terminal panes is the same element as the window's own edges. */
+.resizer[data-axis='sidebar'],
+.resizer[data-axis='row'] {
+  width: 7px;
+  justify-content: center;
+  cursor: col-resize;
+}
+
+.resizer[data-axis='panel'],
+.resizer[data-axis='column'] {
+  height: 7px;
+  flex-direction: column;
+  justify-content: center;
+  cursor: row-resize;
+}
+
+/* The seam here is the sidebar's own right border, which is the last pixel of the track
+   rather than the first of the next one — so the strip starts 4px back, not 3, and its
+   middle lands on the border instead of a pixel past it. */
+.resizer[data-axis='sidebar'] {
+  top: 0;
+  bottom: 0;
+  /* On the tree's own right edge — the panel floats, so that edge is its margin in from
+     the track. The strip is 7px, so half of it sits either side of the line. */
+  left: calc(var(--sidebar, 17rem) - var(--chrome-gap) - 3.5px);
+}
+
+/* The seam here is the panel's own top border, and `top` is measured from inside it — so the
+   strip starts 4px back, not 3, and its middle pixel lands on the border rather than the row
+   under it. Three pixels of handle sitting one low reads as off-centre; nine hides it. */
+.resizer[data-axis='panel'] {
+  top: -4px;
+  left: 0;
+  right: 0;
+}
+
+/* Placed on the split it divides, so the 3px that straddles it comes off here rather than
+   out of a position the layout would have to know about. */
+.resizer[data-axis='row'] {
+  transform: translateX(-3px);
+}
+
+.resizer[data-axis='column'] {
+  transform: translateY(-3px);
+}
+
+/* No handle and no dashes. The strip is the whole of it: a 7px grab area straddling the
+   seam, with the cursor saying what it does. The expanding dot and the dashed line it drew
+   on hover are gone — they were decoration on an edge that is already legible. */
+
+.resizer:focus-visible {
+  outline: none;
+}
+
+body[data-resizing] {
+  user-select: none;
+}
+
+body[data-resizing='sidebar'],
+body[data-resizing='row'] {
+  cursor: col-resize;
+}
+
+body[data-resizing='panel'],
+body[data-resizing='column'] {
+  cursor: row-resize;
+}
+
+.tree,
+.main,
+
+/* ---------- sidebar ---------- */
+
+/* The trigger is the whole row, so its hover and open states fill it instead of starting
+   partway across. It owns the head's padding, which is why this outranks .tree-head.
+
+   In the desktop app the window's close/minimise/zoom buttons land on exactly this row,
+   so the app declares how much room they take and the project starts after them. The gap
+   they leave is the one part of the row that is not a button, which makes it the place to
+   drag the window by. In a browser tab the variable is unset and neither applies. */
+.tree-head.project {
+  padding: 0 0 0 var(--titlebar-inset, 0px);
+  -webkit-app-region: drag;
+}
+
+.project-anchor {
+  -webkit-app-region: no-drag;
+}
+
+/* The inset the app declares is the whole distance to the logo, so the anchor gives back
+   what the row already spent — otherwise the gap after the window buttons is that much
+   wider than the one before them, and the logo reads as pushed off to one side. The margin
+   is spent first, being the part that shows: what is left over is padding, which is what a
+   browser tab gets — no inset there, so the logo stands off the edge by the same 0.85rem
+   the chevron does at the other end. */
+.tree-head.project .project-anchor {
+  padding-left: max(0px, 0.85rem - var(--titlebar-inset, 0px) - 0.3rem);
+}
+
+.tree-head .logo {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+}
+
+/* Standing off the row rather than filling it: the hover is a control you can see the edges
+   of, so it is inset by its own margin and rounded like everything else that lights up. */
+.project-anchor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  margin: 0.3rem;
+  padding: 0 0.6rem;
+  border-radius: var(--row-radius);
+  background: transparent;
+  border: none;
+  font-weight: 600;
+}
+
+.project-anchor:hover,
+.project-anchor[data-state='open'] {
+  background: var(--raised);
+}
+
+.project-anchor .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The repo reads as something the project is holding rather than a second name of equal
+   weight, so it is quieter and gives up its room first when the sidebar narrows. */
+.project-anchor .icon {
+  flex: none;
+  margin-left: auto;
+  width: 0.85rem;
+  height: 0.85rem;
+  color: var(--faint);
+}
+
+.project-anchor:hover .icon {
+  color: var(--muted);
+}
+
+/* Chrome sits at the ground, the document a shade above it. */
+.tree {
+  /* One size for every glyph that stands at the head of a row in here — a file's mark, a
+     folder's caret, the icon on Tasks and Chat. They sit in one column down the side of the
+     pane, and a column of glyphs that disagree about how big they are reads as a ragged
+     edge long before anyone can say which one is wrong. */
+  --tree-icon: 1rem;
+
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  /* Floating: inset from the window by the same gap the account centre keeps from its
+     corner, on the same ground and behind the same border as every other surface that
+     sits above the page. A rule down its right edge is what a docked panel needs, and
+     this one is not docked. */
+  margin: var(--chrome-gap);
+  border-radius: var(--surface-radius);
+  background: var(--raised-bg);
+  backdrop-filter: var(--raised-blur);
+}
+
+.tree-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: var(--head);
+  flex: none;
+  padding: 0 0.35rem;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: -0.018em;
+}
+
+/* The head's mirror: who you work as, pinned under the rows and read left to right the
+   way the project is at the top. No border of its own — the anchor's hover already says
+   where the control is, and a second line under the rows boxed the whole sidebar in. */
+.tree-foot {
+  display: flex;
+  align-items: center;
+  height: var(--head);
+  flex: none;
+}
+
+.profile-anchor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  margin: 0.3rem;
+  padding: 0 0.55rem;
+  border-radius: var(--row-radius);
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-weight: 600;
+  text-align: left;
+}
+
+.profile-anchor:hover,
+.profile-anchor[data-state='open'] {
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.profile-anchor .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-anchor .icon {
+  flex: none;
+  margin-left: auto;
+  width: 14px;
+  height: 14px;
+}
+
+.tree-head .dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--opal-violet);
+}
+
+/* Every rule below is scoped through `> ul` — the file list. The project dropdown is also
+   inside .tree, and a bare `.tree ul` outranked `.project ul` on source order alone. */
+.tree > ul {
+  list-style: none;
+  margin: 0;
+  /* The panel already floats off the window; the list inside it barely insets at all —
+     what holds the rows off the edge is their own margin, not a second gutter here. */
+  padding: 2px 0;
+  flex: 1;
+  overflow: auto;
+}
+
+.tree > ul:focus-visible {
+  outline: none;
+}
+
+/* Inset from the sidebar edge and softly cornered, so the row a selection paints sits in
+   the pane rather than spanning it wall to wall. */
+.tree > ul li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 1px 0.25rem;
+  padding: 0.22rem 0.4rem;
+  border-radius: var(--row-radius);
+  color: color-mix(in srgb, var(--ink) 78%, transparent);
+  /* The sidebar is a column of names read at a glance rather than a passage of prose, and
+     it is set a step heavier than the page for it — the same weight the head above and the
+     profile below are, so the whole panel speaks in one voice. */
+  font-weight: 600;
+  cursor: default;
+}
+
+.tree > ul .name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Nesting level picks a colour off the opal palette, repeating every six. */
+.tree > ul [data-tint='0'] {
+  --tint: var(--opal-violet);
+}
+.tree > ul [data-tint='1'] {
+  --tint: var(--opal-indigo);
+}
+.tree > ul [data-tint='2'] {
+  --tint: var(--opal-cyan);
+}
+.tree > ul [data-tint='3'] {
+  --tint: var(--opal-mint);
+}
+.tree > ul [data-tint='4'] {
+  --tint: var(--opal-gold);
+}
+.tree > ul [data-tint='5'] {
+  --tint: var(--opal-rose);
+}
+
+/* One guide per nesting level. The negative block margins close the gap the row padding
+   would otherwise leave, so a guide runs unbroken down its folder's contents; the inline
+   pair centres it under the chevron of the folder it descends from — the icon is 1rem, so
+   the guide moves half of that and gives the width straight back.
+
+   The width is what a step inward costs. Narrow, because depth in a project is common and
+   a tree that spends a whole glyph on every level has its names in the middle of the pane
+   by the third one. */
+.tree > ul .indent {
+  flex: none;
+  /* Lifted over the rows: a guide bridges into its neighbours, and the background of the
+     row below would otherwise paint across the part that reaches it. */
+  position: relative;
+  z-index: 1;
+  width: 0.5rem;
+  align-self: stretch;
+  margin-block: calc(-0.28rem - 2px);
+  margin-left: 0.5rem;
+  margin-right: -0.5rem;
+  /* Mixed into the ground rather than left translucent: a see-through line picks up
+     whatever row background is behind it and reads as a different colour on the row you
+     are hovering than on the one above it. */
+  border-left: 1px solid color-mix(in srgb, var(--tint) 45%, var(--ground));
+}
+
+/* Obsidian's nav-file-tag: the extension, on everything that isn't a note. */
+.tree > ul .tag {
+  flex: none;
+  margin-left: auto;
+  padding: 0.1rem 0.34rem;
+  border-radius: var(--row-radius);
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.6rem;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+}
+
+/* Which of the two a heading row is, where the pill used to spell it out: the project is
+   the gem the notes are kept in, a repo ships as a package. */
+.tree > ul .root-kind {
+  display: flex;
+  flex: none;
+  margin-left: auto;
+  color: var(--faint);
+}
+
+.tree > ul .tree-caret {
+  flex: none;
+  width: var(--tree-icon);
+  height: var(--tree-icon);
+  color: var(--muted);
+  transition: transform 260ms var(--ease-snap, ease);
+}
+
+.tree > ul li:hover .tree-caret,
+.tree > ul li[data-cursor] .tree-caret {
+  color: var(--ink);
+}
+
+/* The mark at the far end of a heading row, which is a label rather than the row's own
+   glyph — a step down from the column at the head, and the same step wherever it is. */
+.tree > ul .root-kind .icon {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.tree > ul .root-kind[data-kind='project'] {
+  color: var(--opal-violet);
+}
+
+.tree > ul .root-kind[data-kind='repo'] {
+  color: var(--opal-cyan);
+}
+
+/* What became of the file, where the extension pill would be — git's own letter, in the
+   colours the diff beside it is painted in. */
+.tree > ul .change {
+  flex: none;
+  margin-left: auto;
+  padding: 0.1rem 0.34rem;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  line-height: 1.2;
+}
+
+.tree > ul li[data-change='added'] .change,
+.tree > ul li[data-change='added'] .name {
+  color: var(--opal-mint);
+}
+
+.tree > ul li[data-change='removed'] .change,
+.tree > ul li[data-change='removed'] .name {
+  color: var(--danger);
+}
+
+.tree > ul li[data-change='renamed'] .change,
+.tree > ul li[data-change='renamed'] .name {
+  color: var(--opal-cyan);
+}
+
+.tree > ul li[data-change='modified'] .change,
+.tree > ul li[data-change='modified'] .name {
+  color: var(--opal-gold);
+}
+
+.tree > ul li[data-change='conflicted'] .change,
+.tree > ul li[data-change='conflicted'] .name {
+  color: var(--danger);
+}
+
+/* A folder with changes somewhere inside it: the name warms and a dot sits where a letter
+   would, which is how VS Code says the same thing. */
+.tree > ul li[data-holds] .name {
+  color: color-mix(in srgb, var(--opal-gold) 45%, var(--ink));
+}
+
+.tree > ul .change-dot {
+  color: var(--opal-gold);
+}
+
+/* How many paths a tree's checkout has touched, in the pill its tag already wears. */
+.tree > ul .change-count {
+  flex: none;
+  padding: 0.1rem 0.34rem;
+  border-radius: var(--row-radius);
+  background: color-mix(in srgb, var(--opal-gold) 16%, transparent);
+  color: var(--opal-gold);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  line-height: 1.2;
+}
+
+.tree > ul li:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.tree > ul li[data-cursor] {
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.tree > ul li[aria-selected='true'] {
+  background: var(--active);
+  color: var(--tint);
+}
+
+/* The row, typed into. It wears the row rather than opening a box inside it: the padding
+   and border every other field gets would move the name off the line it was reading on,
+   and what has changed is that the name can be typed, not that a form has appeared. */
+.tree > ul .rename,
+.tree > ul .rename:hover {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--row-radius);
+  background: transparent;
+  color: var(--ink);
+}
+
+/* The ring is the tint the row already carries, so the field belongs to its folder the way
+   the row above it does. */
+.tree > ul .rename:focus-visible,
+.tree > ul .rename:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--tint) 60%, transparent);
+}
+
+.tree > ul .rename::selection {
+  background: color-mix(in srgb, var(--tint) 40%, transparent);
+}
+
+/* The row being carried stays in place and steps back, so the list keeps the shape it had
+   while the drag reads against it. */
+.tree > ul li[data-dragging] {
+  opacity: 0.4;
+}
+
+/* The folder a drop would land in. A file hands the drop to the folder it sits in, so this
+   is on the destination rather than always under the pointer — outranks hover for that
+   reason: the row beneath the cursor is not always the one taking it. */
+.tree > ul li[data-drop],
+.tree > ul li[data-drop]:hover {
+  background: color-mix(in srgb, var(--tint) 20%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tint) 55%, transparent);
+  color: var(--ink);
+}
+
+/* Whatever the rows leave over is the top of the project, and it takes a drop the same way —
+   marked on the list itself, there being no row to carry it. */
+.tree > ul[data-drop] {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 20%, transparent);
+  border-radius: var(--row-radius);
+}
+
+.icon {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--faint);
+}
+
+/* A glyph, not a drawing: it needs a line box the size of the sprite it stands in for, and
+   its own colour, which the language it names has already chosen. Seti hangs its ink off a
+   baseline near the foot of the em, which leaves it riding high in a box that is centred on
+   the row — so it comes back down by the distance between the two, measured. */
+.icon.seti {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Seti';
+  font-size: 1.15rem;
+  line-height: 1;
+  transform: translateY(0.17em);
+}
+
+.tree > ul li:hover .icon,
+.tree > ul li[data-cursor] .icon {
+  color: var(--muted);
+}
+
+.tree > ul li[aria-selected='true'] .icon {
+  color: inherit;
+}
+
+.tree > ul .icon,
+.tree > ul .icon.seti {
+  width: var(--tree-icon);
+  height: var(--tree-icon);
+  font-size: var(--tree-icon);
+}
+
+/* Held down enough to sit behind the name and no further: a glyph at half strength is one
+   you have to look for, and a column of them is the thing you read the tree by. */
+.tree > ul .icon {
+  color: var(--tint);
+  opacity: 0.8;
+  transition: opacity 120ms ease;
+}
+
+/* The depth tint is what an outline has instead of a colour of its own. A language glyph
+   arrives with one, and dimming it takes the thing it was there to say. */
+.tree > ul .icon.seti {
+  opacity: 0.92;
+}
+
+.tree > ul li:hover .icon,
+.tree > ul li[data-cursor] .icon,
+.tree > ul li[aria-selected='true'] .icon {
+  opacity: 1;
+}
+
+/* The fold indicator carries the colour of the guides it opens onto. */
+.tree > ul li[aria-expanded] > .icon {
+  color: var(--tint);
+}
+
+/* ---------- document ---------- */
+
+.main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* No ground of its own. One colour under the whole window, so the gap around the floating
+     tree is the same cream as the pane beside it. */
+  background: none;
+}
+
+/* ---------- the track ---------- */
+
+/* The rail the chrome stands on, and the one place its rhythm is written: the height of the
+   row, the inset that floats what is in it off the top and the bottom, and the gap from one
+   control to the next. The tab strip and the branch it belongs to share a track — switching
+   branch is what changes the tabs, so the control that does it sits with them — and the
+   comparison gets a track of its own under it.
+
+   The gap is the track's rather than each control's own margin. Controls setting their own
+   is how a row ends up with different gaps depending on which of them happen to be there:
+   the compare toggle only exists once a repository has a second branch, and a gap that
+   changes when it appears is one nobody can name. The same gap is the track's outer edge. */
+.track {
+  display: flex;
+  align-items: center;
+  gap: var(--chrome-gap);
+  flex: none;
+  height: var(--track-height);
+  /* Nothing on the left: the sidebar floats by this same gap already, and a padding here
+     would add to its margin and stand the row twice as far off the tree as everything else
+     in the window is off its edges. The right is the window's edge, which nothing else
+     insets, so the track keeps that side itself. */
+  padding: 0 var(--chrome-gap) 0 0;
+  /* No ground and no rule under it by default: the top track is chrome the page shows
+     through, and the account centre in its corner carries the only surface in the row. */
+  background: none;
+  border-bottom: none;
+}
+
+/* A track that stands over the pane and says something about what is in it — the comparison
+   — is the raised material, so the pane reads as being under it. */
+.track[data-ground] {
+  border-bottom: 1px solid var(--line);
+  background: var(--raised-bg);
+  backdrop-filter: var(--raised-blur);
+}
+
+/* The top track runs the width of the window and is mostly empty, which makes it the
+   natural place to pick the window up by — the same bargain the tree head makes. Everything
+   standing in it stays clickable; only the space between drags. */
+.track[data-drag],
+.track[data-drag] .tabs {
+  -webkit-app-region: drag;
+}
+
+/* Everything standing in a track is one shape written once: the branch selector, the
+   compare toggle, the comparison's basis and its way out. The height is the track's own
+   figure rather than a number of its own, so a row of controls cannot disagree by a pixel.
+   The chat page's model picker is the same control away from any track, so it is written
+   here too rather than beside itself. */
+.track-control,
+.model-anchor {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 0.35rem;
+  height: var(--track-control);
+  padding: 0 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: var(--row-radius);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  -webkit-app-region: no-drag;
+}
+
+/* One holding a glyph and nothing else is as wide as it is tall, so a run of them keeps the
+   row's rhythm rather than each being as wide as its own icon. */
+.track-control[data-shape='icon'] {
+  justify-content: center;
+  width: var(--track-control);
+  padding: 0;
+}
+
+.branch-anchor,
+.model-anchor {
+  max-width: 14rem;
+}
+
+.track-control:hover,
+.track-control[data-state='open'],
+.model-anchor:hover,
+.model-anchor[data-state='open'] {
+  border-color: var(--line-hover);
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.track-control .name,
+.model-anchor .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-control .icon,
+.model-anchor .icon {
+  flex: none;
+  width: 0.85rem;
+  height: 0.85rem;
+  opacity: 0.75;
+}
+
+/* On, or on the narrower reading: both are the same statement — what you are seeing is not
+   everything — so both are filled the same way. The glyph takes the button's own colour, so
+   hovering and being pressed are visible in it. */
+.track-control[aria-pressed='true'] {
+  border-color: var(--line-hover);
+  background: var(--active);
+  color: var(--ink);
+}
+
+.track-control[aria-pressed='true'] .icon,
+.track-control[data-shape='icon'] .icon {
+  color: currentcolor;
+}
+
+/* ---------- tabs ---------- */
+
+/* What is open, across the top of the pane. Documents and terminals sit in the same strip
+   because they are the same thing from here: something you are working in. The strip fills
+   the track it stands in; the gap after the last tab is the track's, like every other gap
+   in the row. */
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow-x: auto;
+}
+
+/* Which checkout the tabs beside it belong to, at the end of the row they belong to. What
+   stands either side of it is the track's gap, not this box's padding. */
+.branch-menu {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+/* The comparison's own row is a track like the one above it, and takes its rhythm from
+   there: two branch selectors side by side would ask you to work out which is which, so the
+   sentence between them says it instead. */
+.diff-copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.diff-copy strong {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-weight: 400;
+}
+
+.diff-count {
+  margin-left: auto;
+  color: var(--faint);
+  font-size: 0.7rem;
+}
+
+.tab,
+.tab-new,
+.tab-close {
+  -webkit-app-region: no-drag;
+}
+
+/* A tab is a control, not a passage of text: dragging across one should move the window,
+   not paint a selection over the filename. */
+.tabs,
+.tab,
+.tab-name {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* A tab is a control standing in a track like any other, so it is the track's height rather
+   than one of its own: the strip and the selectors at the end of the row line up. */
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: none;
+  min-width: 0;
+  max-width: 13rem;
+  height: var(--track-control);
+  padding: 0 0.3rem 0 0.55rem;
+  border-radius: var(--row-radius);
+  background: var(--raised);
+  color: var(--muted);
+  font-size: 0.76rem;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab[data-active] {
+  background: var(--active);
+  color: var(--ink);
+}
+
+.tab:focus-visible {
+  outline: 1px solid var(--opal-indigo);
+  outline-offset: -1px;
+}
+
+.tab .icon {
+  flex: none;
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.tab .icon.seti {
+  font-size: 0.85rem;
+}
+
+/* Each agent's mark carries its colour into the strip: one glance says whose tab it is. */
+.tab[data-shell='claude'] > .icon {
+  color: var(--claude);
+}
+
+.tab[data-shell='muse'] > .icon {
+  color: var(--muse);
+}
+
+.tab-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The tab, typed into — the same treatment the tree row gets: the name becomes a field
+   without a form appearing around it. */
+.tab .rename,
+.tab .rename:hover {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--row-radius);
+  background: transparent;
+  color: var(--ink);
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.tab .rename:focus-visible,
+.tab .rename:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--opal-indigo) 60%, transparent);
+}
+
+.tab .rename::selection {
+  background: color-mix(in srgb, var(--opal-indigo) 40%, transparent);
+}
+
+/* Visible on the tab you are on or the one under the pointer — a row of close buttons
+   reads as clutter on a strip you are only looking at. */
+.tab-close {
+  display: flex;
+  flex: none;
+  padding: 0.15rem;
+  border: none;
+  border-radius: var(--row-radius);
+  background: transparent;
+  color: var(--faint);
+  opacity: 0;
+}
+
+.tab:hover .tab-close,
+.tab[data-active] .tab-close {
+  opacity: 1;
+}
+
+.tab-close:hover {
+  background: var(--active);
+  color: var(--ink);
+}
+
+.tab-close .icon {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+/* The plus at the end of the strip is a tab-sized button, not a smaller one wearing the
+   same corner: it stands in the same run and is the same height as what it makes. */
+.tab-new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--track-control);
+  height: var(--track-control);
+  padding: 0;
+  border: none;
+  border-radius: var(--row-radius);
+  background: transparent;
+  color: var(--faint);
+}
+
+.tab-new:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.tab-new .icon {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+/* One pane under the strip: the document, or a terminal with the whole thing. */
+.main-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.main-body > .pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  /* Named so a page inside can lay itself out to the pane's width rather than the window's:
+     the sidebar is resizable, so the two are not the same number. */
+  container: pane / inline-size;
+}
+
+.main-body > [hidden] {
+  display: none;
+}
+
+.terminal-tab-pane {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Panes tile the tab from their rects rather than nesting in boxes: a shell that moves in
+   the React tree unmounts, and a pty that unmounts dies. */
+.terminal-pane {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0.68;
+}
+
+/* Which pane your keys go to. xterm hollows its own cursor when it is not focused, which is
+   a small thing to find across four of them, so the ones you are not in stand back — the
+   same thing iTerm2 does. A tab that has not been split has nothing to stand back from. */
+.terminal-pane:focus-within,
+.terminal-pane:only-child {
+  opacity: 1;
+}
+
+/* The body is the whole pane: which document it is belongs to the tab strip above it. */
+.doc {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.doc-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--page-top) 1.75rem 6rem;
+}
+
+.doc-body > * {
+  max-width: var(--measure);
+  margin-inline: auto;
+}
+
+/* The app's own pages scroll the way a document does, and start where one starts. */
+.empty,
+.tasks-page {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--page-top) 1.75rem 6rem;
+}
+
+.empty {
+  color: var(--muted);
+}
+
+/* A project with nothing open: the mark over the name over the two keys, in the middle of
+   the pane. It is a sign, not a surface — nothing to select, nothing to drag off. */
+.home {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 1.75rem;
+  color: var(--muted);
+  text-align: center;
+  user-select: none;
+  cursor: default;
+}
+
+.home .mark {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 0.9rem;
+  object-fit: contain;
+  -webkit-user-drag: none;
+}
+
+.home h1 {
+  margin: 0;
+  color: var(--ink);
+}
+
+.home p {
+  margin: 0;
+}
+
+/* One line per key: the key, then what it does. Two columns rather than one run of text,
+   so the keys start in the same place and so do the descriptions — a chord as wide as ⌘⇧S
+   no longer pushes its own line out of step with the rest. */
+.home-keys {
+  margin: 1.1rem 0 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 0.75rem;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+/* Each row hands its two cells straight up to the grid, so the columns are measured across
+   every key at once instead of within a row. */
+.home-keys > div {
+  display: contents;
+}
+
+.home-keys dt,
+.home-keys dd {
+  margin: 0;
+}
+
+.home-keys dd {
+  color: var(--faint);
+}
+
+/* ---------- editor ---------- */
+
+.broodmother-editor {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* Monaco brings its own scrolling and its own viewport, so the pane around it stops
+   scrolling and stops padding: two scrollbars over one document is one too many. */
+.doc-body:has(.monaco-host) {
+  padding: 0;
+  overflow: hidden;
+}
+
+.doc-body:has(.monaco-host) > * {
+  max-width: none;
+}
+
+/* Monaco measures the box it is given, so the height has to reach it from the pane: every
+   link in the chain fills, or the editor mounts one pixel tall. */
+.broodmother-editor:has(.monaco-host) {
+  height: 100%;
+}
+
+.monaco-host {
+  position: relative;
+  height: 100%;
+}
+
+/* Monaco measures the box it is given and this one is a field, so the height is stated
+   here rather than inherited from a pane. Dressed as the inputs around it: same ground,
+   same border, same corner. */
+.broodmother-editor.inline-editor {
+  height: 28.5rem;
+  overflow: hidden;
+  padding-inline: 0.8rem;
+  background: color-mix(in srgb, var(--ink) 4%, var(--ground));
+  border: 1px solid var(--line);
+  border-radius: var(--field-radius);
+  transition: border-color 120ms ease;
+}
+
+.inline-editor:hover,
+.inline-editor:focus-within {
+  border-color: var(--line-hover);
+}
+
+/* The document's own ground is the pane's; in a field it is the field's. */
+.inline-editor .monaco-editor,
+.inline-editor .monaco-editor .monaco-editor-background,
+.inline-editor .monaco-editor .margin {
+  background: transparent;
+}
+
+/* Monaco draws the caret as tall as the line, and prose is set at a line height half again
+   its own size — so the bar stands well clear of the words it sits between. This is the
+   height of what is being typed instead, measured off the line in `editor/core.tsx` and
+   centred in the line box. `!important` because the height Monaco writes is inline. */
+.monaco-host.prose .monaco-editor .cursors-layer > .cursor {
+  height: calc(1.15em * var(--caret-scale, 1)) !important;
+  transform: translateY(
+    calc((var(--line-box, 1.7em) - 1.15em * var(--caret-scale, 1)) / 2)
+  );
+}
+
+.monaco-mount {
+  height: 100%;
+}
+
+/* Prose is set to the same measure as the rest of the app. Monaco lays out to the box it
+   is given, so the measure is the box rather than a max-width on the text inside it. */
+.monaco-host.prose .monaco-mount {
+  max-width: calc(var(--measure) + 4rem);
+  margin-inline: auto;
+}
+
+/* A note has no gutter to leave room for. */
+.monaco-host.prose .monaco-editor .margin {
+  display: none;
+}
+
+.monaco-host.prose .monaco-editor .cursors-layer .cursor {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+/* The editor paints its own ground from the theme, which is where the minimap and the
+   gutter take theirs from too. What is left here is the box around it. */
+.monaco-host {
+  background: var(--editor-ground);
+}
+
+/* The pane behind the editor is the same ground, so the measure gutters either side of a
+   note are not a different colour from the note. */
+.doc-body:has(.monaco-host) {
+  background: var(--editor-ground);
+}
+
+/* What the diff says in its margin. Monaco marks a changed line with a codicon, and the
+   codicon font is not one this app loads — `editor.api` is the editor without the bundle
+   that pulls the font in, and every one of those glyphs comes out a tofu box. The two the
+   diff needs are a plus and a minus, which every font has: they are written here as text
+   rather than by loading a font for two characters. */
+.monaco-editor .insert-sign,
+.monaco-diff-editor .insert-sign,
+.monaco-editor .delete-sign,
+.monaco-diff-editor .delete-sign {
+  justify-content: center;
+  font-family: var(--mono) !important;
+  /* Over the coloured margin, which is where the change is now said loudest. */
+  color: var(--ink);
+  opacity: 1 !important;
+}
+
+.monaco-editor .insert-sign::before,
+.monaco-diff-editor .insert-sign::before {
+  content: '+';
+}
+
+.monaco-editor .delete-sign::before,
+.monaco-diff-editor .delete-sign::before {
+  content: '−';
+}
+
+/* ---------- markdown, drawn as what it means ---------- */
+
+/* The one decoration that removes rather than styles. Everything the live preview hides —
+   `##`, `**`, `](url)` — is hidden by this and comes back by losing it. */
+.monaco-editor .md-hidden {
+  display: none;
+}
+
+.monaco-editor .md-h1,
+.monaco-editor .md-h2,
+.monaco-editor .md-h3,
+.monaco-editor .md-h4,
+.monaco-editor .md-h5,
+.monaco-editor .md-h6 {
+  font-family: var(--display);
+  font-weight: 650;
+  letter-spacing: -0.018em;
+  color: var(--ink);
+}
+
+.monaco-editor .md-h1 {
+  font-size: 1.6em;
+}
+.monaco-editor .md-h2 {
+  font-size: 1.32em;
+}
+.monaco-editor .md-h3 {
+  font-size: 1.15em;
+}
+.monaco-editor .md-h4 {
+  font-size: 1.04em;
+}
+.monaco-editor .md-h5,
+.monaco-editor .md-h6 {
+  font-size: 1em;
+  color: var(--muted);
+}
+
+.monaco-editor .md-strong {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.monaco-editor .md-emphasis {
+  font-style: italic;
+}
+
+.monaco-editor .md-strike {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+/* Code in a note is set in the same mono the terminal and the rest of the interface use,
+   not in whatever the editor happens to be set in. */
+.monaco-editor .md-code,
+.monaco-host.prose .monaco-editor .md-code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  color: var(--opal-mint);
+}
+
+/* A fenced block is code too, and Shiki colours it — but the face is ours. */
+.monaco-editor .md-fence {
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+
+.monaco-editor .md-link,
+.monaco-editor .md-wikilink {
+  color: var(--opal-indigo);
+  cursor: pointer;
+}
+
+.monaco-editor .md-quote {
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* The `-` and the `[x]` are drawn as the thing they mean. The character underneath is
+   still there and still what gets saved — it is only given no room to show itself, and
+   Monaco is told the width changed so the caret lands where the text is. */
+.monaco-editor .md-bullet,
+.monaco-editor .md-task {
+  font-size: 0;
+  letter-spacing: 0;
+}
+
+.monaco-editor .md-bullet::before {
+  content: '\2022';
+  font-size: 1rem;
+  color: var(--opal-violet);
+}
+
+/* A real box rather than a glyph: drawn, so it is the right size at any font, and square
+   with the corners taken off the way every other small control in the app is. */
+.monaco-editor .md-task::before {
+  content: '';
+  display: inline-block;
+  width: 0.82rem;
+  height: 0.82rem;
+  vertical-align: -0.1em;
+  border: 1.5px solid var(--line-hover);
+  border-radius: var(--row-radius);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.monaco-editor .md-task:hover::before {
+  border-color: var(--opal-violet);
+}
+
+/* Checked is the box filled, and nothing else. At this size a tick is three grey pixels
+   that read as dirt; the fill is unambiguous on its own. */
+.monaco-editor .md-task-done::before {
+  background: var(--opal-violet);
+  border-color: var(--opal-violet);
+}
+
+/* Done is said in the text as well as in the box. */
+.monaco-editor .md-done {
+  text-decoration: line-through;
+  color: var(--faint);
+}
+
+.monaco-editor .md-math-inline {
+  font-family: var(--mono);
+  color: var(--opal-gold);
+}
+
+/* A field in this form is a label stacked over its input, which is right for a text box
+   and wrong for a radio: the dot belongs beside what it names, not above it. */
+.fields .check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+  color: color-mix(in srgb, var(--ink) 82%, transparent);
+  cursor: pointer;
+}
+
+.fields .check input {
+  flex: none;
+  width: auto;
+  margin: 0;
+  accent-color: var(--accent, var(--opal-violet));
+  cursor: pointer;
+}
+
+/* The one that is chosen is the one you are reading about underneath. */
+.fields .check:has(input:checked) {
+  color: var(--ink);
+}
+
+/* ---------- images ---------- */
+
+.image-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  height: 100%;
+  padding: 2rem;
+  background: var(--editor-ground);
+}
+
+.image-view img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--surface-radius);
+  /* A transparent PNG on a dark ground is a picture of nothing, so it is given one. */
+  background: repeating-conic-gradient(var(--raised) 0% 25%, transparent 0% 50%) 50% /
+    16px 16px;
+}
+
+.image-meta {
+  margin: 0;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+
+/* A table drawn where its pipes were. It reads as the app's own table, not as a code
+   editor's idea of one — same rules, same lines, same restraint. */
+.md-table-zone {
+  display: flex;
+  /* The zone's height is Monaco's to set; the frame is what the table is measured by, so
+     it must keep its own rather than stretch to the zone's. */
+  align-items: flex-start;
+  overflow-x: auto;
+  cursor: text;
+  border-radius: var(--row-radius);
+}
+
+.md-table-zone:hover {
+  background: var(--raised);
+}
+
+.md-table-frame {
+  display: grid;
+  grid-template-columns: auto 1rem;
+  grid-template-rows: auto 1rem;
+  gap: 0.25rem;
+  padding: 0.35rem 0;
+}
+
+.md-table {
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.md-table th,
+.md-table td {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--line);
+  text-align: left;
+  white-space: pre-wrap;
+}
+
+.md-table th {
+  font-weight: 650;
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.md-table td {
+  color: color-mix(in srgb, var(--ink) 88%, transparent);
+}
+
+/* The one cell being edited shows its raw markdown; the ring is what says so. */
+.md-table th.md-table-editing,
+.md-table td.md-table-editing {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+  background: var(--raised);
+  cursor: text;
+}
+
+.md-table-add {
+  visibility: hidden;
+  padding: 0;
+  border: 1px dashed var(--line);
+  border-radius: var(--row-radius);
+  background: none;
+  color: var(--faint);
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.md-table-zone:hover .md-table-add {
+  visibility: visible;
+}
+
+.md-table-add:hover {
+  border-style: solid;
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.md-table-add-column {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.md-table-add-row {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+/* A display equation is drawn under its source: Monaco can put rendered DOM between lines,
+   but it has no public way to take the source lines' room back. */
+.md-math-zone {
+  display: flex;
+  justify-content: center;
+  padding: 0.25rem 0;
+  color: var(--ink);
+  cursor: text;
+  border-radius: var(--row-radius);
+}
+
+/* It is a thing you can put a caret in, and it says so on the way past. */
+.md-math-zone:hover {
+  background: var(--raised);
+}
+
+.md-math-block {
+  display: block;
+  text-align: center;
+}
+
+/* ---------- reading mode ---------- */
+
+.broodmother-reading h1,
+.broodmother-reading h2,
+.broodmother-reading h3 {
+  font-family: var(--display);
+}
+
+.broodmother-reading pre {
+  padding: 0.75rem 0.9rem;
+  background: var(--raised);
+  overflow-x: auto;
+}
+
+.broodmother-reading code {
+  font-family: var(--mono);
+}
+
+.broodmother-reading blockquote {
+  margin: 0.8rem 0;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--line);
+  color: var(--muted);
+}
+
+/* The same table both ways: reading mode may not disagree with the live preview about
+   what a table looks like. markdown-it gives the table no wrapper to scroll in, so the
+   element scrolls itself. */
+.broodmother-reading table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.broodmother-reading th,
+.broodmother-reading td {
+  border: 1px solid var(--line);
+  padding: 0.3rem 0.7rem;
+}
+
+.broodmother-reading th {
+  font-weight: 650;
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.broodmother-reading td {
+  color: color-mix(in srgb, var(--ink) 88%, transparent);
+}
+
+.broodmother-reading img {
+  max-width: 100%;
+}
+
+/* ---------- notebook ---------- */
+
+/* Code runs the width of the page, so the notebook is the one document that leaves the
+   prose measure behind. */
+.doc-body:has(.notebook) > * {
+  max-width: none;
+}
+
+/* Cells in a scrolling list. Focus on the list itself is command mode, said by the
+   selected cell's edge rather than by an outline of its own; the rhythm between cells
+   comes from the insert seams. */
+.notebook {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  outline: none;
+}
+
+/* The bar wears the anatomy of the tree's menus: the same lifted surface, holding flat
+   rows that light up under the pointer. The rows are glyphs alone — the title says the
+   rest — so the bar stays a quiet strip rather than a sentence of labels. */
+.notebook-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: var(--surface-inset);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+}
+
+.notebook-button {
+  display: flex;
+  padding: 0.35rem;
+  background: none;
+  border: none;
+  border-radius: var(--row-radius);
+  color: var(--muted);
+}
+
+.notebook-button:hover {
+  background: var(--active);
+  color: var(--ink);
+}
+
+.notebook-button:disabled {
+  background: none;
+  color: var(--faint);
+  cursor: default;
+}
+
+.notebook-button .icon {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.notebook-kernel {
+  margin-left: auto;
+  padding-inline: 0.45rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.notebook-kernel[data-state='busy'] {
+  color: var(--opal-cyan);
+}
+
+.notebook-kernel[data-state='idle'] {
+  color: var(--opal-mint);
+}
+
+/* A cell wears its selection on its left edge, the way VS Code's do. The gutter column
+   is the page's left margin: run, count and handling live there, and the source takes
+   everything to the right. */
+.notebook-cell {
+  display: grid;
+  grid-template-columns: 3.9rem minmax(0, 1fr);
+  column-gap: 0.6rem;
+  border-left: 2px solid transparent;
+  padding-left: 0.35rem;
+}
+
+.notebook-cell[data-selected] {
+  border-left-color: var(--accent);
+}
+
+.notebook-main {
+  min-width: 0;
+}
+
+.notebook-gutter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding-top: 0.4rem;
+}
+
+/* The handling — move, retype, delete — waits invisibly under the count until the
+   pointer or the selection is on the cell. */
+.notebook-handling {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.notebook-cell:hover .notebook-handling,
+.notebook-cell:focus-within .notebook-handling,
+.notebook-cell[data-selected] .notebook-handling {
+  opacity: 1;
+}
+
+.notebook-handle {
+  display: flex;
+  padding: 0.25rem;
+  color: var(--muted);
+}
+
+.notebook-handle:hover {
+  color: var(--ink);
+}
+
+.notebook-handle .icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* The seam between two cells: a hairline that says nothing until the pointer asks. */
+.notebook-insert {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 1.4rem;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.notebook-insert:hover,
+.notebook-insert:focus-within {
+  opacity: 1;
+}
+
+.notebook-insert::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  border-top: 1px solid var(--line);
+}
+
+.notebook-insert button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.05rem 0.5rem;
+  font-size: 0.72rem;
+}
+
+.notebook-insert button .icon {
+  width: 11px;
+  height: 11px;
+}
+
+.notebook-run {
+  display: flex;
+  padding: 0.15rem;
+}
+
+.notebook-run .icon {
+  width: 13px;
+  height: 13px;
+}
+
+.notebook-run:disabled {
+  color: var(--faint);
+  cursor: default;
+}
+
+/* `In [ ]` holds its blank the way Jupyter prints it. */
+.notebook-count {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--faint);
+  white-space: pre;
+}
+
+/* The cell's editor is Monaco standing as tall as its content, dressed as the fields
+   around it; the page scrolls, the cell does not. */
+.notebook-source {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  padding-block: 0.35rem;
+  background: var(--editor-ground);
+  border: 1px solid var(--line);
+  border-radius: var(--field-radius);
+}
+
+.notebook-cell[data-selected] .notebook-source {
+  border-color: var(--line-hover);
+}
+
+.cell-editor .monaco-editor,
+.cell-editor .monaco-editor .monaco-editor-background,
+.cell-editor .monaco-editor .margin {
+  background: transparent;
+}
+
+.notebook-md {
+  min-height: 1.6rem;
+}
+
+.notebook-md > :first-child {
+  margin-top: 0;
+}
+
+.notebook-md > :last-child {
+  margin-bottom: 0;
+}
+
+/* Outputs sit under the source, in the same full-width column. */
+.notebook-outputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.notebook-text {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.notebook-text[data-stream='stderr'],
+.notebook-text[data-stream='error'] {
+  background: color-mix(in srgb, var(--danger) 7%, transparent);
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--row-radius);
+}
+
+.notebook-image {
+  max-width: 100%;
+  border-radius: var(--row-radius);
+}
+
+.notebook-frame {
+  width: 100%;
+  height: 24rem;
+  border: 0;
+  /* Paper, not the ink: this frame renders documents' own HTML, which assumes a white page. */
+  background: #ffffff;
+  border-radius: var(--row-radius);
+}
+
+.doc-body:has(.notebook-broken) {
+  position: relative;
+}
+
+.notebook-broken {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--field-radius);
+}
+
+/* The ANSI a kernel speaks: VS Code's dark-theme terminal palette, because the traceback
+   being read here is the one it would print. */
+.ansi-black {
+  color: #666666;
+}
+.ansi-red {
+  color: #cd3131;
+}
+.ansi-green {
+  color: #0dbc79;
+}
+.ansi-yellow {
+  color: #e5e510;
+}
+.ansi-blue {
+  color: #2472c8;
+}
+.ansi-magenta {
+  color: #bc3fbc;
+}
+.ansi-cyan {
+  color: #11a8cd;
+}
+.ansi-white {
+  color: #e5e5e5;
+}
+.ansi-bright-black {
+  color: #666666;
+}
+.ansi-bright-red {
+  color: #f14c4c;
+}
+.ansi-bright-green {
+  color: #23d18b;
+}
+.ansi-bright-yellow {
+  color: #f5f543;
+}
+.ansi-bright-blue {
+  color: #3b8eea;
+}
+.ansi-bright-magenta {
+  color: #d670d6;
+}
+.ansi-bright-cyan {
+  color: #29b8db;
+}
+.ansi-bright-white {
+  color: #fffeee;
+}
+.ansi-bold {
+  font-weight: 700;
+}
+
+/* ---------- commands ---------- */
+
+/* The slash menu is anchored to a caret rather than to a control, but it is the same
+   surface and the same rows as every other menu. */
+.monaco-commands {
+  z-index: 20;
+  min-width: 15rem;
+  margin: 0.25rem 0 0;
+  padding: var(--surface-inset);
+  list-style: none;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+  box-shadow: var(--surface-shadow);
+}
+
+.monaco-commands li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: var(--row-radius);
+  color: color-mix(in srgb, var(--ink) 82%, transparent);
+}
+
+.monaco-commands li[aria-selected='true'] {
+  background: var(--active);
+  color: var(--ink);
+}
+
+.monaco-commands .hint {
+  margin-left: auto;
+  color: var(--faint);
+  font-size: 0.75rem;
+}
+
+/* ---------- terminal ---------- */
+
+/* Hidden, not unmounted: ⌘J puts the panel away without killing the shell. */
+.terminal {
+  /* What the shell is held off the panel's edges by. Wider than the app's gap: a terminal
+     is a wall of text, and a hairline of margin reads as text jammed into a corner. */
+  --terminal-inset: 0.75rem;
+
+  grid-column: 2;
+  grid-row: 2;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* Floating, the way the tree is: the same inset and the same corner, so the two panels
+     read as the same kind of thing. `overflow: hidden` is what makes the corner clip the
+     shell inside it. A rule across the top is what a docked panel needs, and this one is
+     not docked. */
+  /* No left margin: the tree is the next thing over and it already keeps one, so a second
+     here would put twice the gap between them as there is at every edge. Every other side
+     is against the window, where the inset is this panel's own to keep. */
+  margin: var(--chrome-gap) var(--chrome-gap) var(--chrome-gap) 0;
+  overflow: hidden;
+  border-radius: var(--surface-radius);
+  /* No border, and the shell's own ground rather than the translucent one the other
+     surfaces float on: xterm paints an opaque `#fefcf8` — sand-50 — and anything else here
+     draws a second rectangle inside the panel, one edge for the panel and another for the
+     shell sitting in it. One ground and no outline is one surface, which is what it is. */
+  background: var(--color-sand-50);
+}
+
+.terminal[hidden] {
+  display: none;
+}
+
+/* The panel's own rail: the same height and the same rhythm as the track at the top of the
+   window, so a row of controls is a row of controls wherever it is standing. Its buttons
+   line up over the shell's first column rather than sitting a few pixels inside it. */
+.terminal-head {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex: none;
+  height: var(--track-height);
+  padding: 0 calc(var(--terminal-inset) - 0.25rem);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.terminal-head .spacer,
+.task-options-head .spacer,
+.canvas-options-head .spacer {
+  flex: 1;
+}
+
+/* Square, all of them, at the height everything standing in a row of chrome is: a strip of
+   icons reads as a row only if the hit targets match. */
+.terminal-head button,
+.task-options-head button,
+.canvas-options-head button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--track-control);
+  height: var(--track-control);
+  padding: 0;
+  border: none;
+  border-radius: var(--row-radius);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.terminal-head button:hover,
+.task-options-head button:hover,
+.canvas-options-head button:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
+
+/* A glyph rather than an icon, so it needs the size said in type. */
+.terminal-hide {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* Which shell you are looking at, said by weight rather than a tab shape: the bar is two
+   glyphs wide and a chrome-heavy tab strip would outweigh the panel under it. */
+.terminal-tab .icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  color: inherit;
+}
+
+/* Anthropic's mark keeps the orange it comes with, active or not, and a hair more room than
+   the terminal glyph: it fills its box corner to corner where the others do not, so equal
+   boxes would read as a bigger mark. */
+.terminal-tab[data-kind='claude'] .icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--claude);
+}
+
+.terminal-tab[data-kind='muse'] .icon {
+  color: var(--muse);
+}
+
+.terminal-tab[data-active] {
+  background: var(--active);
+  color: var(--ink);
+}
+
+/* The shell sits in its rounded container rather than against one edge of it. Nothing on
+   top: the head above is already a room's worth of space, and a second one under it stands
+   the first line off the buttons far enough to read as a gap. The other three sides are the
+   panel's inset. */
+.terminal-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 0 var(--terminal-inset) var(--terminal-inset);
+}
+
+/* xterm rules a hairline across the top of its own surface. One pixel of the shell's own
+   ground, laid over it — cheaper than fighting the renderer for it. It has to be the
+   ground xterm actually paints, which is the theme's `#fefcf8` — sand-50 — and is now the
+   panel's own, so the cover cannot be seen against either. */
+.terminal-body::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: var(--terminal-inset);
+  right: var(--terminal-inset);
+  height: 1px;
+  background: var(--color-sand-50);
+}
+
+.terminal-body[hidden] {
+  display: none;
+}
+
+.terminal-lost {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0.4rem 0.85rem;
+  background: color-mix(in srgb, var(--opal-gold) 14%, var(--panel));
+  border-top: 1px solid var(--line);
+  color: var(--opal-gold);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+
+/* ---------- status line ---------- */
+
+
+
+/* Where you are working, heading the bar: the repo you are in, or the project where you are
+   in none. Brighter than what follows it, because it is the thing the rest of the line is
+   about — and it is stated here rather than in the picker at the head of the tree, which is
+   a way to somewhere else rather than a label for where you are. */
+
+/* The gear, in the corner of the bar: the one control on it, and the way to the page about
+   the app. Lit while that page is up. */
+
+
+
+
+.sync[data-state='syncing'] {
+  color: var(--opal-cyan);
+}
+.sync[data-state='conflict'] {
+  color: var(--opal-gold);
+}
+.sync[data-state='error'] {
+  color: var(--opal-rose);
+}
+.sync[data-state='offline'] {
+  color: var(--faint);
+}
+.notice {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--opal-indigo);
+}
+
+.notice:hover {
+  background: none;
+  color: var(--ink);
+}
+
+.banner {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--opal-gold) 8%, transparent);
+  color: var(--opal-gold);
+}
+
+.banner button {
+  flex: none;
+}
+
+/* ---------- palette ---------- */
+
+.palette-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  padding-top: 14vh;
+  background: color-mix(in srgb, #000 55%, transparent);
+  backdrop-filter: blur(3px);
+}
+
+/* The field stays put and the list scrolls under it: with every document in the project
+   on offer, arrowing down should not carry what you typed off the top of the dialog. */
+.palette {
+  display: flex;
+  flex-direction: column;
+  width: min(40rem, 92vw);
+  max-height: 68vh;
+  overflow: hidden;
+  align-self: flex-start;
+  padding: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+  box-shadow: var(--surface-shadow);
+}
+
+.palette-label {
+  flex: none;
+  color: var(--muted);
+  margin: 0;
+  padding: 0.9rem 1rem 0.35rem;
+  display: block;
+}
+
+label.palette-label {
+  color: var(--faint);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+p.palette-label {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.palette-detail {
+  margin: 0;
+  padding: 0 1rem 0.75rem;
+  color: var(--muted);
+}
+
+.palette input {
+  flex: none;
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  padding: 0.5rem 1rem 0.85rem;
+  font-size: 1rem;
+}
+
+.palette input:focus-visible {
+  border-color: var(--line);
+}
+
+.palette ul {
+  overflow: auto;
+  list-style: none;
+  margin: 0;
+  padding: var(--surface-inset);
+}
+
+/* A row names one thing — a command or a document — so it is read the way the tree reads
+   one: an icon, the name, and what qualifies it trailing behind. */
+.palette li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: var(--row-radius);
+  color: color-mix(in srgb, var(--ink) 78%, transparent);
+  cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.palette li .name {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The folder a document sits in: enough to tell two notes of the same name apart, quiet
+   enough that the name is still what you read. */
+/* Shrinks far faster than the name beside it: a row that runs out of width gives up the
+   folder first, because the name is what was searched for. */
+.palette li .note {
+  flex: 0 8 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--faint);
+  font-size: 0.72rem;
+}
+
+/* The tree's tag, on the same terms: the extension, on everything that isn't a note. */
+.palette li .tag {
+  flex: none;
+  margin-left: auto;
+  padding: 0.1rem 0.34rem;
+  border-radius: var(--row-radius);
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+  color: var(--muted);
+  font-size: 0.6rem;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+}
+
+.palette li:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.palette li[data-cursor] {
+  background: var(--active);
+  color: var(--ink);
+}
+
+.palette li:hover .icon,
+.palette li[data-cursor] .icon {
+  color: var(--muted);
+}
+
+/* A yes-or-no question does not need the width a list of documents does, and its buttons
+   are two words, not two sentences: they sit side by side at the end of the row. */
+.palette[data-confirm] {
+  width: min(23rem, 92vw);
+}
+
+.palette[data-confirm] .palette-label {
+  padding-bottom: 0.2rem;
+  font-size: 0.9rem;
+}
+
+.palette-detail {
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.palette-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  padding: 0.15rem 1rem 0.9rem;
+}
+
+.palette-actions button {
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--row-radius);
+  font-size: 0.76rem;
+}
+
+/* ---------- menus ---------- */
+
+/* One anatomy for every dropdown: a floating surface, sections divided by a rule, and rows
+   that carry a leading visual, a label over an optional second line, and a trailing check. */
+
+.menu-surface {
+  /* Over a modal's ground, not under it: a persona or a model is picked from inside a dialog
+     as often as from the page, the way the colour surface is. Tooltips still clear it. */
+  z-index: 55;
+  min-width: 12rem;
+  max-width: 20rem;
+  padding: var(--surface-inset);
+  background: var(--raised-bg);
+  backdrop-filter: var(--raised-blur);
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+  box-shadow: var(--surface-shadow);
+  outline: none;
+}
+
+.menu-surface[data-state='open'] {
+  animation: menu-in 110ms ease-out;
+  /* The primitive names the variable after itself, so the surface has to ask for both to
+     grow out of its anchor whether it was opened by a control or by the right button. */
+  transform-origin: var(
+    --radix-dropdown-menu-content-transform-origin,
+    var(--radix-context-menu-content-transform-origin)
+  );
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+.menu-heading {
+  padding: 0.3rem 0.45rem 0.35rem;
+  color: var(--faint);
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+/* Sections are told apart by the room between them and by the heading over each, rather
+   than by a rule drawn across the surface. */
+.menu-section + .menu-section {
+  margin-top: 0.35rem;
+}
+
+/* A list too long to read is typed at instead: the field stays where it is and the rows
+   scroll under it, so what you typed is never carried off the top of the surface. */
+.menu-search {
+  width: 100%;
+  margin-bottom: 0.25rem;
+  padding: 0.25rem 0.45rem;
+  border-radius: var(--row-radius);
+  font-size: 0.72rem;
+}
+
+.menu-list {
+  max-height: 14rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.menu-empty {
+  margin: 0;
+  padding: 0.35rem 0.45rem;
+  color: var(--faint);
+  font-size: 0.75rem;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: var(--row-radius);
+  color: color-mix(in srgb, var(--ink) 82%, transparent);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  cursor: default;
+  outline: none;
+  user-select: none;
+}
+
+/* Pointer and keyboard write the same highlight, so the two can never disagree — and a
+   branch stays lit while its popout is the thing under the pointer. */
+.menu-item[data-highlighted],
+.menu-item[data-state='open'] {
+  background: var(--active);
+  color: var(--ink);
+}
+
+.menu-item[data-disabled] {
+  color: var(--faint);
+  pointer-events: none;
+}
+
+/* The same red the danger buttons are, rather than a second one that means the same thing. */
+.menu-item[data-danger] {
+  color: var(--danger);
+}
+
+.menu-item[data-danger][data-highlighted] {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  color: var(--danger);
+}
+
+.menu-item > .icon {
+  flex: none;
+  width: 0.85rem;
+  height: 0.85rem;
+  color: var(--faint);
+}
+
+.menu-item[data-highlighted] > .icon {
+  color: var(--muted);
+}
+
+/* What the row says it will do, the glyph says too: a red label beside a grey cross is the
+   mark disagreeing with the words. */
+.menu-item[data-danger] > .icon,
+.menu-item[data-danger][data-highlighted] > .icon {
+  color: inherit;
+}
+
+.menu-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-mark {
+  display: flex;
+  flex: none;
+  margin-left: auto;
+  padding-left: 0.5rem;
+}
+
+.menu-mark .icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: var(--opal-violet);
+}
+
+/* The chevron on a branch row, standing where a chosen row's check would. */
+.menu-sub {
+  display: flex;
+  flex: none;
+  margin-left: auto;
+  padding-left: 0.5rem;
+}
+
+.menu-sub .icon {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+/* A time on a field's terms: typed in front, or picked from the two dials that open
+   under it on the same surface every menu in the app stands on. */
+.time-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.time-field input {
+  flex: 1;
+  min-width: 0;
+  padding-right: 1.9rem;
+  font-family: var(--mono);
+}
+
+.time-field > .icon {
+  position: absolute;
+  right: 0.55rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  color: var(--faint);
+  pointer-events: none;
+}
+
+.time-panel {
+  position: fixed;
+  z-index: 40;
+  display: flex;
+  gap: 2px;
+  padding: var(--surface-inset);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+  box-shadow: var(--surface-shadow);
+}
+
+.time-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 3rem;
+  max-height: 10.5rem;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.time-col button {
+  flex: none;
+  padding: 0.3rem 0;
+  border: none;
+  border-radius: var(--row-radius);
+  background: none;
+  color: color-mix(in srgb, var(--ink) 82%, transparent);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.time-col button:hover {
+  background: var(--active);
+  color: var(--ink);
+}
+
+.time-col button[data-chosen] {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--ink);
+}
+
+/* The one dropdown in a field's clothes: it opens the same surface every other selector in
+   the app does, so in a column of inputs it has to read as one of them and not as a button
+   that happens to be there. */
+.select {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.35rem 0.55rem;
+  background: color-mix(in srgb, var(--ink) 4%, var(--ground));
+  border-color: var(--line);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.select:hover {
+  background: color-mix(in srgb, var(--ink) 4%, var(--ground));
+  border-color: var(--line-hover);
+}
+
+.select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The chevron is the part that says this opens, so it sits at the far end whatever the
+   value beside it is. */
+.select > .icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-left: auto;
+  flex: none;
+  color: var(--faint);
+}
+
+/* An initial on the profile's colour reads as an identity; a bare square reads as decoration. */
+/* News on a row, ahead of its name: a branch with shells open in it wears a filled dot, and
+   one without wears the same dot hollow, so the names stand in one column and the eye reads
+   down the dots for where the work is. Filled is the colour the row was given; hollow is a
+   ring in the card's own grey — present, and pointedly empty. */
+.menu-dot {
+  flex: none;
+  box-sizing: border-box;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+.menu-dot[data-hollow] {
+  border: 1.5px solid var(--dot);
+  background: transparent;
+}
+
+.menu-badge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: var(--row-radius);
+  color: var(--black);
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ---------- tooltips ---------- */
+
+/* The same lifted sheet as a menu — same panel, line, shadow and grow-out — sized down to
+   one phrase, so hover help and dropdowns read as one system. Above the menus: a tip can
+   be raised over an open surface, and under one it is lost. */
+.tooltip {
+  position: fixed;
+  z-index: 60;
+  width: max-content;
+  max-width: 18rem;
+  padding: 0.3rem 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+  box-shadow: var(--surface-shadow);
+  color: color-mix(in srgb, var(--ink) 82%, transparent);
+  font-size: 0.7rem;
+  line-height: 1.35;
+  pointer-events: none;
+  animation: menu-in 110ms ease-out;
+}
+
+/* ---------- modals ---------- */
+
+.modal-ground {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: color-mix(in srgb, #000 55%, transparent);
+  backdrop-filter: blur(3px);
+  animation: fade-in 150ms ease-out;
+}
+
+.modal {
+  position: fixed;
+  z-index: 51;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  width: min(var(--modal-width, 28rem), calc(100vw - 3rem));
+  max-height: min(80vh, calc(100vh - 4rem));
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+  box-shadow: var(--surface-shadow);
+  outline: none;
+  animation: modal-in 160ms cubic-bezier(0.33, 1, 0.68, 1);
+  transform: translate(-50%, -50%);
+}
+
+.modal[data-size='small'] {
+  --modal-width: 22rem;
+}
+
+.modal[data-size='large'] {
+  --modal-width: 44rem;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: none;
+  padding: 0.7rem 0.7rem 0.7rem 1rem;
+}
+
+.modal-head h2 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* The greeting: the mark over the name, in the middle, with room to breathe. */
+.modal-head[data-mark] {
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.6rem 1rem 0.4rem;
+  text-align: center;
+}
+
+.modal-head[data-mark] h2 {
+  font-size: 1.05rem;
+}
+
+/* The aside under the greeting: a form label's type, leaning. */
+.modal-tagline {
+  margin: -0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.modal-mark {
+  width: 3.5rem;
+  height: 3.5rem;
+  object-fit: contain;
+  -webkit-user-drag: none;
+}
+
+.modal-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  margin-left: auto;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--row-radius);
+  color: var(--faint);
+}
+
+.modal-close:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.modal-close .icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.modal-description {
+  flex: none;
+  margin: 0;
+  padding: 0.85rem 1rem 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.modal-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem;
+}
+
+/* No rule over the buttons: the gap is what separates them from the form, and a line under
+   the last field reads as a field that has one. */
+/* Centred, because what a modal asks for is the whole of what is in front of you, and the
+   answer belongs under the question rather than in a corner of it. */
+.modal-foot {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex: none;
+  padding: 0.75rem 1rem;
+}
+
+.modal-foot [type='submit'] {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.modal-foot [type='submit']:disabled {
+  background: var(--raised);
+  border-color: var(--line);
+  color: var(--faint);
+  cursor: not-allowed;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* A field whose control is not one a label can point at — an editor rather than an input —
+   is captioned the same way and sits in the same column. */
+.fields label,
+.fields .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* The same size the `.select` beside them is set at, so a column of fields does not change
+   type where one of them happens to be a dropdown. */
+.fields input,
+.fields select {
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.fields h2 {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+}
+
+/* Fields that belong to one thing, in a box that says which. The only container in a form
+   here: everything else in the column stands on its own label. */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0.7rem 0.8rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--field-radius);
+}
+
+/* Radios and checkboxes are one list rather than a stack of separate fields, so every row
+   in a run takes the same closer step from the last than the gap the box keeps around
+   everything else. Nothing wraps a run of them: a box inside the box would take its rows
+   out of this count and leave the list unevenly spaced. */
+.field-group .check + .check {
+  margin-top: -0.42rem;
+}
+
+/* Pulled back by exactly the padding that keeps the border off the word, so the name of the
+   box starts on the same line down as the fields inside it. */
+.field-group legend {
+  margin-inline-start: -0.35rem;
+  padding: 0 0.35rem;
+  color: var(--muted);
+}
+
+/* A colour as a row of swatches — the opal palette, and a plus at the end for one of your
+   own, which opens the menu surface every other selector uses, laid out for colour: the
+   square and hue rail, and the hex spelled out at the foot. */
+.color-field {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.color-field > button {
+  flex: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--row-radius);
+  box-shadow: 0 0 0 1px var(--line);
+  transition:
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.color-field > button:hover {
+  transform: translateY(-1px);
+}
+
+.color-field > button[aria-checked='true'] {
+  border-color: var(--panel);
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.color-field > button:focus-visible {
+  outline: none;
+  border-color: var(--panel);
+  box-shadow: 0 0 0 2px var(--opal-indigo);
+}
+
+/* The plus is a swatch with nothing on it yet: dashed, dim, and lit on hover. Once a colour
+   is picked it wears it like the rest, keeping the plus as the sign it can be changed. */
+.color-custom {
+  display: grid;
+  place-items: center;
+  background: var(--raised);
+  color: var(--faint);
+}
+
+.color-custom:not([aria-checked='true']) {
+  box-shadow: 0 0 0 1px var(--line-hover);
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--raised) 0 3px,
+    transparent 3px 6px
+  );
+}
+
+.color-custom:hover,
+.color-custom[data-state='open'] {
+  color: var(--ink);
+}
+
+.color-custom[aria-checked='true'] {
+  color: var(--black);
+}
+
+.color-custom .icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.color-surface {
+  /* Opened from inside a modal as often as not, so it stands over the modal rather than
+     under its ground like a menu would; tooltips still clear it. */
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 15rem;
+  min-width: 0;
+  padding: 0.55rem;
+  transform-origin: var(--radix-popover-content-transform-origin);
+}
+
+/* The square: white to the hue across, then to black down. Position is where the thumb
+   sits, written by the component as a pair of percentages. */
+.color-area {
+  position: relative;
+  aspect-ratio: 8 / 5;
+  border-radius: var(--row-radius);
+  background:
+    linear-gradient(to top, #000, transparent),
+    linear-gradient(to right, #fff, var(--hue));
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  cursor: crosshair;
+  touch-action: none;
+  outline: none;
+}
+
+.color-area .color-thumb {
+  left: var(--x);
+  top: var(--y);
+}
+
+.color-hue {
+  position: relative;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    #f00 0%,
+    #ff0 16.67%,
+    #0f0 33.33%,
+    #0ff 50%,
+    #00f 66.67%,
+    #f0f 83.33%,
+    #f00 100%
+  );
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  cursor: ew-resize;
+  touch-action: none;
+  outline: none;
+}
+
+.color-hue .color-thumb {
+  left: var(--h);
+  top: 50%;
+  background: var(--hue);
+}
+
+.color-thumb {
+  position: absolute;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: var(--accent);
+  box-shadow:
+    0 0 0 1px rgb(31 31 31 / 20%),
+    0 1px 3px rgb(31 31 31 / 15%);
+  transform: translate(-50%, -50%);
+  transition: transform 120ms ease;
+  pointer-events: none;
+}
+
+.color-area[data-dragging] .color-thumb,
+.color-hue[data-dragging] .color-thumb {
+  transform: translate(-50%, -50%) scale(1.25);
+}
+
+.color-area:focus-visible .color-thumb,
+.color-hue:focus-visible .color-thumb {
+  border-color: var(--opal-indigo);
+}
+
+.color-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.color-preview {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--row-radius);
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+/* The hex, with the hash held in front so what you type is the six that vary. */
+.color-hex {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0 0.55rem;
+  height: 1.75rem;
+  background: color-mix(in srgb, var(--ink) 4%, var(--ground));
+  border: 1px solid var(--line);
+  border-radius: var(--field-radius);
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  transition: border-color 120ms ease;
+}
+
+.color-hex:hover {
+  border-color: var(--line-hover);
+}
+
+.color-hex:focus-within {
+  border-color: var(--opal-indigo);
+}
+
+.color-hex input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* What a control does, said under it. One rule for all of them: the same sentence under the
+   same field read at three different sizes depending on which surface it had landed on. */
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.field-error {
+  margin: 0;
+  color: var(--opal-rose);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* A word under a field about what it needs, in the faint type of an aside. */
+.field-hint {
+  margin: 0;
+  color: var(--faint);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* A link that has to sit in a row of buttons and read as one of them. */
+.link-button {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: var(--field-radius);
+  background: var(--raised);
+  color: var(--ink);
+  /* A button takes the app's own type through `font: inherit`; a link is set in whatever the
+     UA gives an anchor, so it has to be told the same thing or it stands a size too large. */
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration: none;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.link-button:hover {
+  background: var(--active);
+  border-color: var(--line-hover);
+}
+
+/* ---------- project picker ---------- */
+
+/* Both gates are modals over an empty home now, so this is a modal body: the list of what
+   is already there, then the form that makes another. */
+.project-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Inset a little from the surface it is on: a row that reaches the edge reads as the edge. */
+.project-list button {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  width: calc(100% - 0.5rem);
+  margin-inline: 0.25rem;
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+  background: var(--raised);
+  border: 1px solid transparent;
+  border-radius: var(--row-radius);
+  color: var(--ink);
+}
+
+.project-list button:hover {
+  background: var(--active);
+}
+
+.project-list button[aria-current='true'] {
+  border-color: color-mix(in srgb, var(--opal-violet) 45%, transparent);
+  background: var(--active);
+}
+
+.project-name {
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.project-path {
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  line-height: 1.3;
+}
+
+/* The list above and the form below are two answers to one question, kept apart by the room
+   between them. The fields themselves are `.fields` like every other form in a modal, and
+   are not restyled here: the same form asked for in two places must not be set two
+   different ways. */
+.project-picker form {
+  padding-top: 0.5rem;
+}
+
+/* ---------- tasks ---------- */
+
+/* The canvas: a dot grid that pans with the world, everything else absolute over it. */
+/* The canvas over the panel, the way the shell holds a pane over the terminal. */
+.task-page {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.task {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  user-select: none;
+  background-color: var(--ground);
+  /* The size and the offset are written by the canvas, off its zoom and pan: the dots are
+     the grid the nodes snap to, so they have to move and scale with the nodes. */
+  background-image: radial-gradient(var(--line) 1px, transparent 1px);
+  outline: none;
+}
+
+.task-icon {
+  display: contents;
+  color: var(--opal-indigo);
+}
+
+.task-world {
+  position: absolute;
+  transform-origin: 0 0;
+}
+
+.task-edges {
+  position: absolute;
+  overflow: visible;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.task-edge {
+  fill: none;
+  stroke: var(--faint);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.task-edge[data-picked] {
+  stroke: var(--opal-indigo);
+}
+
+.task-ghost {
+  stroke: var(--opal-indigo);
+  stroke-dasharray: 6 4;
+}
+
+/* Fat and invisible under the visible line, so an edge can be picked without aim. */
+.task-edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.task-node {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--field-radius);
+  background: var(--panel);
+  cursor: grab;
+}
+
+/* A trigger is where the flow starts, and its card says so the way n8n's does: the side
+   nothing arrives at is rounded off into a half-circle, and the side the flow leaves by
+   stays a card's corner — a rounder corner than the card's own 6px, because next to a
+   half-circle that much reads as a point. */
+.task-node[data-trigger] {
+  border-radius: 999px 12px 12px 999px;
+}
+
+/* A node switched off is a wire, not a step: the card draws its edge dashed and lets its
+   glyph go grey — nothing happens in it, and what feeds it passes straight through. It
+   reads that way at rest and in a run alike, and it can still be picked. */
+.task-node[data-off],
+.task-node[data-state='off'] {
+  border-style: dashed;
+}
+
+.task-node[data-picked] {
+  border-color: var(--opal-indigo);
+}
+
+.task-node[data-state='running'] {
+  border-color: var(--opal-cyan);
+}
+
+.task-node[data-state='done'] {
+  border-color: var(--opal-mint);
+}
+
+.task-node[data-state='error'],
+.task-node[data-state='skipped'] {
+  border-color: var(--opal-rose);
+}
+
+/* A step that chose to end the flow: an outcome worth its own colour, not an error's. */
+.task-node[data-state='stopped'] {
+  border-color: var(--opal-gold);
+}
+
+/* Where a node reaches, in the corner it has spare: the glyph in the middle says what the
+   step does, and this says which service it does it against. Darker than any other mark on
+   the card — a shade over the card's own line — so it reads as stamped into the card rather
+   than as a second icon arguing with the first. Never in the way of a drag. */
+.task-node-mark {
+  position: absolute;
+  right: 0.3rem;
+  bottom: 0.25rem;
+  display: grid;
+  place-items: center;
+  color: color-mix(in srgb, var(--ink) 16%, transparent);
+  pointer-events: none;
+}
+
+.task-node-mark .icon {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.task-node[data-off] > .icon {
+  color: var(--muted);
+}
+
+.task-node > .icon {
+  width: 2.1rem;
+  height: 2.1rem;
+  color: var(--opal-indigo);
+}
+
+/* The name, under the card and centred on it, in white whatever state the card is in. It
+   may be wider than the card, since the card is only an icon now. A double click on it
+   opens it as a field in the same place, at the same size, so the word does not jump. */
+.task-node-title {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: max-content;
+  max-width: 12rem;
+  margin: 0.45rem 0 0;
+  padding: 0 0.2rem;
+  overflow: hidden;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transform: translateX(-50%);
+  border: 1px solid transparent;
+  border-radius: var(--row-radius);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1.25;
+  cursor: text;
+}
+
+.task-node-rename {
+  width: 10rem;
+  max-width: none;
+  border-color: var(--opal-indigo);
+  background: var(--panel);
+}
+
+/* What the node can do, over the card: bare icons, no surface — shown under the pointer
+   and kept while the pointer is on them. */
+.task-node-actions {
+  position: absolute;
+  bottom: 100%;
+  /* Pulled back by the button's own padding, so the first glyph lines up with the card's
+     left edge. */
+  left: -0.2rem;
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.35rem;
+  transform: translateY(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 110ms ease-out,
+    transform 110ms ease-out,
+    visibility 0s linear 110ms;
+}
+
+/* A node switched off keeps its bar up: the grey switch is how you see it is off without
+   going looking for it. */
+.task-node:hover .task-node-actions,
+.task-node[data-off] .task-node-actions,
+.task-node-actions:focus-within {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition:
+    opacity 110ms ease-out,
+    transform 110ms ease-out;
+}
+
+.task-node-action {
+  display: grid;
+  place-items: center;
+  padding: 0.2rem;
+  border: none;
+  border-radius: var(--row-radius);
+  background: none;
+  color: var(--muted);
+  transition:
+    color 90ms ease-out,
+    transform 90ms ease-out;
+}
+
+.task-node-action:hover {
+  background: none;
+  transform: scale(1.15);
+}
+
+.task-node-action .icon {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+/* The switch, first on every node's bar: green while the node does its work, grey once it
+   is off and what feeds it runs straight through. */
+.task-node-action.task-power {
+  color: var(--opal-mint);
+}
+
+.task-node-action.task-power[aria-pressed='false'] {
+  color: var(--muted);
+}
+
+/* Play is a solid grey triangle with rounded corners and no outline; it lights up white
+   under the pointer. Its glyph sits a little inside its own box, so it is pulled back by
+   that much to stand off the switch the way the switch stands off the card. */
+.task-node-action.task-run {
+  margin-left: calc(-1.6rem * (4 / 24));
+  color: var(--muted);
+}
+
+.task-node-action.task-run:hover {
+  color: var(--ink);
+}
+
+.task-port {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translateY(-50%);
+  border: 2px solid var(--faint);
+  border-radius: 50%;
+  background: var(--ground);
+}
+
+/* A line drawn towards it pulls the in-port up out of the card — the nearer the pointer,
+   the larger — and once the line has hold the port fills, so what will happen on release
+   is already on screen. `--pull` is written by the canvas, 0 to 1. */
+.task-in {
+  left: -6px;
+  transform: translateY(-50%) scale(calc(1 + 0.8 * var(--pull, 0)));
+  border-color: color-mix(in srgb, var(--opal-indigo) calc(var(--pull, 0) * 100%), var(--faint));
+  transition:
+    transform 90ms ease-out,
+    border-color 90ms ease-out,
+    background 90ms ease-out;
+}
+
+.task-in[data-held] {
+  background: var(--opal-indigo);
+  border-color: var(--opal-indigo);
+}
+
+.task-out {
+  right: -6px;
+  cursor: crosshair;
+}
+
+.task-out:hover {
+  border-color: var(--opal-indigo);
+}
+
+/* The toolbar floats over the canvas the way n8n's does, out of the world's transform,
+   dressed as the tree's menus: the same lifted surface, holding flat rows that light up
+   under the pointer rather than buttons standing raised on their own. */
+.task-bar,
+.canvas-bar {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: var(--surface-inset);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+  box-shadow: var(--surface-shadow);
+}
+
+.task-button,
+.canvas-button {
+  display: flex;
+  padding: 0.35rem;
+  background: none;
+  border: none;
+  border-radius: var(--row-radius);
+  color: var(--muted);
+}
+
+.task-button:hover,
+.task-button[data-state='open'],
+.canvas-button:hover,
+.canvas-button[data-state='open'] {
+  background: var(--active);
+  color: var(--ink);
+}
+
+.task-button .icon,
+.canvas-button .icon {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.task-state {
+  padding-inline: 0.45rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.task-state[data-state='running'] {
+  color: var(--opal-cyan);
+}
+
+.task-state[data-state='done'] {
+  color: var(--opal-mint);
+}
+
+.task-state[data-state='error'] {
+  color: var(--opal-rose);
+}
+
+/* The options panel: Figma's inspector rather than the terminal's slot — a narrow card
+   floating over the canvas's right edge, on the surface the menus float on. It hugs its
+   fields and scrolls past the canvas's height, and ⌘J raises it the way it raises the
+   terminal everywhere else. */
+.task-options,
+.canvas-options {
+  position: absolute;
+  z-index: 3;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  width: 15rem;
+  max-height: calc(100% - 1.5rem);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+  box-shadow: var(--surface-shadow);
+}
+
+.task-options[hidden],
+.canvas-options[hidden] {
+  display: none;
+}
+
+.task-options-head,
+.canvas-options-head {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex: none;
+  height: 1.75rem;
+  padding: 0 0.3rem 0 0.6rem;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.task-options-body,
+.canvas-options-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.6rem 0.6rem 0.7rem;
+}
+
+.task-options .inline-editor {
+  height: 7rem;
+}
+
+/* An agent node's own dialog, docked to the canvas's right edge on the menus' surface:
+   the prompt is the work here, so it gets room the corner card never had, and it always
+   opens in the same place — the canvas stays readable to its left. */
+.task-agent {
+  position: absolute;
+  z-index: 4;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  width: min(24rem, calc(100% - 1.5rem));
+  max-height: calc(100% - 1.5rem);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+  box-shadow: var(--surface-shadow);
+}
+
+.task-agent .task-options-head .icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 0.3rem;
+}
+
+.task-agent-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  overflow-y: auto;
+  padding: 0.75rem 0.85rem 0.85rem;
+}
+
+.task-agent .inline-editor {
+  height: 12rem;
+}
+
+.task-inspector,
+.canvas-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* A field is named the way the settings pages name one — label over control — but at the
+   inspector's scale: everything a step down, so the card stays a card. */
+.task-field,
+.canvas-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--ink);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.task-field input,
+.task-field textarea,
+.task-field select,
+.canvas-field input,
+.canvas-field textarea,
+.canvas-field select {
+  padding: 0.3rem 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  resize: vertical;
+}
+
+.task-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.task-step[data-state='stopped'] {
+  color: var(--opal-gold);
+}
+
+.task-step[data-state='error'] {
+  color: var(--opal-rose);
+}
+
+/* The step's output, set the way settings set a public key: bordered, on the editor's
+   ground, monospace because it is meant to be read back. */
+.task-step pre {
+  margin: 0;
+  overflow: auto;
+  max-height: 12rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--field-radius);
+  background: var(--editor-ground);
+  white-space: pre-wrap;
+}
+
+/* ── the diagram ──────────────────────────────────────────────────────────────────
+   A `.canvas` file drawn: shapes on the same plane the task canvas stands on, sharing its
+   dotted grid, its floating toolbar and its inspector card. What differs is what stands on
+   it — a shape is drawn rather than iconic, holds its own words, and takes a line from any
+   of its four sides. */
+.canvas-page {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.canvas {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  user-select: none;
+  background-color: var(--ground);
+  background-image: radial-gradient(var(--line) 1px, transparent 1px);
+  outline: none;
+}
+
+.canvas-world {
+  position: absolute;
+  transform-origin: 0 0;
+}
+
+.canvas-edges {
+  position: absolute;
+  overflow: visible;
+  width: 1px;
+  height: 1px;
+}
+
+.canvas-edge {
+  fill: none;
+  stroke: var(--tint, #b4b4b4);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.canvas-edge[data-picked='true'] {
+  stroke: var(--opal-indigo);
+}
+
+.canvas-ghost {
+  stroke: var(--opal-indigo);
+  stroke-dasharray: 6 4;
+}
+
+/* Fat and invisible under the visible line, so a line can be picked without aim. */
+.canvas-edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+/* A word on a line, sat on the ground so the line does not run through it. */
+.canvas-label {
+  position: absolute;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  padding: 0.05rem 0.3rem;
+  border-radius: var(--row-radius);
+  background: var(--ground);
+  color: var(--muted);
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.canvas-node {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  cursor: move;
+}
+
+/* The shape is an outline drawn at the node's own size — not a box stretched to it — so a
+   rounded corner is the same corner however wide the shape is. A white card with a black
+   line round it, until the inspector says otherwise; both are written by the canvas. */
+.canvas-outline {
+  position: absolute;
+  inset: 0;
+  fill: var(--fill, #ffffff);
+  stroke: var(--stroke, #000000);
+  stroke-width: 2;
+}
+
+/* Picking a shape does not repaint it: the ring is drawn round the outside, the way a
+   diagram tool shows what it has hold of, so the border you chose is still the border you
+   see. Rectangular whatever the shape, because that is what the handles sit on. */
+.canvas-node[data-picked] {
+  outline: 1px solid var(--opal-indigo);
+  outline-offset: 3px;
+}
+
+.canvas-node[data-shape='text'] {
+  color: var(--ink, #ffffff);
+}
+
+.canvas-node[data-shape='text']:not([data-picked]):hover {
+  outline: 1px dashed var(--line-hover);
+  outline-offset: 3px;
+}
+
+.canvas-text {
+  position: relative;
+  color: var(--ink, #111111);
+  overflow: hidden;
+  max-width: 100%;
+  max-height: 100%;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  text-align: center;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* A UML class: the name across the top, then a compartment under each rule. The rules are
+   the box's own line, so a class recoloured is recoloured throughout, and the text is left
+   where a list is read from rather than centred like a shape's one word. */
+.canvas-class {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  color: var(--ink, #111111);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Set to the pixel, because the canvas works the box's height out from these numbers: a
+   compartment is its lines, and a line is a line. Change one here and change it there. */
+.canvas-class-name {
+  flex: none;
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+}
+
+.canvas-class-part {
+  flex: none;
+  min-height: 31px;
+  padding: 6px 10px;
+  border-top: 1px solid var(--stroke, #9f9f9f);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 18px;
+}
+
+/* Four ports, one to a side, out of the way until the shape is under the pointer or
+   picked. A line drawn towards one pulls it out of the shape — the nearer the pointer, the
+   larger — and once the line has hold the port fills. `--pull` is written by the canvas. */
+.canvas-port {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--opal-indigo);
+  border-radius: 50%;
+  background: var(--ground);
+  opacity: 0;
+  cursor: crosshair;
+  transition:
+    opacity 90ms ease-out,
+    transform 90ms ease-out,
+    border-color 90ms ease-out,
+    background 90ms ease-out;
+}
+
+.canvas-node:hover .canvas-port,
+.canvas-node[data-picked] .canvas-port,
+.canvas-port[style] {
+  opacity: 1;
+}
+
+.canvas-port:hover {
+  border-color: var(--opal-indigo);
+}
+
+.canvas-port[data-side='top'] {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%) scale(calc(1 + 0.8 * var(--pull, 0)));
+}
+
+.canvas-port[data-side='bottom'] {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) scale(calc(1 + 0.8 * var(--pull, 0)));
+}
+
+.canvas-port[data-side='left'] {
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%) scale(calc(1 + 0.8 * var(--pull, 0)));
+}
+
+.canvas-port[data-side='right'] {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%) scale(calc(1 + 0.8 * var(--pull, 0)));
+}
+
+.canvas-port[style] {
+  border-color: color-mix(
+    in srgb,
+    var(--opal-indigo) calc(var(--pull, 0) * 100%),
+    var(--faint)
+  );
+}
+
+.canvas-port[data-held] {
+  background: var(--opal-indigo);
+  border-color: var(--opal-indigo);
+}
+
+/* Corners only, and only on a shape picked by itself: a handle on every edge of every
+   shape in a selection is more argument than help. */
+.canvas-handle {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--opal-indigo);
+  border-radius: 2px;
+  background: var(--ground);
+}
+
+.canvas-handle[data-corner='nw'] {
+  top: -5px;
+  left: -5px;
+  cursor: nwse-resize;
+}
+
+.canvas-handle[data-corner='ne'] {
+  top: -5px;
+  right: -5px;
+  cursor: nesw-resize;
+}
+
+.canvas-handle[data-corner='sw'] {
+  bottom: -5px;
+  left: -5px;
+  cursor: nesw-resize;
+}
+
+.canvas-handle[data-corner='se'] {
+  bottom: -5px;
+  right: -5px;
+  cursor: nwse-resize;
+}
+
+/* The rubber band, drawn in the world so it keeps up with the shapes it is gathering. */
+.canvas-band {
+  position: absolute;
+  border: 1px solid var(--opal-indigo);
+  background: color-mix(in srgb, var(--opal-indigo) 12%, transparent);
+  pointer-events: none;
+}
+
+.canvas-shapes {
+  display: flex;
+  gap: 0.2rem;
+  flex-wrap: wrap;
+}
+
+.canvas-shapes .canvas-button[aria-checked='true'] {
+  background: var(--active);
+  color: var(--opal-indigo);
+}
+
+/* One swatch, wearing the colour it holds and opening the picker. Bordered, because white
+   on the menus' surface would otherwise have no edge at all. */
+.canvas-field .color-custom {
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 1px solid var(--line-hover);
+  border-radius: var(--row-radius);
+}
+
+.canvas-measures {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.canvas-measures .canvas-field {
+  flex: 1;
+}
+
+.canvas-ends {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.canvas-ends label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* The tasks page: the settings page's column, without the rail — a table of what is set
+   to run, and the log of what running has looked like. */
+.tasks-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: var(--page-width);
+  margin-inline: auto;
+}
+
+.tasks-page h1 {
+  margin: 0;
+  line-height: 1.25;
+}
+
+.tasks-page h2 {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+}
+
+.tasks-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.tasks-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.tasks-table th {
+  text-align: left;
+  padding: 0.35rem 0.55rem;
+  color: var(--faint);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--line);
+}
+
+.tasks-table td {
+  padding: 0.45rem 0.55rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: baseline;
+}
+
+/* The scheduled panel is the sidebar's explorer in miniature: it wears `.tree` so the
+   rows, guides and tints are the ones the sidebar teaches, and this strips the pane
+   chrome those rows arrived wrapped in. Keep the row padding inherited — the indent
+   guides' negative margins are cut to it. */
+.task-tree {
+  background: transparent;
+  border-right: 0;
+}
+
+.task-tree > ul {
+  padding: 0;
+}
+
+/* What the table's columns used to say, trailing the name the way the sidebar's badges
+   do: the triggers pushed to the far side, the last run at the end of the line. */
+.task-tree .fires {
+  min-width: 0;
+  margin-left: auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.task-tree li .task-state,
+.task-tree li .tasks-dim:last-child {
+  flex: none;
+}
+
+.tasks-dim {
+  color: var(--muted);
+}
+
+.tasks-log {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tasks-log > li > button {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  width: 100%;
+  background: transparent;
+  border-color: transparent;
+  border-radius: var(--row-radius);
+  padding: 0.35rem 0.1rem;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.tasks-log > li > button:hover {
+  background: var(--raised);
+  border-color: transparent;
+}
+
+.tasks-log > li > button[aria-expanded='true'] {
+  background: var(--active);
+}
+
+.tasks-run-name {
+  font-weight: 600;
+}
+
+/* An opened run: its steps, the way the inspector shows one, indented under the row. */
+.tasks-run {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0.35rem 0 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--field-radius);
+}
+
+.tasks-run-error {
+  margin: 0;
+  color: var(--opal-rose);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+
+.task-live {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 40%;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  box-shadow: var(--surface-shadow);
+}
+
+.task-live-body {
+  overflow: auto;
+  padding: 0.6rem 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  min-height: 4rem;
+}
+
+.task-live-body pre {
+  margin: 0.4rem 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--editor-ground);
+  border: 1px solid var(--line);
+  border-radius: var(--field-radius);
+  padding: 0.5rem 0.6rem;
+}
+
+/* ---------- chat ---------- */
+
+/* The pane's whole height, like the task canvas and unlike the settings and tasks pages: a
+   conversation scrolls under a box that stays where you left it, and the shared page padding
+   would put that box below the fold. */
+.chat-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* The rail and the thread, under whatever header the page has: the rail hangs off this
+   rather than the page, so a header across the top pushes both down together. */
+.chat-body {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* The conversations this project has had. Narrow and fixed: it is a list of names, and a name
+   that needs more room than this is one nobody reads to the end anyway.
+   
+   Out of the flow, in the margin beside the thread: what was said is what you came to read,
+   so it keeps the middle of the pane, and the list of other conversations hangs off its left
+   the way the settings rail does. */
+.chat-history {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  width: 13rem;
+  min-height: 0;
+  overflow: auto;
+  gap: 0.15rem;
+  padding: 0.6rem;
+}
+
+/* Too narrow for both: the list stands beside the thread again, and takes its width back
+   out of it. */
+@container pane (max-width: 76rem) {
+  .chat-history {
+    position: static;
+  }
+}
+
+.chat-history ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The row is the box: it lights as one, the mark at its end included, and where you clicked
+   inside it is the only thing that decides between opening the conversation and opening what
+   can be done to it. */
+.chat-history li {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding-right: 0.15rem;
+  border-radius: var(--row-radius);
+}
+
+.chat-history li:hover {
+  background: var(--raised);
+}
+
+/* The name takes the room the mark does not. It carries no background of its own — the row
+   under it is what lights — so the two never read as two boxes side by side. */
+.chat-history li > button:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.3rem 0.45rem;
+  border: 0;
+  border-radius: var(--row-radius);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  text-align: left;
+}
+
+/* The name is what runs out of room, not the row: the mark ahead of it keeps its size, and
+   the words are what the ellipsis happens to. */
+.chat-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-history li > button:first-child > .icon {
+  flex: none;
+  width: 0.8rem;
+  height: 0.8rem;
+  color: var(--faint);
+}
+
+.chat-history li > button:first-child[aria-current='true'] > .icon,
+.chat-history li:hover > button:first-child > .icon {
+  color: var(--muted);
+}
+
+.chat-history li:hover > button:first-child {
+  color: var(--ink);
+}
+
+/* The one you are in is the only name not dimmed. Marked by that rather than by a fill,
+   because nothing in the rail carries a background until you are pointing at it. */
+.chat-history li > button[aria-current='true'] {
+  color: var(--ink);
+}
+
+/* Out of the way until the row is pointed at — a list where every row wears a way to act on
+   it reads as a list of buttons rather than a list of conversations. It stays while its own
+   menu is up, or the thing you opened would vanish under the pointer that left the row. */
+.chat-more {
+  display: flex;
+  flex: none;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: var(--row-radius);
+  background: transparent;
+  color: var(--faint);
+  opacity: 0;
+}
+
+.chat-history li:hover .chat-more,
+.chat-more[data-state='open'] {
+  opacity: 1;
+}
+
+/* No fill of its own, ever: the row it sits in is the surface, and a second one inside it
+   would be a button on a button. What answers the pointer is the mark going white. */
+.chat-more:hover,
+.chat-more[data-state='open'] {
+  color: var(--ink);
+}
+
+.chat-more .icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+/* A row like the ones under it, not a button over them: the rail is a list, and the first
+   thing in it is the empty conversation you are about to fill. */
+.chat-new {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: none;
+  padding: 0.35rem 0.45rem;
+  border: 0;
+  border-radius: var(--row-radius);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+}
+
+.chat-new:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.chat-new .icon {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.chat-empty {
+  margin: 0.5rem 0.45rem;
+  color: var(--faint);
+  font-size: 0.78rem;
+}
+
+.chat-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.chat-thread {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 2rem 1.5rem 1rem;
+}
+
+/* The column the thread and the box under it share, so a line of an answer and the line you
+   are typing start in the same place — and what you said ends at the same place, rather than
+   at the edge of the window. The column is a wrapper rather than the scrolling box, so the
+   scrollbar stays at the edge where scrollbars are. */
+.chat-column,
+.chat-composer {
+  width: 100%;
+  max-width: var(--measure);
+  margin-inline: auto;
+}
+
+.chat-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* One thing that was said, with whatever can be done to it under it. The message keeps the
+   side it was on — you on the right, the model across the column — so the wrapper takes the
+   alignment the bubble used to hold. */
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+}
+
+.chat-message[data-role='user'] {
+  align-self: flex-end;
+  align-items: flex-end;
+  max-width: 80%;
+}
+
+/* Under the message, out of the way until the pointer is on it — the bar a task node wears,
+   hung below rather than above, since what it is about is above it.
+   
+   It holds its room whether it is shown or not. A bar that appeared into the flow would push
+   everything under it down as the pointer crossed the thread, and reading a conversation
+   would be reading one that flinches. Only the ink comes and goes. */
+.chat-actions {
+  display: flex;
+  gap: 0.25rem;
+  min-height: 1.3rem;
+  margin-top: 0.15rem;
+  opacity: 0;
+  transition: opacity 110ms ease-out;
+}
+
+.chat-message:hover .chat-actions,
+.chat-actions:focus-within {
+  opacity: 1;
+}
+
+/* Beside the button rather than under the message: one row of everything that is about the
+   message without being it. */
+.chat-time {
+  align-self: center;
+  color: var(--faint);
+  font-size: 0.7rem;
+}
+
+.chat-action {
+  display: grid;
+  place-items: center;
+  padding: 0.2rem;
+  border: none;
+  border-radius: var(--row-radius);
+  background: none;
+  color: var(--faint);
+  transition:
+    color 90ms ease-out,
+    transform 90ms ease-out;
+}
+
+.chat-action:hover {
+  background: none;
+  color: var(--ink);
+  transform: scale(1.15);
+}
+
+.chat-action .icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+/* You are a bubble; the model is prose. An answer is the page's content rather than a remark
+   in it, and boxing it would put a frame around the thing you came to read. */
+.chat-bubble[data-role='user'] {
+  width: fit-content;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--row-radius);
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat-bubble[data-role='assistant'] {
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+/* An answer still arriving is drawn as text rather than as markdown: a fence that has opened
+   and not closed yet would draw as something the next token contradicts. */
+.chat-bubble[data-role='assistant'][data-pending='true'] {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* What an answer did on its way to being written, above the words rather than woven through
+   them. Quieter than the prose it sits over — this is the working, and the answer is the
+   thing you came to read. */
+.chat-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.chat-step {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+
+/* A dot per state, in the colours the task nodes already use: gold while it is happening,
+   mint once it has, red where it did not. */
+.chat-step-mark {
+  flex: none;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--faint);
+}
+
+.chat-step[data-state='running'] .chat-step-mark {
+  background: var(--opal-gold);
+  animation: chat-waiting 1.2s ease-in-out infinite;
+}
+
+.chat-step[data-state='done'] .chat-step-mark {
+  background: var(--opal-mint);
+}
+
+.chat-step[data-state='error'] .chat-step-mark {
+  background: var(--danger);
+}
+
+.chat-step[data-state='error'] {
+  color: var(--danger);
+}
+
+.chat-step-said {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-step pre {
+  margin: 0.2rem 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Asked for and not started: a light on, not an empty bubble. */
+.chat-waiting {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: chat-waiting 1.2s ease-in-out infinite;
+}
+
+@keyframes chat-waiting {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.chat-error,
+.chat-notice {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--row-radius);
+  background: var(--raised);
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.chat-notice {
+  flex: none;
+  width: 100%;
+  max-width: var(--measure);
+  margin: 1rem auto 0;
+  color: var(--muted);
+}
+
+.chat-notice code {
+  font-family: var(--mono);
+  color: var(--ink);
+}
+
+/* The box stays where it is while the conversation moves under it. No border: what separates
+   it from the page is being a shade lighter than one, which is a quieter line than a drawn
+   one and does not box in the thing you are typing. The shadow is slight — the page under it
+   is already black, so what a shadow can do here is seat the box rather than lift it. */
+.chat-composer {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  padding: 0.6rem;
+  border: 0;
+  border-radius: var(--surface-radius);
+  background: var(--dark);
+  box-shadow: 0 2px 8px rgb(31 31 31 / 12%);
+}
+
+/* No handle to drag: the height is what is in it, set as it is typed. `max-height` is where
+   that stops and the scrollbar starts, so a long draft never pushes the conversation off the
+   top of the page. */
+.chat-composer textarea {
+  min-height: 2.6rem;
+  max-height: 14rem;
+  overflow-y: auto;
+  padding: 0.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: none;
+}
+
+.chat-composer textarea:focus {
+  outline: none;
+}
+
+/* Both controls sit at the right end, the picker inboard of the button that sends: what you
+   are about to do is the rightmost thing, and what you are about to do it with is beside it. */
+.chat-composer-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Square, on the app's one radius: a circle would be the only round thing on the page. */
+/* The button that says the thing you are saying: yours, so it wears the profile's colour.
+   White where no profile has answered yet, which is the colour it always was. */
+.chat-send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: var(--row-radius);
+  background: var(--accent-fill, var(--ink));
+  color: var(--accent-ink, var(--black));
+}
+
+/* Lit, rather than swapped for another colour: a hover that changed the fill would be a
+   second colour on a button whose whole point is that it is wearing yours. White mixed into
+   what it already is, which lightens a navy and a gold the same amount. */
+.chat-send:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink) 16%, var(--accent-fill, var(--ink)));
+}
+
+.chat-send:disabled {
+  background: var(--active);
+  color: var(--faint);
+}
+
+.chat-send .icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+/* ---- Coworkers -------------------------------------------------------------------------- */
+
+/* Under the conversations, set off by a heading rather than a rule: the rail is one list of
+   places to go, and this is the second half of it. Pushed to the foot when there is room, so
+   the people sit under the chats the way they sit under them in the sentence. */
+.coworker-rail {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  gap: 0.15rem;
+  margin-top: 1rem;
+}
+
+.coworker-heading {
+  margin: 0 0 0.2rem;
+  padding: 0 0.45rem;
+  color: var(--faint);
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.coworker-rail ul {
+  margin: 0;
+}
+
+.coworker-rail li > button:first-child {
+  padding: 0.3rem 0.45rem;
+}
+
+/* The name over the persona, both cut to the row: who they are, and who they are being. */
+.coworker-who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.coworker-persona {
+  overflow: hidden;
+  color: var(--faint);
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A face: initials on the coworker's colour, in whichever ink can be read on it. Round, the
+   one round thing on the page, because a face is the one thing here that is a person. The
+   dot at the corner is presence: grey at rest, the coworker's own colour breathing when they
+   are at something. */
+.coworker-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--avatar-fill, var(--raised));
+  color: var(--avatar-ink, var(--ink));
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.coworker-avatar[data-size='large'] {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 0.9rem;
+}
+
+.coworker-presence {
+  position: absolute;
+  right: -0.1rem;
+  bottom: -0.1rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 2px solid var(--black);
+  border-radius: 50%;
+  background: var(--faint);
+}
+
+.coworker-avatar[data-size='large'] .coworker-presence {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.coworker-avatar[data-working='true'] .coworker-presence {
+  background: #34d399;
+  animation: chat-waiting 1.2s ease-in-out infinite;
+}
+
+/* Across the top of the page: who you are talking to, and whether they are at something. */
+.coworker-header {
+  flex: none;
+  padding: 0.85rem 1.5rem 0.75rem;
+  border-bottom: 1px solid var(--dark);
+}
+
+.coworker-header-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.coworker-header-who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.1rem;
+}
+
+.coworker-name {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.coworker-status {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0;
+  color: var(--faint);
+  font-family: var(--sans);
+  font-size: 0.75rem;
+}
+
+.coworker-status [data-working='true'] {
+  color: #34d399;
+}
+
+/* A person's messages: a bubble on the left with a face and a name over the first of a run,
+   the way every work chat draws the other side. The page's own answers stay prose — an
+   answer is content; what a colleague says is a remark. Padded on the left the width of the
+   face, so a run of them lines up under the name rather than under the avatar. */
+.chat-message[data-who='true'] {
+  align-self: flex-start;
+  align-items: flex-start;
+  max-width: 80%;
+  padding-left: 2rem;
+}
+
+.chat-message[data-who='true'][data-lead='true'] {
+  margin-top: 0.5rem;
+}
+
+.coworker-said-by {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.25rem -2rem;
+}
+
+.coworker-said-name {
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.chat-message[data-who='true'] .chat-bubble[data-role='assistant'] {
+  width: fit-content;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--row-radius);
+  background: var(--dark);
+}
+
+/* Their bubbles are close together in a run, the way messages typed one after another are. */
+.chat-message[data-who='true'] + .chat-message[data-who='true']:not([data-lead='true']) {
+  margin-top: -0.35rem;
+}
+
+/* The box that cannot pick a model says which one it has, where the picker would be. */
+.chat-composer-model {
+  color: var(--faint);
+  font-family: var(--sans);
+  font-size: 0.75rem;
+}
+
+/* A way somewhere rather than a row in the project — Tasks is a page about the app. Set
+   exactly as a row of the tree is, down to the margin and the radius, so the side menu reads
+   as one list; what marks it out is that it lights while its page is up. */
+.tree-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: calc(100% - 0.5rem);
+  flex: none;
+  margin: 1px 0.25rem;
+  padding: 0.22rem 0.4rem;
+  border: 0;
+  border-radius: var(--row-radius);
+  background: none;
+  backdrop-filter: none;
+  color: color-mix(in srgb, var(--ink) 78%, transparent);
+  font: inherit;
+  /* The rows under it are set a step heavier; these are rows too. */
+  font-weight: 600;
+  text-align: left;
+  cursor: default;
+}
+
+.tree-tab:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.tree-tab[aria-pressed='true'] {
+  background: var(--active);
+  color: var(--ink);
+}
+
+.tree-tab .icon {
+  width: var(--tree-icon);
+  height: var(--tree-icon);
+  flex: none;
+  color: var(--muted);
+  opacity: 1;
+}

@@ -1,0 +1,108 @@
+/* ---------------------------------------------------------------------------
+   The tokens every Proprium surface shares, and only those.
+
+   What lives here is what all three apps agree on to the hex: the opal hues,
+   black, the two radii, the motion vocabulary, and the font roles. Everything
+   an app holds a different opinion about — its white, its pastels, its
+   surfaces — stays in that app's own globals.css under its own name. Two apps
+   disagreeing about a colour is a real difference, and hoisting it here would
+   only hide which one a given page is using.
+
+   Imported by every app. The console chrome auth and Pheno share is next
+   door in console.css.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-black: #1f1f1f;
+
+  /* The opalescent hues. console.css draws the accent, link and state colours
+     from these, so a rename here is a rename there. */
+  --color-opal-violet: #c084fc;
+  --color-opal-indigo: #818cf8;
+  --color-opal-cyan: #22d3ee;
+  --color-opal-mint: #34d399;
+  --color-opal-gold: #fbbf24;
+  --color-opal-rose: #f472b6;
+  --color-opal-red: #f87171;
+
+  /* radii: rounded-md is the app-wide radius, shared by surfaces, sidebar rows
+     and the controls that sit beside them; rounded-sm is the small one, for
+     chips and dense table furniture */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+
+  /* Font roles. next/font sets the face variables (--font-funnel,
+     --font-ubuntu-mono, --font-martian-mono) on <html>; these name what each
+     face is *for*, so markup asks for a role and never for a typeface. An app
+     with faces of its own adds its roles to its own @theme. */
+  --font-sans: var(--font-funnel), system-ui, sans-serif;
+  --font-mono: var(--font-ubuntu-mono), ui-monospace, monospace;
+  --font-martian: var(--font-martian-mono), ui-monospace, monospace;
+
+  /* motion */
+  --ease-snap: cubic-bezier(0.22, 1.2, 0.36, 1);
+  --animate-sweep: sweep 420ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  --animate-drop: drop 120ms ease-out;
+  --animate-rise: rise 140ms ease-out;
+  --animate-fade: fade 140ms ease-out;
+  --animate-blink: blink 1.6s ease-in-out infinite;
+  --animate-status-pulse: status-pulse 1.6s ease-in-out infinite;
+
+  @keyframes sweep {
+    from {
+      transform: translateX(-101%) skewX(-18deg);
+    }
+    to {
+      transform: translateX(0) skewX(-18deg);
+    }
+  }
+  @keyframes drop {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+  @keyframes status-pulse {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 1px #fffef9,
+        0 0 0 1px rgba(251, 191, 36, 0.4);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px #fffef9,
+        0 0 0 5px rgba(251, 191, 36, 0);
+    }
+  }
+}
