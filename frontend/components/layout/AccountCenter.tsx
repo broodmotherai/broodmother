@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import type { Profile } from '@broodmother/types/profile'
 import type { ProjectSummary } from '@broodmother/types/project'
-import Avatar from '@/components/ui/core/Avatar'
-import Collapse, { snap } from '@/components/ui/core/Collapse'
-import CoreIcon from '@/components/ui/core/Icon'
-import { useDismiss } from '@/hooks/useDismiss'
-import { cx } from '@/cx'
+import Avatar from '@/components/core/Avatar'
+import Collapse, { snap } from '@/components/core/Collapse'
+import CoreIcon from '@/components/core/Icon'
+import { useDismiss } from '@/hooks/Dismiss'
+import { cx } from '@/Cx'
 
 /**
  * Who you are working as, in the corner of the bar. Proprium's account centre, carried over

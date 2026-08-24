@@ -2,11 +2,11 @@
 
 import { useEffect, useState, type KeyboardEvent, type ReactNode } from 'react'
 import type { DocRef, DocRoot } from '@broodmother/types/doc'
-import { ContextMenu, type MenuSection } from '@/components/ui'
-
-import { ancestorsOf, flatten, refKey, sameRef, type Row, type TreeRoot } from './paths'
-import { type TreeCommand, TreeRow } from './row'
-import { useTreeDrag } from './drag'
+import { ContextMenu } from '@/components/core/ContextMenu'
+import { type MenuSection } from '@/components/core/Menu'
+import { ancestorsOf, flatten, refKey, sameRef, type Row, type TreeRoot } from './Paths'
+import { type TreeCommand, TreeRow } from './TreeRow'
+import { useTreeDrag } from './TreeDrag'
 
 export type { TreeCommand }
 

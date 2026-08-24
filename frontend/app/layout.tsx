@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
-import { Shell } from '@/components/shell'
-import { Tooltips } from '@/components/ui'
-import { AppProvider } from '@/state'
+import { Shell } from '@/components/shell/Shell'
+import { Tooltips } from '@/components/core/Tooltips'
+import { AppProvider } from '@/State'
 import './globals.css'
 
 // The window's title, and so the name in the Window menu and the app switcher. Lowercase,

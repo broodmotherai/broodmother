@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { watch, type FSWatcher } from 'chokidar'
-import { Git } from '@broodmother/git'
+import { Git } from '@daemon/utils/git'
 
 const DEBOUNCE_MS = 100
 const POLL_MS = 200

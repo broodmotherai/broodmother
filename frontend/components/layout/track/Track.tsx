@@ -1,7 +1,7 @@
 'use client'
 
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
-import { cx } from '@/cx'
+import { cx } from '@/Cx'
 
 export const TRACK_CONTROL = 'track-control'
 

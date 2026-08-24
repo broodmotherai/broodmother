@@ -1,10 +1,10 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
-import { Git } from '@broodmother/git'
-import type { TreeEvent } from '@broodmother/tree'
-import { cleanup, delay, tempDir, until } from '../../src/test'
-import { ProjectService } from '../../src/services/ProjectService'
+import { Git } from '@daemon/utils/git'
+import type { TreeEvent } from '@daemon/services/Tree'
+import { cleanup, delay, tempDir, until } from '@daemon/test'
+import { ProjectService } from '@daemon/services/ProjectService'
 
 afterAll(cleanup)
 

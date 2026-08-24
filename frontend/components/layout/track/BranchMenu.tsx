@@ -3,7 +3,11 @@
 import { useState, type FormEvent } from 'react'
 import type { Branch } from '@broodmother/types/branch'
 import type { AgentStates } from '@broodmother/types/api/agents'
-import { Button, Confirm, Icon, Menu, type MenuSection, Modal } from '@/components/ui'
+import { Button } from '@/components/core/Button'
+import { Confirm } from '@/components/core/Confirm'
+import { Icon } from '@/components/core/Icons'
+import { Menu, type MenuSection } from '@/components/core/Menu'
+import { Modal } from '@/components/core/Modal'
 import { branchNameProblem } from '@broodmother/types/branch'
 import { TRACK_CONTROL } from './Track'
 

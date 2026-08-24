@@ -8,7 +8,7 @@ import {
   providerOf,
   type ChatSummary,
 } from '@broodmother/types/api/chat'
-import { useApp } from '@/state'
+import { useApp } from '@/State'
 import { ChatHistory } from './ChatHistory'
 import { ChatThread } from './ChatThread'
 import { Composer } from './Composer'

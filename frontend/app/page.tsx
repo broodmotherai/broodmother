@@ -1,5 +1,4 @@
-import { HomeView } from '@/components/doc'
-
+import { HomeView } from '@/components/doc/HomeView'
 export default function Page() {
   return <HomeView />
 }

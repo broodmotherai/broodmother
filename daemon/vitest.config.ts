@@ -8,7 +8,6 @@ export default defineConfig({
   // tsx reads the tsconfig paths at runtime; vite does not, so they are spelled out here.
   resolve: {
     alias: [
-      { find: /^@broodmother\/(.*)$/, replacement: `${here}/src/lib/$1.ts` },
       { find: /^@daemon\/(.*)$/, replacement: `${here}/src/$1.ts` },
     ],
   },

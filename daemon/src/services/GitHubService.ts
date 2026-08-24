@@ -1,6 +1,6 @@
 /**
  * GitHub, as a task can see it: four things to watch and two things to do. The device flow
- * and the repo picker live in `@broodmother/github`, and each asks one question; this asks
+ * and the repo picker live in `@daemon/utils/github`, and each asks one question; this asks
  * the same question every few minutes for as long as the app is open, which is a different
  * job and is why it is a service.
  *
@@ -14,7 +14,7 @@
  * the cursor to save next time. Whose cursor it is, and how often to ask, is the trigger's.
  */
 
-import { GITHUB_API, GithubError } from '@broodmother/github'
+import { GITHUB_API, GithubError } from '@daemon/utils/github'
 
 /** What a cursor is: whatever the source hands out that says "seen up to here". The same
  *  small JSON a trigger saves between checks. */
@@ -303,7 +303,6 @@ export class GitHubService {
     return text(record(answer.body), 'default_branch') || 'main'
   }
 
-  /** Says something on an issue or a pull request, and answers with where it landed. */
   async comment(repo: string, issue: number, body: string): Promise<string> {
     const answer = await this.ask(`/repos/${repo}/issues/${issue}/comments`, null, {
       method: 'POST',
@@ -314,7 +313,6 @@ export class GitHubService {
     return text(record(answer.body), 'html_url')
   }
 
-  /** Opens a pull request, and answers with where it is. */
   async openPull(
     repo: string,
     pull: { base: string; head: string; title: string; body: string; draft?: boolean },

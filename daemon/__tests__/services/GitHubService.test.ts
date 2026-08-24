@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { GithubError } from '@broodmother/github'
-import { GitHubService, type GithubIO } from '../../src/services/GitHubService'
+import { GithubError } from '@daemon/utils/github'
+import { GitHubService, type GithubIO } from '@daemon/services/GitHubService'
 
 interface Asked {
   path: string

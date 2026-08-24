@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { render } from '@/src/markdown/render'
+import { render } from '@/src/markdown/Render'
 import type { ChatMessage, ChatStep } from '@broodmother/types/api/chat'
-import { Icon } from '@/components/ui'
+import { Icon } from '@/components/core/Icons'
 import { Avatar } from './Avatar'
 
 export interface Who {

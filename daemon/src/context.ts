@@ -1,114 +1,79 @@
-import { mkdir, readdir, rm, stat } from 'node:fs/promises'
+import { PRIMARY } from '@daemon/constants/files'
+import { MAX_ROUNDS } from '@daemon/constants/agents'
+import { mkdir, stat } from 'node:fs/promises'
 import path from 'node:path'
-import { TaskError, parseTask } from '@broodmother/types/task/codec'
-import { isTaskPath } from '@broodmother/types/task/schema'
-import { runOrder } from '@broodmother/types/task/graph'
-import { parseCanvas } from '@broodmother/types/canvas/codec'
-import { isCanvasPath } from '@broodmother/types/canvas/schema'
-import { normalize } from '@broodmother/path'
-import type { Persona } from '@broodmother/types/api/personas'
-import type { ServerMessage } from '@broodmother/types/api/ws'
+import { TaskError, parseTask } from '@daemon/types/task/codec'
+import { isTaskPath } from '@daemon/types/task/schema'
+import { runOrder } from '@daemon/types/task/graph'
+import { parseCanvas } from '@daemon/types/canvas/codec'
+import { isCanvasPath } from '@daemon/types/canvas/schema'
+import { NoProjectError, NoRepoError } from '@daemon/types/error'
+import { normalize } from '@daemon/utils/path'
+import type { ServerMessage } from '@daemon/types/api/ws'
 import {
   repoOf,
   repoRoot,
   type DocPath,
-  type DocRef,
   type DocRoot,
   type TreeEntry,
   type TreeEvent,
-} from '@broodmother/tree'
-import type { DiffBasis, DiffFile, TreeChanges } from '@broodmother/git'
-import type { BroodmotherConfig } from '@broodmother/types/config'
-import type { AccessCheck, GitSettings, GitState } from '@broodmother/types/git'
-import type { Identity, Profile } from '@broodmother/types/profile'
-import type { NewRepo, RepoSummary } from '@broodmother/types/repo'
-import type { ProjectSummary } from '@broodmother/types/project'
-import { brief, type BriefState, type BriefSurface } from './brief/core'
-import type { Branch } from '@broodmother/branch'
-import {
-  BranchError,
-  createBranch,
-  findBranch,
-  listBranches,
-  openBranch,
-  removeBranch,
-  type Checkouts,
-} from '@broodmother/branch'
-import { ConfigStore, defaultConfig, defaultGitSettings } from '@broodmother/config'
+} from '@daemon/services/Tree'
+import type { TreeChanges } from '@daemon/utils/git'
+import type { BroodmotherConfig } from '@daemon/types/config'
+import type { AccessCheck, GitSettings, GitState } from '@daemon/types/git'
+import type { Profile } from '@daemon/types/profile'
+import type { RepoSummary } from '@daemon/types/repo'
+import type { ProjectSummary } from '@daemon/types/project'
+import { brief, type BriefState, type BriefSurface } from '@daemon/features/brief/brief'
+import { ConfigStore, defaultConfig, defaultGitSettings } from '@daemon/utils/config'
 
-import { Tasks, type TaskSite } from './tasks/core'
-import { scanDiagrams } from './diagrams'
-import type { DiagramSummary } from '@broodmother/types/api/canvas'
-import { Crontab, systemCrontab, type CrontabIO } from './tasks/crontab'
-import { RunStore } from './tasks/db'
-import { apiCall } from './chat/api'
-import { Chats } from './chat/core'
-import { ChatStore } from './chat/db'
-import { chatStream, MAX_ROUNDS } from './chat/model'
-import { chatTools } from './chat/tools'
-import { Coworkers } from './coworkers/core'
-import { crontabScheduler } from './tasks/scheduler'
-import { TriggerStore } from './tasks/state'
+import { Tasks, type TaskSite } from '@daemon/features/tasks/Tasks'
+import { scanDiagrams } from '@daemon/utils/diagrams'
+import type { DiagramSummary } from '@daemon/types/api/canvas'
+import { Crontab, systemCrontab, type CrontabIO } from '@daemon/features/tasks/crontab'
+import { RunStore } from '@daemon/features/tasks/db'
+import { apiCall } from '@daemon/features/chat/api'
+import { Chats } from '@daemon/features/chat/Chats'
+import { ChatStore } from '@daemon/features/chat/db'
+import { chatStream } from '@daemon/features/chat/model'
+import { chatTools } from '@daemon/features/chat/tools'
+import { Coworkers } from '@daemon/features/coworkers/Coworkers'
+import { crontabScheduler } from '@daemon/features/tasks/scheduler'
+import { TriggerStore } from '@daemon/features/tasks/state'
 import {
-  GithubError,
   createRepo as createGithubRepo,
   login as githubLogin,
   poll as githubPoll,
   remoteSlug,
   repos as githubRepos,
-  startDevice,
-} from '@broodmother/github'
-import { GitHubService } from './services/GitHubService'
-import type { GithubReach } from './tasks/blocks/core'
-import type { GithubDevice, GithubRepo } from '@broodmother/github'
-import { Git, diffFiles, mergeBase, readBlob, resolveRef } from '@broodmother/git'
-import { expandHome } from '@broodmother/fs'
-import { SyncLoop } from '@broodmother/sync'
-import { GitService } from './services/GitService'
-import { AgentService } from './services/AgentService'
-import type { AgentStates } from '@broodmother/types/api/agents'
-import { migrate } from './migrate'
+} from '@daemon/utils/github'
+import { GitHubService } from '@daemon/services/GitHubService'
+import type { GithubReach } from '@daemon/features/tasks/blocks/Block'
+import { Git } from '@daemon/utils/git'
+import { expandHome } from '@daemon/utils/fs'
+import { SyncLoop } from '@daemon/services/SyncLoop'
+import { GitService } from '@daemon/services/GitService'
+import { AgentService } from '@daemon/services/AgentService'
+import type { AgentStates } from '@daemon/types/api/agents'
+import { migrate } from '@daemon/utils/migrate'
+import { listRepos, repoCheckouts } from '@daemon/utils/repo'
 import {
-  RepoError,
-  createRepo,
-  deleteRepo,
-  listRepos,
-  repoCheckouts,
-} from '@broodmother/repo'
-import {
-  ProfileError,
   broodmotherHome,
-  createProfile,
-  findProfile,
-  generateKey,
-  keyFile,
   listProfiles,
   profileDir,
   readAccount,
-  readModelKeys,
-  readPublicKey,
-  writeAccount,
-  writeIdentity,
-  writeModelKey,
-  type ModelKey,
-  type ModelKeys,
-} from './profiles'
-import { Relay } from './sockets/relay'
-import { Terminals, type TerminalSession } from './sockets/terminal'
-import { PRIMARY, checkoutPath } from '@broodmother/branch'
-import { Tree } from '@broodmother/tree'
-import { TreeService } from './services/TreeService'
-import { ProjectService } from './services/ProjectService'
-import { readPersona } from '@broodmother/personas'
-import {
-  ProjectError,
-  createProject,
-  deleteProject,
-  findProject,
-  listProjects,
-  projectCheckouts,
-  type NewProject,
-} from '@broodmother/project'
+} from '@daemon/utils/profiles'
+import { BranchService } from '@daemon/services/BranchService'
+import { ProfileService } from '@daemon/services/ProfileService'
+import { WorkspaceService } from '@daemon/services/WorkspaceService'
+import { Relay } from '@daemon/services/Relay'
+import { Terminals, type TerminalSession } from '@daemon/services/Terminals'
+import { branchKey, checkoutPath } from '@daemon/utils/branch'
+import { Tree } from '@daemon/services/Tree'
+import { TreeService } from '@daemon/services/TreeService'
+import { ProjectService } from '@daemon/services/ProjectService'
+import { readPersona } from '@daemon/utils/personas'
+import { listProjects } from '@daemon/utils/project'
 
 export interface ContextOptions {
   root?: string
@@ -116,10 +81,6 @@ export interface ContextOptions {
   /** The system crontab unless a test hands in a tamer one. */
   cron?: CrontabIO
 }
-
-export class NoProjectError extends Error {}
-export class NoRepoError extends Error {}
-export class NoProfileError extends Error {}
 
 /**
  * The same for each repo the project links. Every one of them is open — the sidebar draws
@@ -155,17 +116,9 @@ function checkBoard(path: string, text: string): void {
     throw new TaskError('the task has a cycle — untangle it first')
 }
 
-/** Everything that touches disk, and the one place any root can be swapped. */
 export class AppContext {
   private projectOpen: ProjectService | null = null
   private readonly reposOpen = new Map<string, OpenRepo>()
-  private activeProfile: Profile | null = null
-  /** The open profile's host token, read once when the profile is: every checkout's git is
-   *  built with it, and reading a file per git command is a file read per git command. */
-  private hostToken: string | null = null
-  /** And the open profile's model credentials, held for the same reason: a reply is streamed
-   *  a token at a time, and reading a file to start one is a file read per conversation. */
-  private modelKeys: ModelKeys = {}
   /** The address the brief hands to agents, known only once the server is listening. */
   private url = ''
   /** The one service the profile's token built, kept so the budget it counts is counted
@@ -175,13 +128,12 @@ export class AppContext {
   readonly relay: Relay
   readonly terminals: Terminals
   readonly tasks: Tasks
-  /** What is at work in each checkout — Claude by its own account, everything else by the
-   *  pty's — for the branch menu and the tabs to wear. */
   readonly agents: AgentService
-  /** Conversations held in the open project, and the replies still arriving in them. */
   readonly chats: Chats
-  /** The people-shaped agents under the chats: who there is, and how each takes a turn. */
   readonly coworkers: Coworkers
+  readonly branches: BranchService
+  readonly profiles: ProfileService
+  readonly workspace: WorkspaceService
   private readonly runStore: RunStore
   private readonly chatStore: ChatStore
 
@@ -191,6 +143,48 @@ export class AppContext {
     cron: CrontabIO,
   ) {
     this.relay = new Relay()
+    this.workspace = new WorkspaceService({
+      home,
+      config: () => this.config,
+      save: (config) => this.store.save(config),
+      projectHome: () => this.projectHome,
+      profile: () => this.profiles.require,
+      project: () => this.project,
+      requireProject: () => this.requireProject,
+      hasRepo: (name) => this.reposOpen.has(name),
+      loadProfile: () => this.profiles.load(),
+      openProject: (projectPath) => this.useProject(projectPath),
+      openRepos: () => this.useRepos(),
+      closeRepo: (name) => this.closeRepo(name),
+      watchScope: () => this.watchScope(),
+      clearConflict: () => {
+        this.sync.clearConflict()
+      },
+      shutDown: () => {
+        this.terminals.close()
+        this.profiles.forget()
+      },
+    })
+    this.profiles = new ProfileService({
+      home,
+      config: () => this.config,
+      save: (config) => this.store.save(config),
+      reopen: (projectPath) => this.useProject(projectPath),
+      followAgents: () => this.followAgents(),
+      project: () => this.project,
+    })
+    this.branches = new BranchService({
+      config: () => this.config,
+      save: (config) => this.store.save(config),
+      project: () => this.requireProject.path,
+      pathOf: (root) => this.rootPathOf(root),
+      hasRepo: (name) => this.reposOpen.has(name),
+      sshKey: () => this.profiles.active?.sshKeyPath,
+      reopen: (root) => {
+        const name = repoOf(root)
+        return name ? this.reopenRepo(name) : this.useProject(this.requireProject.path)
+      },
+    })
     this.runStore = new RunStore(path.join(home, 'tasks.db'))
     this.chatStore = new ChatStore(path.join(home, 'chats.db'))
     // The root the shell was opened from, then the project, then the home — which is only
@@ -205,7 +199,7 @@ export class AppContext {
     this.sync = new SyncLoop({
       git: () => this.projectOpen?.git ?? null,
       settings: () => this.gitSettings,
-      author: () => this.activeProfile?.gitAuthor ?? null,
+      author: () => this.profiles.active?.gitAuthor ?? null,
       onStatus: (status) => this.broadcast({ type: 'sync', status }),
     })
     // Tasks run wherever a task file can live: the project, and every open repo.
@@ -224,7 +218,7 @@ export class AppContext {
     })
     // A conversation belongs to the project it was held in, and speaks with the key the
     // profile holds for whichever provider serves the model it was asked for.
-    const stream = chatStream({ credential: (provider) => this.modelKeys[provider] })
+    const stream = chatStream({ credential: (provider) => this.profiles.keys[provider] })
     // Its own front door, allowlisted — so what a tool does is what the route does.
     const reach = () => ({
       tree: (root: DocRoot) => this.rootOf(root).tree,
@@ -264,7 +258,7 @@ export class AppContext {
           : null,
       persona: (name) =>
         this.projectOpen ? readPersona(this.projectOpen.path, name) : Promise.resolve(null),
-      profile: () => this.activeProfile?.name ?? null,
+      profile: () => this.profiles.active?.name ?? null,
       brief: () => brief(this.briefState(this.here(), this.scope, 'coworker')),
       terminalBrief: () => brief(this.briefState(this.here(), this.scope)),
       checkout: () => this.here(),
@@ -277,7 +271,7 @@ export class AppContext {
    *  Claude config folder, and a key where the server has one. */
   private agentEnv(): Record<string, string> {
     const env: Record<string, string> = {}
-    const claudeCfgDir = this.activeProfile?.claudeCfgDir
+    const claudeCfgDir = this.profiles.active?.claudeCfgDir
     if (claudeCfgDir) env.CLAUDE_CONFIG_DIR = expandHome(claudeCfgDir)
     if (process.env.ANTHROPIC_API_KEY) env.ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
     return env
@@ -306,7 +300,7 @@ export class AppContext {
    * One service for the token, so the hour's budget is shared the way GitHub counts it.
    */
   private async reach(checkout: string): Promise<GithubReach | null> {
-    const profile = this.activeProfile
+    const profile = this.profiles.active
     if (!profile) return null
     const token = (await readAccount(profile).catch(() => null))?.token
     if (!token) return null
@@ -325,7 +319,6 @@ export class AppContext {
     }
   }
 
-  /** Every diagram in those checkouts, and what is drawn on each. */
   diagrams(): Promise<DiagramSummary[]> {
     return scanDiagrams(this.sites())
   }
@@ -349,7 +342,7 @@ export class AppContext {
     const config = { ...migrated.config, projectPath, profile }
     // Persist the resolution, or the open project and the reported config disagree.
     if (JSON.stringify(config) !== JSON.stringify(store.config)) await store.save(config)
-    await context.loadProfile()
+    await context.profiles.load()
     await context.useProject(projectPath)
     return context
   }
@@ -358,7 +351,6 @@ export class AppContext {
     return this.store.config
   }
 
-  /** The open project as the web app sees it, or null on first run. */
   get project(): ProjectSummary | null {
     const target = this.config.projectPath
     if (!target) return null
@@ -369,9 +361,8 @@ export class AppContext {
     }
   }
 
-  /** The folder the projects you can open are in. Null until there is a profile to be them. */
   private get projectHome(): string | null {
-    return this.activeProfile ? profileDir(this.activeProfile) : null
+    return this.profiles.active ? profileDir(this.profiles.active) : null
   }
 
   /** Where you are working: the project, or one of its repos. A repo named here that is
@@ -382,8 +373,6 @@ export class AppContext {
     return name && this.reposOpen.has(name) ? repoRoot(name) : 'project'
   }
 
-  /** The repo the scope is in, or null when it is the project — which is an ordinary state,
-   *  not a first run. */
   get repo(): RepoSummary | null {
     const name = repoOf(this.scope)
     const open = name ? this.reposOpen.get(name) : null
@@ -391,7 +380,7 @@ export class AppContext {
   }
 
   get profile(): Profile | null {
-    return this.activeProfile
+    return this.profiles.active
   }
 
   /** How the open project syncs. A project nobody has configured uses the defaults, which sync
@@ -414,20 +403,11 @@ export class AppContext {
     return settings
   }
 
-  /** What git says about the open project's checkout, which is the truth about whether it has
-   *  a repository at all and where it syncs. */
   async gitState(): Promise<GitState> {
     const git = this.projectOpen?.git
     if (!git || !(await git.isRepo()))
       return { repo: false, remoteUrl: null, branch: null }
     return { repo: true, remoteUrl: await git.remoteUrl(), branch: await git.branch() }
-  }
-
-  /** Throws rather than returning null: nothing that commits works without an identity. */
-  get requireProfile(): Profile {
-    if (!this.activeProfile)
-      throw new NoProfileError('no profile yet — pick one for this project first')
-    return this.activeProfile
   }
 
   /** Throws rather than returning null: creating a project needs somewhere to put it and the
@@ -449,7 +429,6 @@ export class AppContext {
     return this.projectOpen
   }
 
-  /** The repo the scope is in, as the half that touches disk. */
   get openedRepo(): OpenRepo | null {
     const name = repoOf(this.scope)
     return name ? (this.reposOpen.get(name) ?? null) : null
@@ -465,8 +444,6 @@ export class AppContext {
     return repo
   }
 
-  /** The project's documents and every repo's files, which is the whole sidebar — each
-   *  with what git says its checkout has touched, so the rows can wear it. */
   async trees(): Promise<{
     project: TreeEntry[]
     projectChanges: TreeChanges
@@ -521,238 +498,19 @@ export class AppContext {
     return docPath
   }
 
-  async setConfig(config: BroodmotherConfig): Promise<BroodmotherConfig> {
-    const previous = this.config.projectPath
-    await this.store.save(config)
-    if (config.projectPath !== previous) {
-      await this.loadProfile()
-      await this.useProject(config.projectPath)
-    }
-    return this.config
-  }
-
-  /** The profile's projects. A machine with no profile yet has none to list. */
-  async listProjects(): Promise<ProjectSummary[]> {
-    return this.projectHome ? listProjects(this.projectHome) : []
-  }
-
-  /** Deleting the project you are in falls back the way startup does: whatever is left, or
-   *  nothing, which is the first-run state again. */
-  async removeProject(name: string): Promise<ProjectSummary | null> {
-    const home = this.projectHome
-    const gone = home ? await findProject(name, home) : null
-    if (!home || !gone) throw new ProjectError(`no project named "${name}"`)
-    await deleteProject(name, home)
-
-    // Nothing filed under the path outlives it: a folder of that name made later is a
-    // different project, and it does not inherit this one's sync settings or the repos
-    // that were inside it.
-    const config = this.forget(gone.path)
-    if (this.config.projectPath !== gone.path) {
-      await this.store.save(config)
-      return this.project
-    }
-
-    const next = (await listProjects(home))[0] ?? null
-    await this.store.save({ ...config, projectPath: next?.path ?? null })
-    await this.loadProfile()
-    await this.useProject(next?.path ?? null)
-    return this.project
-  }
-
-  /** Everything this machine filed under a project path, dropped. */
-  private forget(projectPath: string): BroodmotherConfig {
-    const git = { ...this.config.git }
-    const checkouts = { ...this.config.checkouts }
-    const repo = { ...this.config.repo }
-    delete git[projectPath]
-    delete checkouts[projectPath]
-    delete repo[projectPath]
-    const repoBranch = Object.fromEntries(
-      Object.entries(this.config.repoBranch).filter(
-        ([key]) => !key.startsWith(`${projectPath}#`),
-      ),
-    )
-    return { ...this.config, git, checkouts, repo, repoBranch }
-  }
-
-  /**
-   * Everything broodmother has on disk: every profile, the projects inside them, the repos
-   * inside those, and this machine's config. The home folder itself stays — it is a folder
-   * someone chose, and emptying it is what was asked for — and what stands in it afterwards
-   * is a first run.
-   */
-  async removeEverything(): Promise<BroodmotherConfig> {
-    // A latched conflict outlives a refresh, and it is about a project that is going.
-    this.sync.clearConflict()
-    // Closed before the folders go, or the watcher reports the deletion of a project nobody
-    // is in and the shells sit in a working directory that no longer exists.
-    await this.useProject(null)
-    this.terminals.close()
-    for (const entry of await readdir(this.home))
-      await rm(path.join(this.home, entry), { recursive: true, force: true })
-    this.activeProfile = null
-    return this.store.save(defaultConfig(null))
-  }
-
-  async listProfiles(): Promise<Profile[]> {
-    return listProfiles(this.home)
-  }
-
-  /** A profile made from the project menu is one you meant to work as, so it is worked as on
-   *  the spot. It holds no projects yet, which is the first-run state with a name on it. */
-  async addProfile(input: { name: string } & Identity): Promise<Profile> {
-    const profile = await createProfile(input, this.home)
-    await this.useProfile(profile)
-    return profile
-  }
-
-  /** Working as someone else is standing in their folder, so what opens is one of their
-   *  projects. Null when they have none yet, which is where a new profile starts. */
-  async selectProfile(name: string): Promise<ProjectSummary | null> {
-    const profile = await findProfile(name, this.home)
-    if (!profile) throw new ProfileError(`no profile named "${name}"`)
-    await this.useProfile(profile)
-    return this.project
-  }
-
-  /** Whether the root named can reach its remote, and which reason it cannot. */
   async checkAccess(root: DocRoot): Promise<AccessCheck> {
     return this.rootOf(root).git.checkAccess()
   }
 
-  /** The public half of the open profile's key, or null when it has none yet. */
-  async publicKey(): Promise<string | null> {
-    return this.activeProfile ? readPublicKey(this.activeProfile) : null
-  }
-
-  /**
-   * Makes a key and points the profile at it, so the next git command offers it. The project
-   * reopens for the same reason changing the identity does: the key a checkout's git offers
-   * is fixed when it opens.
-   */
-  async addKey(): Promise<{ profile: Profile; publicKey: string }> {
-    const profile = this.requireProfile
-    const publicKey = await generateKey(profile)
-    this.activeProfile = await writeIdentity(profile, {
-      ...profile,
-      sshKeyPath: keyFile(profile),
-    })
-    await this.useProject(this.config.projectPath)
-    return { profile: this.activeProfile, publicKey }
-  }
-
-  /**
-   * The answer to a device code, once the browser has given one. Connecting is the profile's
-   * — the token is what it pushes with, the way its key is — so the project reopens for the
-   * same reason a new key makes it: what a checkout's git offers is fixed when it opens.
-   */
-  async connectGithub(
-    deviceCode: string,
-  ): Promise<{ pending: boolean; profile: Profile }> {
-    const profile = this.requireProfile
-    const answer = await githubPoll(deviceCode)
-    if (!answer.token) return { pending: true, profile }
-
-    const login = await githubLogin(answer.token)
-    this.activeProfile = await writeAccount(profile, { login, token: answer.token })
-    this.hostToken = answer.token
-    await this.useProject(this.config.projectPath)
-    return { pending: false, profile: this.activeProfile }
-  }
-
-  /** The token goes and nothing else does. What was pushed with it stays pushed, and the
-   *  projects it reached are still there — this is a credential, not a relationship. */
-  async disconnectGithub(): Promise<Profile> {
-    this.activeProfile = await writeAccount(this.requireProfile, null)
-    this.hostToken = null
-    await this.useProject(this.config.projectPath)
-    return this.activeProfile
-  }
-
-  /**
-   * The key a profile speaks to one model provider with. Written to the profile's own file
-   * and held in memory from here on, so the chat that uses it next does not go to disk for
-   * it. What comes back is the profile as the browser may see it: which providers are
-   * connected, and not a character of what they are connected with.
-   */
-  async setModelKey(provider: string, credential: ModelKey | null): Promise<Profile> {
-    this.activeProfile = await writeModelKey(this.requireProfile, provider, credential)
-    this.modelKeys = await readModelKeys(this.activeProfile)
-    return this.activeProfile
-  }
-
-  /** Throws rather than returning empty: a picker with nothing in it and no reason why is
-   *  worse than being told the connection is gone. */
-  private async requireToken(): Promise<string> {
-    const account = await readAccount(this.requireProfile)
-    if (!account)
-      throw new GithubError(`${this.requireProfile.name} is not connected to GitHub`)
-    return account.token
-  }
-
-  async startGithub(): Promise<GithubDevice> {
-    return startDevice()
-  }
-
-  async githubRepos(): Promise<GithubRepo[]> {
-    return githubRepos(await this.requireToken())
-  }
-
-  async createGithubRepo(input: { name: string; private: boolean }): Promise<GithubRepo> {
-    return createGithubRepo(await this.requireToken(), input)
-  }
-
-  async setIdentity(identity: Identity): Promise<Profile> {
-    this.activeProfile = await writeIdentity(this.requireProfile, identity)
-    // The key a checkout's git offers is fixed when it opens, so both are reopened to pick
-    // up a changed one.
-    await this.useProject(this.config.projectPath)
-    return this.activeProfile
-  }
-
-  private async useProfile(profile: Profile): Promise<void> {
-    this.activeProfile = profile
-    this.hostToken = (await readAccount(profile))?.token ?? null
-    this.modelKeys = await readModelKeys(profile)
-    await this.followAgents()
-    const target = (await listProjects(profileDir(profile)))[0]?.path ?? null
-    await this.store.save({ ...this.config, profile: profile.name, projectPath: target })
-    // The key a checkout's git offers is fixed when it opens, so both are reopened to pick
-    // up the new profile's.
-    await this.useProject(target)
-  }
-
-  /** The open project sits inside the profile it commits as, so the path names it. With no
-   *  project the config remembers who you were working as, and a name pointing at nothing
-   *  falls back to whichever profile is on disk. */
-  private async loadProfile(): Promise<void> {
-    const target = this.config.projectPath
-    const name = target ? path.basename(path.dirname(target)) : this.config.profile
-    this.activeProfile = name ? await findProfile(name, this.home) : null
-    if (!this.activeProfile && !target)
-      this.activeProfile = (await listProfiles(this.home))[0] ?? null
-    this.hostToken = this.activeProfile
-      ? ((await readAccount(this.activeProfile))?.token ?? null)
-      : null
-    this.modelKeys = this.activeProfile ? await readModelKeys(this.activeProfile) : {}
-    await this.followAgents()
-  }
-
-  /** The Claude sessions worth reading are the ones under the profile's config folder — the
-   *  one its terminals spawn claude with — so the watch follows the profile. */
   private async followAgents(): Promise<void> {
-    const dir = this.activeProfile?.claudeCfgDir
+    const dir = this.profiles.active?.claudeCfgDir
     await this.agents.follow(dir ? expandHome(dir) : null).catch(() => null)
   }
 
-  /** What is at work where, as it stands — for a client that has just connected. */
   get agentStates(): AgentStates {
     return this.agents.agents
   }
 
-  /** Where a shell opens: the root it was opened from, the project if that root is gone, and
-   *  the home only on a first run with neither. */
   /** The checkout the scope is standing in — a repo's, or the project's, or the home on a
    *  first run with neither. The same fallback a shell opens on, so the two agree about
    *  where "here" is even though only one of them has a working directory. */
@@ -762,10 +520,12 @@ export class AppContext {
     return repo?.path ?? this.projectOpen?.path ?? this.home
   }
 
+  /** Where a shell opens: the root it was opened from, the project if that root is gone, and
+   *  the home only on a first run with neither. */
   private session(root: DocRoot | null): TerminalSession {
     const name = root ? repoOf(root) : repoOf(this.scope)
     const repo = name ? this.reposOpen.get(name) : null
-    const claudeCfgDir = this.activeProfile?.claudeCfgDir
+    const claudeCfgDir = this.profiles.active?.claudeCfgDir
     const cwd = repo?.path ?? this.projectOpen?.path ?? this.home
     const here = repo ? repoRoot(repo.name) : 'project'
     return {
@@ -789,8 +549,8 @@ export class AppContext {
     const state = this.sync.state.state
     return {
       api: this.url,
-      profile: this.activeProfile?.name ?? null,
-      soul: this.activeProfile?.soul ?? null,
+      profile: this.profiles.active?.name ?? null,
+      soul: this.profiles.active?.soul ?? null,
       project:
         project && this.projectOpen
           ? { name: project.name, path: project.path, checkout: this.projectOpen.path }
@@ -806,101 +566,6 @@ export class AppContext {
       surface,
       sync: state === 'conflict' ? 'conflicted' : state === 'off' ? 'off' : 'on',
     }
-  }
-
-  /**
-   * A project is created as the profile you are working as, and stays bound to it. A project
-   * given a remote starts syncing, because asking for one is asking for that; a plain
-   * folder or a local repository does not, because there is nowhere for it to sync to.
-   */
-  async addProject(input: NewProject): Promise<ProjectSummary> {
-    const profile = this.requireProfile
-    // The credential the profile pushes with, whichever kind it has: a key for the remote
-    // it reaches over ssh, a host token for the one it reaches over https.
-    const token = (await readAccount(profile))?.token ?? null
-    const project = await createProject(input, profile, token)
-    await this.store.save({
-      ...this.config,
-      projectPath: project.path,
-      profile: profile.name,
-      git: {
-        ...this.config.git,
-        [project.path]: { ...defaultGitSettings(), enabled: input.git === 'remote' },
-      },
-    })
-    await this.useProject(project.path)
-    return project
-  }
-
-  /** Opens a project. Nothing about git is copied out of it: how it syncs is its own setting,
-   *  and where it syncs is a question for the repository every time it is asked. */
-  async openProject(projectPath: string): Promise<BroodmotherConfig> {
-    const config = await this.store.save({
-      ...this.config,
-      projectPath,
-      profile: path.basename(path.dirname(projectPath)),
-    })
-    // The profile is settled before the project opens: it is what picks the key git offers.
-    await this.loadProfile()
-    await this.useProject(projectPath)
-    return config
-  }
-
-  async listRepos(): Promise<RepoSummary[]> {
-    return listRepos(this.requireProject.path)
-  }
-
-  /** Made and scoped to in one gesture: a repository you are not going to work in is a step
-   *  nobody wants on its own. A repo made in a project you are not in is left for the next
-   *  time you are there — the scope is a fact about the project you are standing in. */
-  async addRepo(input: NewRepo): Promise<RepoSummary> {
-    const home = this.projectHome
-    const project =
-      input.project && home ? await findProject(input.project, home) : this.requireProject
-    if (!project) throw new RepoError(`no project named "${input.project}"`)
-
-    const profile = this.requireProfile
-    const token = (await readAccount(profile))?.token ?? null
-    const repo = await createRepo(project.path, input, profile, token)
-    if (project.path !== this.project?.path) return repo
-    await this.useRepos()
-    await this.setScope(repoRoot(repo.name))
-    return repo
-  }
-
-  /**
-   * Where you are working. Every repo is open already, so nothing is loaded or dropped
-   * here: what moves is which root the tabs, the branches and the next shell are about, and
-   * which one is worth watching for changes.
-   */
-  async setScope(root: DocRoot): Promise<BroodmotherConfig> {
-    const project = this.requireProject.path
-    const name = repoOf(root)
-    if (name && !this.reposOpen.has(name))
-      throw new RepoError(`no repo named "${name}"`)
-    const config = await this.store.save({
-      ...this.config,
-      repo: { ...this.config.repo, [project]: name },
-    })
-    await this.watchScope()
-    return config
-  }
-
-  /** Deleting the one you are in leaves the project's documents on their own, which is where
-   *  every project starts. */
-  async removeRepo(name: string): Promise<void> {
-    const project = this.requireProject.path
-    await this.closeRepo(name)
-    await deleteRepo(project, name)
-    const { [this.branchKey(project, name)]: _gone, ...repoBranch } =
-      this.config.repoBranch
-    const scoped = this.config.repo[project] === name
-    await this.store.save({
-      ...this.config,
-      repoBranch,
-      repo: scoped ? { ...this.config.repo, [project]: null } : this.config.repo,
-    })
-    if (scoped) await this.watchScope()
   }
 
   start(url: string): void {
@@ -940,156 +605,6 @@ export class AppContext {
     return project ? checkoutPath(project, this.checkoutFor(project)) : null
   }
 
-  private branchKey(project: string, repo: string): string {
-    return `${project}#${repo}`
-  }
-
-  /** Where each root's checkouts are, which is the one thing branches differ on. */
-  private async checkoutsFor(root: DocRoot): Promise<Checkouts> {
-    const project = this.requireProject.path
-    const name = repoOf(root)
-    if (!name) return projectCheckouts(project)
-    if (!this.reposOpen.has(name))
-      throw new NoRepoError(`no repo named "${name}"`)
-    return repoCheckouts(project, name)
-  }
-
-  async listBranches(root: DocRoot): Promise<Branch[]> {
-    const name = repoOf(root)
-    if (name && !this.reposOpen.has(name)) return []
-    if (!this.config.projectPath) return []
-    return listBranches(await this.checkoutsFor(root))
-  }
-
-  /** The branch of the open checkout, or null when that root has no repository. */
-  async activeBranch(root: DocRoot): Promise<string | null> {
-    const open = root === 'project' ? this.root : (this.rootPathOf(root) ?? null)
-    if (!open) return null
-    const branches = await this.listBranches(root)
-    return branches.find((one) => one.path === open)?.name ?? null
-  }
-
-  /** Cut off the branch this root is open on: a new branch continues the work you are in. */
-  async addBranch(root: DocRoot, name: string): Promise<Branch> {
-    const branch = await createBranch(
-      await this.checkoutsFor(root),
-      name,
-      await this.activeBranch(root),
-      this.activeProfile?.sshKeyPath,
-    )
-    await this.moveInto(root, branch)
-    return branch
-  }
-
-  /**
-   * Opening a branch is moving into its checkout, and it gets one here if it has none —
-   * which is what makes picking a branch off the remote a single gesture.
-   */
-  async openBranch(root: DocRoot, name: string): Promise<Branch> {
-    const branch = await openBranch(
-      await this.checkoutsFor(root),
-      name,
-      this.activeProfile?.sshKeyPath,
-    )
-    await this.moveInto(root, branch)
-    return branch
-  }
-
-  /**
-   * Every path that differs between the branch this root is standing on and the branch
-   * named. Both refs are read out of the repository itself: a worktree shares its object
-   * database with the checkout it came from, so neither branch has to have a folder.
-   */
-  async diff(root: DocRoot, against: string, basis?: DiffBasis): Promise<DiffFile[]> {
-    const sides = await this.sidesOf(root, against, basis)
-    if (!sides) return []
-    return diffFiles(sides.git, sides.against, sides.current)
-  }
-
-  /** One of those files, as each branch has it. */
-  async diffFile(
-    root: DocRoot,
-    against: string,
-    path: DocPath,
-    basis?: DiffBasis,
-  ): Promise<{ against: string | null; current: string | null }> {
-    const sides = await this.sidesOf(root, against, basis)
-    if (!sides) return { against: null, current: null }
-    // A rename is one file under two names, so the other branch is asked for the name it
-    // has rather than the one this branch gave it.
-    const files = await diffFiles(sides.git, sides.against, sides.current)
-    const source = files.find((one) => one.path === path)?.from ?? path
-    return {
-      against: await readBlob(sides.git, sides.against, source),
-      current: await readBlob(sides.git, sides.current, path),
-    }
-  }
-
-  /**
-   * The repository and the two refs to read out of it, or null when there is nothing to
-   * compare — no repository, or a branch asked to be compared with itself.
-   *
-   * The basis is the whole of what `split` changes: `git diff A...B` is defined as the diff
-   * from the merge base of the two to B, so resolving the far side to that commit is all it
-   * takes — the file list and the two sides of each file both come out of the same pair of
-   * refs, and neither has to know which basis produced them.
-   */
-  private async sidesOf(
-    root: DocRoot,
-    against: string,
-    basis: DiffBasis = 'now',
-  ): Promise<{ git: Git; against: string; current: string } | null> {
-    const current = await this.activeBranch(root)
-    if (!current || current === against) return null
-    const git = new Git((await this.checkoutsFor(root)).primary)
-    const from = await resolveRef(git, against)
-    if (!from) throw new BranchError(`no branch named "${against}"`)
-    const here = await resolveRef(git, current)
-    if (!here) return null
-    // Two branches with nothing in common have no split to compare from. The far side stays
-    // the branch itself, which is a comparison rather than an error.
-    const far = basis === 'split' ? ((await mergeBase(git, from, here)) ?? from) : from
-    return { git, against: far, current: here }
-  }
-
-  /** Removing the checkout you are in falls back to the repository's own. */
-  async removeBranch(root: DocRoot, name: string): Promise<Branch[]> {
-    const checkouts = await this.checkoutsFor(root)
-    const gone = await findBranch(checkouts, name)
-    if (!gone) throw new BranchError(`no branch named "${name}"`)
-    const here = gone.path === (root === 'project' ? this.root : this.rootPathOf(root))
-    await removeBranch(checkouts, name)
-    if (here) await this.moveInto(root, { ...gone, path: checkouts.primary })
-    return listBranches(checkouts)
-  }
-
-  /**
-   * The folder is what gets recorded, not the branch: a checkout moved onto another branch
-   * from a terminal is still the folder you are standing in.
-   */
-  private async moveInto(root: DocRoot, branch: Branch): Promise<void> {
-    const project = this.requireProject.path
-    const folder = path.basename(branch.path)
-    if (root === 'project') {
-      await this.store.save({
-        ...this.config,
-        checkouts: { ...this.config.checkouts, [project]: folder },
-      })
-      await this.useProject(project)
-      return
-    }
-    const name = repoOf(root)!
-    await this.store.save({
-      ...this.config,
-      repoBranch: {
-        ...this.config.repoBranch,
-        [this.branchKey(project, name)]: folder,
-      },
-    })
-    await this.reopenRepo(name)
-  }
-
-  /** Where a root's open checkout is, or null when it names a repo the project has lost. */
   private rootPathOf(root: DocRoot): string | null {
     const name = repoOf(root)
     if (!name) return this.root
@@ -1108,7 +623,7 @@ export class AppContext {
       name,
       path: target,
       tree: new Tree(target),
-      git: new Git(target, this.activeProfile?.sshKeyPath ?? null, this.hostToken),
+      git: new Git(target, this.profiles.active?.sshKeyPath ?? null, this.profiles.token),
       treeService: null,
       gitService: null,
     })
@@ -1128,7 +643,7 @@ export class AppContext {
     await mkdir(target, { recursive: true })
     const opening = new ProjectService(
       target,
-      new Git(target, this.activeProfile?.sshKeyPath ?? null, this.hostToken),
+      new Git(target, this.profiles.active?.sshKeyPath ?? null, this.profiles.token),
       (event) => this.onTreeEvent('project', event),
       () => this.onGitEvent('project'),
     )
@@ -1159,7 +674,7 @@ export class AppContext {
         name: repo.name,
         path: target,
         tree: new Tree(target),
-        git: new Git(target, this.activeProfile?.sshKeyPath ?? null, this.hostToken),
+        git: new Git(target, this.profiles.active?.sshKeyPath ?? null, this.profiles.token),
         treeService: null,
         // Watched whether or not the repo is the scope: a commit made in any shell
         // changes what the sidebar says, and this watch is two files, not a repository.
@@ -1178,7 +693,7 @@ export class AppContext {
    *  is gone. */
   private async checkoutOf(projectPath: string, name: string): Promise<string | null> {
     const checkouts = repoCheckouts(projectPath, name)
-    const key = this.branchKey(projectPath, name)
+    const key = branchKey(projectPath, name)
     const folder = this.config.repoBranch[key]
     if (folder && folder !== path.basename(checkouts.primary)) {
       const branch = path.join(checkouts.worktrees, folder)

@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Chat, ChatClientMessage, ChatMessage, ChatStep } from '@broodmother/types/api/chat'
-import { useApp } from '@/state'
-import type { Connection } from '@/src/services'
-
+import { useApp } from '@/State'
+import { type Connection } from '@/src/services/DataSource'
 export type Reply = { text: string; steps: ChatStep[] } | null
 
 export interface Conversation {

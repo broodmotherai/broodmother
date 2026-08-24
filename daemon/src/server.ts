@@ -2,16 +2,13 @@ import { serve, type ServerType } from '@hono/node-server'
 import type { Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { WebSocketServer, type WebSocket } from 'ws'
-import type { WsRoute } from '@broodmother/types/api/ws'
-import type { DocRoot } from '@broodmother/tree'
+import type { WsRoute } from '@daemon/types/api/ws'
+import type { DocRoot } from '@daemon/services/Tree'
+import { HEARTBEAT_MS, HOST, PORT } from '@daemon/constants/server'
 import { createApp } from './app'
 import { AppContext, type ContextOptions } from './context'
 
-/** Loopback only: there is no auth and full read/write access to the repo. */
-export const HOST = '127.0.0.1'
-export const PORT = 4242
-/** How often a socket is asked whether anything is still on the other end of it. */
-const HEARTBEAT_MS = 30 * 1000
+export { HOST, PORT } from '@daemon/constants/server'
 
 export interface ServerHandle {
   context: AppContext

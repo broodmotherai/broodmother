@@ -1,1 +1,0 @@
-export { CoworkersView } from './core'

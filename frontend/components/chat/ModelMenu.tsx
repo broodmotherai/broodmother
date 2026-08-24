@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { CHAT_MODELS, CHAT_PROVIDERS } from '@broodmother/types/api/chat'
-import { Icon, Menu, type MenuSection } from '@/components/ui'
-
+import { Icon } from '@/components/core/Icons'
+import { Menu, type MenuSection } from '@/components/core/Menu'
 const CONNECTED = { color: 'var(--opal-mint)', label: 'connected' }
 const MISSING = { color: 'var(--faint)', hollow: true, label: 'no key' }
 

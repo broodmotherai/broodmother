@@ -1,8 +1,8 @@
 import { writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { afterAll, expect, it } from 'vitest'
-import { cleanup, git, initRepo, tempDir, until } from '../../src/test'
-import { GitService } from '../../src/services/GitService'
+import { cleanup, git, initRepo, tempDir, until } from '@daemon/test'
+import { GitService } from '@daemon/services/GitService'
 
 afterAll(cleanup)
 

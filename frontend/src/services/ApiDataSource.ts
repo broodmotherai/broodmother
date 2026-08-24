@@ -153,3 +153,7 @@ export function httpClient(): ApiClient {
     },
   }
 }
+
+/** The one client the app talks through. Made here rather than per caller: the socket it
+ *  holds is the app's, and a second would be a second connection saying the same things. */
+export const api: ApiClient = httpClient()

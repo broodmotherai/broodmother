@@ -2,8 +2,8 @@
 
 import { useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
 import { CHAT_MODELS } from '@broodmother/types/api/chat'
-import { readableOn } from '@/colors'
-import { Icon } from '@/components/ui'
+import { readableOn } from '@/Colors'
+import { Icon } from '@/components/core/Icons'
 import { ModelMenu } from './ModelMenu'
 
 export function Composer({

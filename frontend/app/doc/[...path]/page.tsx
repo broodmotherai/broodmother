@@ -1,7 +1,6 @@
 import type { DocRoot } from '@broodmother/types/doc'
-import { DocView } from '@/components/doc'
-import { HomeView } from '@/components/doc'
-
+import { DocView } from '@/components/doc/DocView'
+import { HomeView } from '@/components/doc/HomeView'
 /** Next hands catch-all segments as they appear in the URL, so a document with a space in
  *  its name arrives as `The%20Journey.md` and reaches the server — and `open()` — that
  *  way. A malformed escape is passed through rather than thrown on: the tree then

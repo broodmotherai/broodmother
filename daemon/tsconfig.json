@@ -13,7 +13,6 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@broodmother/*": ["src/lib/*"],
       "@daemon/*": ["src/*"]
     }
   },

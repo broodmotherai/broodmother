@@ -33,7 +33,7 @@ import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { execa } from 'execa'
 import { watch, type FSWatcher } from 'chokidar'
-import type { AgentState, AgentStates } from '@broodmother/types/api/agents'
+import type { AgentState, AgentStates } from '@daemon/types/api/agents'
 
 /** How the pty side is asked: every shell, its pid, where it is, what it says is in front. */
 export type ForegroundIO = () => { pid: number; cwd: string; process: string }[]
@@ -141,7 +141,6 @@ export class AgentService {
     this.publish()
   }
 
-  /** The picture as it stands, for a client that has just arrived. */
   get agents(): AgentStates {
     return this.fold()
   }

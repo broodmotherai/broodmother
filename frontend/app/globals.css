@@ -2,7 +2,7 @@
    Two layers, in this order on purpose.
 
    1. Tailwind's theme and utilities, then proprium's tokens — what
-      `components/ui/core/` is written against. Preflight is deliberately NOT
+      `components/core/` is written against. Preflight is deliberately NOT
       imported: `@import "tailwindcss"` would pull in a reset, and everything
       below this header is a 5,460-line stylesheet that was written without one.
       Theme + utilities is all the kit needs.
@@ -22,7 +22,7 @@
 
 /* ---------------------------------------------------------------------------
    The sandy scheme. One scale, and both token systems point at it — proprium's
-   `@theme` colours (what `components/ui/` is written against) and broodmother's
+   `@theme` colours (what `components/core/` is written against) and broodmother's
    own (what the stylesheet below is written against). Change a step here and
    both move together.
 
@@ -254,7 +254,7 @@ nextjs-portal {
    block, the terminal all scroll without one. Set on `*` rather than per pane because the
    list of things that scroll is not a list anyone can keep up to date, and one pane left on
    the platform default is exactly the inconsistency this exists to stop. Monaco draws its
-   own rather than the browser's, so `editor/core.tsx` hides that one where it is set.
+   own rather than the browser's, so `components/editor/Editor.tsx` hides that one where it is set.
 
    The standard property only — Chromium ignores `::-webkit-scrollbar` rules once
    `scrollbar-width` is set, so styling it both ways styles it neither. */
@@ -1510,7 +1510,7 @@ body[data-resizing='column'] {
 
 /* Monaco draws the caret as tall as the line, and prose is set at a line height half again
    its own size — so the bar stands well clear of the words it sits between. This is the
-   height of what is being typed instead, measured off the line in `editor/core.tsx` and
+   height of what is being typed instead, measured off the line in `components/editor/Editor.tsx` and
    centred in the line box. `!important` because the height Monaco writes is inline. */
 .monaco-host.prose .monaco-editor .cursors-layer > .cursor {
   height: calc(1.15em * var(--caret-scale, 1)) !important;

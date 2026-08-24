@@ -1,9 +1,9 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { afterAll, expect, it } from 'vitest'
-import type { AgentStates } from '@broodmother/types/api/agents'
-import { cleanup, tempDir, until } from '../../src/test'
-import { AgentService } from '../../src/services/AgentService'
+import type { AgentStates } from '@daemon/types/api/agents'
+import { cleanup, tempDir, until } from '@daemon/test'
+import { AgentService } from '@daemon/services/AgentService'
 
 afterAll(cleanup)
 

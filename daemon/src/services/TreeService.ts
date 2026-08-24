@@ -1,8 +1,7 @@
+import { RESERVED, TEMP_SUFFIX } from '@daemon/constants/files'
 import { watch, type FSWatcher } from 'chokidar'
-import type { TreeEvent } from '@broodmother/tree'
-import { TEMP_SUFFIX } from '@broodmother/fs'
-import { RESERVED } from '@broodmother/path'
-import { toDocPath } from '@broodmother/fs'
+import type { TreeEvent } from '@daemon/services/Tree'
+import { toDocPath } from '@daemon/utils/fs'
 
 const DEBOUNCE_MS = 100
 /**

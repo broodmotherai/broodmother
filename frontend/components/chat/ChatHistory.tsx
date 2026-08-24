@@ -1,8 +1,8 @@
 'use client'
 
 import type { ChatSummary } from '@broodmother/types/api/chat'
-import { Icon, Menu } from '@/components/ui'
-
+import { Icon } from '@/components/core/Icons'
+import { Menu } from '@/components/core/Menu'
 export function ChatHistory({
   chats,
   open,

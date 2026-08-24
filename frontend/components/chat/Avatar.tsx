@@ -1,7 +1,7 @@
 'use client'
 
 import type { CSSProperties } from 'react'
-import { readableOn } from '@/colors'
+import { readableOn } from '@/Colors'
 
 export function initialsOf(name: string): string {
   const [first, second] = name.trim().split(/\s+/).filter(Boolean)

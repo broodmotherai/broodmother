@@ -10,7 +10,9 @@ export default defineConfig({
   // next reads the tsconfig paths; vite does not, so it is spelled out here.
   resolve: {
     alias: [
-      { find: /^@broodmother\/(.*)$/, replacement: `${here}/../daemon/src/lib/$1.ts` },
+      { find: /^@daemon\/(.*)$/, replacement: `${here}/../daemon/src/$1.ts` },
+      { find: /^@broodmother\/types\/(.*)$/, replacement: `${here}/../daemon/src/types/$1.ts` },
+      { find: /^@broodmother\/(.*)$/, replacement: `${here}/../daemon/src/utils/$1.ts` },
       { find: /^@\/(.*)$/, replacement: `${here}/$1` },
     ],
   },
@@ -18,7 +20,7 @@ export default defineConfig({
     name: '@broodmother/frontend',
     environment: 'jsdom',
     include: ['__tests__/**/*.test.{ts,tsx}'],
-    setupFiles: ['./test/setup.ts'],
+    setupFiles: ['./test/Setup.ts'],
     passWithNoTests: true,
   },
 })
