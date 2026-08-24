@@ -28,6 +28,20 @@ const NEAR = 140
 
 const initials = (name: string) => name.trim().charAt(0).toUpperCase() || '?'
 
+/* What the menu is a list of. The fill under the pointer and the padding are the Explorer's
+   — `--raised` is a 6% wash of the ink rather than the opaque sand proprium reached for, and
+   the room around the words is a row's — so a name here sits exactly as a name in the tree
+   does. The rest is the menu's own: these are set smaller than a row and in the softer ink,
+   because the card is read as a menu rather than as more of the list behind it.
+
+   Said once. It was four copies of the same string, three of them identical. */
+const item =
+  'group flex items-center gap-2 rounded-md px-[0.4rem] py-[0.22rem] text-[13px] text-charcoal hover:bg-[var(--raised)] hover:text-foreground'
+
+/** A <button> brings chrome an <a> does not, and has to be told it is neither a box nor
+ *  centred. */
+const itemButton = cx(item, 'cursor-pointer border-0 bg-transparent text-left')
+
 export function AccountCenter({
   profile,
   project,
@@ -104,7 +118,7 @@ export function AccountCenter({
             name rather than behind it. The head itself stands in front, in the host. */}
         <div className="h-[var(--track-control)]" aria-hidden />
       {project && (
-        <Collapse open={showDetail} className="px-2.5" openClassName="pb-2">
+        <Collapse open={showDetail} className="px-1.5" openClassName="pb-2">
           <span className="flex items-center gap-1.5 text-[11px] text-muted">
             <CoreIcon name="book" size={12} className="block shrink-0" />
             <span className="min-w-0 truncate">{project.name}</span>
@@ -120,7 +134,7 @@ export function AccountCenter({
             setOpen(false)
             onSettings()
           }}
-          className="group flex cursor-pointer items-center gap-2 rounded-md border-0 bg-transparent px-2 py-1 text-left text-[13px] text-charcoal hover:bg-surface-active hover:text-foreground"
+          className={itemButton}
         >
           <CoreIcon name="settings" size={13} className="block shrink-0 text-muted group-hover:text-foreground" />
           Settings
@@ -132,7 +146,7 @@ export function AccountCenter({
             role="menuitem"
             target="_blank"
             rel="noreferrer"
-            className="group flex items-center gap-2 rounded-md px-2 py-1 text-[13px] text-charcoal no-underline hover:bg-surface-active hover:text-foreground"
+            className={cx(item, 'no-underline')}
           >
             <CoreIcon name="info" size={13} className="block shrink-0 text-muted group-hover:text-foreground" />
             Help
@@ -151,7 +165,7 @@ export function AccountCenter({
               setOpen(false)
               onSelectProfile(one.name)
             }}
-            className="group flex cursor-pointer items-center gap-2 rounded-md border-0 bg-transparent px-2 py-1 text-left text-[13px] text-charcoal hover:bg-surface-active hover:text-foreground"
+            className={itemButton}
           >
             <span aria-hidden className="flex shrink-0">
               <Avatar initials={initials(one.name)} size={16} className="text-cream" style={{ background: one.color }} />
@@ -166,7 +180,7 @@ export function AccountCenter({
             setOpen(false)
             onAddProfile()
           }}
-          className="group flex cursor-pointer items-center gap-2 rounded-md border-0 bg-transparent px-2 py-1 text-left text-[13px] text-charcoal hover:bg-surface-active hover:text-foreground"
+          className={itemButton}
         >
           <CoreIcon name="plus" size={13} className="block shrink-0 text-muted group-hover:text-foreground" />
           New profile…
@@ -181,7 +195,7 @@ export function AccountCenter({
           the two. */}
       <button
         type="button"
-        className="relative z-40 flex h-[var(--track-control)] cursor-pointer items-center gap-2 border-0 bg-transparent! px-2.5 text-left text-foreground"
+        className="relative z-40 flex h-[var(--track-control)] cursor-pointer items-center gap-2 border-0 bg-transparent! px-1.5 text-left text-foreground"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
