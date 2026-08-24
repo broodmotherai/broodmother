@@ -1182,8 +1182,27 @@ body[data-resizing='column'] {
   color: var(--ink);
 }
 
+/* The tab you are in catches the light. Three of the opals bloom across the same ground every
+   other chosen control stands on, sat where they fell rather than at the corners — a sheen
+   too slight to read as colour, felt only as the tab being warmer than its neighbours. */
 .tab[data-active] {
-  background: var(--active);
+  background:
+    radial-gradient(
+      86% 132% at 19% 114%,
+      color-mix(in srgb, var(--opal-violet) 11%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      104% 118% at 73% -22%,
+      color-mix(in srgb, var(--opal-cyan) 9%, transparent),
+      transparent 66%
+    ),
+    radial-gradient(
+      72% 154% at 96% 61%,
+      color-mix(in srgb, var(--opal-rose) 8%, transparent),
+      transparent 70%
+    ),
+    var(--active);
   color: var(--ink);
 }
 
