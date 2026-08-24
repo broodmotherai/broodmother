@@ -93,6 +93,10 @@ const newCoworkerBody = z.object({
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
 })
 const coworkerBody = z.object({ coworker: z.string().min(1) })
+const coworkerModelBody = z.object({
+  coworker: z.string().min(1),
+  model: z.enum(CHAT_MODELS.map((one) => one.id) as [string, ...string[]]),
+})
 /** A provider nobody serves is refused here rather than written and never read. */
 const modelKeyBody = z.object({
   provider: z.enum(CHAT_PROVIDERS.map((one) => one.id) as [string, ...string[]]),
@@ -384,6 +388,11 @@ export function createApp(ctx: AppContext): Hono {
   app.post('/api/coworker/clear', async (c) => {
     ctx.coworkers.clear((await parse(c, coworkerBody)).coworker)
     return c.json({ ok: true } as const)
+  })
+
+  app.post('/api/coworker/model', async (c) => {
+    const { coworker, model } = await parse(c, coworkerModelBody)
+    return c.json({ coworker: ctx.coworkers.setModel(coworker, model) })
   })
 
   /** Every diagram in the open checkouts. A canvas has no runner, so this is all it has:

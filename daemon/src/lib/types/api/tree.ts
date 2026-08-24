@@ -1,5 +1,5 @@
-import type { TreeChanges } from '@broodmother/git'
-import type { TreeEntry } from '@broodmother/tree'
+import type { TreeChanges } from '../git'
+import type { TreeEntry } from '../doc'
 
 /** Every tree in one answer: they are drawn as one sidebar and change together. Each
  *  repo the project links is here whether or not it is the one you are working in — the

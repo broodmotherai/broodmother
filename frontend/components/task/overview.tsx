@@ -2,9 +2,9 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import type { TaskRun, TaskSummary } from '@/src/contracts/api/tasks'
-import { basename } from '@/path'
-import { repoOf, type DocRoot } from '@/src/contracts/doc'
+import type { TaskRun, TaskSummary } from '@broodmother/types/api/tasks'
+import { basename } from '@broodmother/path'
+import { repoOf, type DocRoot } from '@broodmother/types/doc'
 import { useApp } from '@/state'
 import { docRoute } from '../shell'
 import { ago, TaskTree } from './tree'

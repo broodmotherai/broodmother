@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
-import type { Profile } from '@/src/contracts/profile'
+import type { Profile } from '@broodmother/types/profile'
 import { createMockClient, type MockClient } from '@/src/services/mock'
 import { AppProvider } from '@/state'
 import { Shell } from '@/components/shell/core'

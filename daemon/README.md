@@ -6,7 +6,7 @@ that to a browser over HTTP and four websockets.
 
 Ported from `example/old-broodmother`, where it was `daemon/` plus a `lib/` workspace shared
 with the frontend. Here the daemon owns that domain layer as `src/lib/`, and the frontend
-keeps its own contracts.
+compiles the same files: `@broodmother/*` resolves to `src/lib/*` on both sides.
 
 ## Running it
 
@@ -45,7 +45,10 @@ src/
   tasks/        the graph, its blocks, its two clocks
   sockets/      the relay and the ptys
   lib/          the domain — git, sync, tree, project, repo, branch, path
-    types/      the wire
+    types/      the wire, and everything the browser shares. Nothing here reaches
+                node: a declaration the frontend names lives in this folder and the
+                module that talks to git re-exports it, which is what lets the app
+                compile these files rather than keep a copy of them
 __tests__/      mirrors src/, plus lib/ for the domain modules
 ```
 
@@ -63,7 +66,8 @@ __tests__/      mirrors src/, plus lib/ for the domain modules
 ## What the port changed
 
 - **`lib/` became `src/lib/`.** It was a sibling workspace shared with the frontend. The
-  `@broodmother/*` imports are unchanged; a tsconfig path and a vitest alias point them here.
+  `@broodmother/*` imports are unchanged; a tsconfig path and a vitest alias point them here —
+  and the frontend now carries the same two lines rather than a copy of the folder.
 - **`@daemon/*`** is a second alias, for the moved `__tests__/lib/` reaching `src/test.ts`.
 - **The port is 4242**, and CORS defaults to the frontend on 4243. Both were 3001/6767.
 - **Two test fixtures gained `models: []`.** `Profile` requires it, and the lib tests were

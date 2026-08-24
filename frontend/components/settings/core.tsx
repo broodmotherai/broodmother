@@ -73,15 +73,12 @@ const rail =
 
 /* A row of the rail is the app's row — the same one the Explorer's files and the Tasks and
    Chat entries above them wear, from the kit rather than restated here. What is left is
-   what belongs to this rail: the glyph is a step down from the Explorer's, and `relative`
-   is what the accent bar below hangs off. */
-const row = 'relative [&_.icon]:size-[0.9rem]!'
+   what belongs to this rail: the glyph is a step down from the Explorer's. */
+const row = '[&_.icon]:size-[0.9rem]!'
 
-/* Selected is a fill and the accent bar outside it, which is what carries down the rail:
-   the fill alone is easy to lose against the panel. Not a weight any more — every row is
-   set in the row's own 600 now, so a heavier one was no longer the odd one out. */
-const chosen =
-  "aria-selected:bg-[var(--active)]! aria-selected:[&_.icon]:text-[var(--ink)]! aria-selected:after:absolute aria-selected:after:top-[0.2rem] aria-selected:after:bottom-[0.2rem] aria-selected:after:-left-[0.6rem] aria-selected:after:w-0.5 aria-selected:after:rounded-[var(--row-radius)] aria-selected:after:bg-[var(--accent)] aria-selected:after:content-['']"
+/* Selected is the fill and the inked glyph, nothing outside the row. Not a weight either —
+   every row is set in the row's own 600 now, so a heavier one was no longer the odd one out. */
+const chosen = 'aria-selected:bg-[var(--active)]! aria-selected:[&_.icon]:text-[var(--ink)]!'
 
 export function SettingsView() {
   const app = useApp()

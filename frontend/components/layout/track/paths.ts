@@ -1,5 +1,5 @@
-import type { DocPath, DocRef, DocRoot, TreeEntry } from '@/src/contracts/doc'
-import type { GitChange } from '@/git'
+import type { DocPath, DocRef, DocRoot, TreeEntry } from '@broodmother/types/doc'
+import type { GitChange } from '@broodmother/types/git'
 
 /** One tree the sidebar draws, and the name of the row that heads it — the project's or the
  *  repo's. Without one the entries stand on their own, with nothing to collapse into. */

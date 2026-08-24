@@ -1,4 +1,4 @@
-import type { DocPath, DocRef } from '@broodmother/tree'
+import type { DocPath, DocRef } from '../doc'
 
 export interface Backlink {
   from: DocPath // the document that links

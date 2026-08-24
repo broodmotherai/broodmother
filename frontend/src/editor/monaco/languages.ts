@@ -1,4 +1,4 @@
-import { basename, extensionOf } from '@/path'
+import { basename, extensionOf } from '@broodmother/path'
 import type { MonacoApi } from './core'
 
 /** Everything in a project is text, so a file nobody has a grammar for still opens. */

@@ -17,9 +17,12 @@ export const LIGHT = 'light-plus'
  *
  * Both are the app's `--editor-ground`, which is what `.monaco-host` paints behind this and
  * so is where the two have to agree — a seam between them is visible at the gutter. That
- * token is `color-mix(in srgb, var(--ink) 4%, var(--ground))`, resolved here because Monaco
- * takes a hex and not a token: `#0A0A0A` when that token was a shade off the page, and
- * the sandy scheme's `--color-sand-200` now that it is the page's own ground. Changing it changes this.
+ * token is `var(--ground)`, resolved here because Monaco takes a hex and not a token: the
+ * sandy scheme's `--color-sand-200`. Changing one changes the other.
+ *
+ * This is the ground of a document, which is the pane's. A field is not a document: the
+ * inline editor carries the `input` ground instead, and turns both this and `.monaco-host`
+ * transparent so that it shows — see `.inline-editor` in globals.css.
  */
 const GROUND_DARK = '#0A0A0A'
 const GROUND_LIGHT = '#F6F0E4'

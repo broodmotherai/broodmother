@@ -1,7 +1,7 @@
 'use client'
 
-import type { DocRef, DocRoot, TreeEntry } from '@/src/contracts/doc'
-import type { GitChange } from '@/git'
+import type { DocRef, DocRoot, TreeEntry } from '@broodmother/types/doc'
+import type { GitChange } from '@broodmother/types/git'
 import {
   ContextMenu,
   displayName,

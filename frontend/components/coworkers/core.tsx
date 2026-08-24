@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import type { CoworkerSummary, NewCoworker } from '@/src/contracts/api/coworkers'
+import type { CoworkerSummary, NewCoworker } from '@broodmother/types/api/coworkers'
 import { useApp } from '@/state'
 import { CoworkerRail } from './rail'
 import { CoworkerHeader, CoworkerView } from './view'
@@ -69,6 +69,13 @@ export function CoworkersView() {
       .catch(() => setFailed('could not clear that conversation'))
   }
 
+  const retune = (id: string, model: string) => {
+    void app.client
+      .request('POST /api/coworker/model', { coworker: id, model })
+      .then(() => list())
+      .catch(() => setFailed('could not change that model'))
+  }
+
   const fire = (id: string) => {
     void app.client
       .request('DELETE /api/coworker', { coworker: id })
@@ -86,22 +93,23 @@ export function CoworkersView() {
   const coworker = working.find((one) => one.id === open) ?? null
 
   return (
-    <div className="chat-page">
-      {coworker && <CoworkerHeader coworker={coworker} working={coworker.working} />}
-      <div className="chat-body">
-        <CoworkerRail
-          coworkers={working}
-          open={open}
-          onOpen={setOpen}
-          onNew={() => setHiring(true)}
-          onClear={clear}
-          onDelete={fire}
-        />
+    <div className="chat-page coworker-page">
+      <CoworkerRail
+        coworkers={working}
+        open={open}
+        onOpen={setOpen}
+        onNew={() => setHiring(true)}
+        onClear={clear}
+        onDelete={fire}
+      />
+      <div className="coworker-column">
+        {coworker && <CoworkerHeader coworker={coworker} working={coworker.working} />}
         {coworker ? (
           <CoworkerView
             key={`${coworker.id}:${String(cleared)}`}
             coworker={coworker}
             error={failed}
+            onModel={(model) => retune(coworker.id, model)}
           />
         ) : (
           /* Nobody hired yet, or the last one let go. The rail's own button is the way out

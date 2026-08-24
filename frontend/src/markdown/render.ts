@@ -2,8 +2,7 @@ import MarkdownIt from 'markdown-it'
 import katex from 'katex'
 import { math } from './plugins/math'
 import { wikilink } from './plugins/wikilink'
-
-const FRONTMATTER = /^---[ \t]*\r?\n[\s\S]*?\r?\n---[ \t]*(?:\r?\n|$)/
+import { stripFrontmatter } from '@broodmother/markdown/frontmatter'
 
 const tex = (latex: string, display: boolean) =>
   katex.renderToString(latex, {
@@ -25,7 +24,5 @@ renderer.renderer.rules.math_block = (tokens, i) => tex(tokens[i].content.trim()
 
 /** Reading mode. Frontmatter is a header, not prose, so it is dropped rather than shown. */
 export function render(source: string): string {
-  const text = source.replace(/\r\n/g, '\n')
-  const fence = FRONTMATTER.exec(text)
-  return renderer.render(fence ? text.slice(fence[0].length) : text)
+  return renderer.render(stripFrontmatter(source.replace(/\r\n/g, '\n')))
 }

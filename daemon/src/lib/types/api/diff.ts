@@ -1,5 +1,5 @@
-import type { DiffBasis, DiffFile } from '@broodmother/git'
-import type { DocPath, DocRoot } from '@broodmother/tree'
+import type { DiffBasis, DiffFile } from '../git'
+import type { DocPath, DocRoot } from '../doc'
 
 /** Which two branches: the one the root is standing on, and the one named. */
 interface Against {

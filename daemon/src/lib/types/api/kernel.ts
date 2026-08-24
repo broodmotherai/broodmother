@@ -1,5 +1,5 @@
 import type { CellOutput } from '@broodmother/notebook/codec'
-import type { DocRef } from '@broodmother/tree'
+import type { DocRef } from '../doc'
 
 /**
  * Sessions are keyed by the client-chosen id — the notebook's path — the way shells are

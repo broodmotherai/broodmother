@@ -25,12 +25,12 @@ import {
   type TaskKind,
   type TaskNode,
   type MuseNode,
-} from '@/src/contracts/task/schema'
-import { parseTask, serializeTask } from '@/src/contracts/task/codec'
-import { runOrder } from '@/src/contracts/task/graph'
-import type { Persona } from '@/src/contracts/api/personas'
-import type { TaskRun } from '@/src/contracts/api/tasks'
-import type { DocRef } from '@/src/contracts/doc'
+} from '@broodmother/types/task/schema'
+import { parseTask, serializeTask } from '@broodmother/types/task/codec'
+import { runOrder } from '@broodmother/types/task/graph'
+import type { Persona } from '@broodmother/types/api/personas'
+import type { TaskRun } from '@broodmother/types/api/tasks'
+import type { DocRef } from '@broodmother/types/doc'
 import {
   ContextMenu,
   Icon,

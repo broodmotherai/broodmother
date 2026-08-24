@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import type { GithubDevice } from '@/github'
+import type { GithubDevice } from '@broodmother/types/github'
 import { useApp } from '@/state'
 import { Button, LinkButton } from '@/components/ui'
 import { Code, Hint, Row, Section } from './layout'

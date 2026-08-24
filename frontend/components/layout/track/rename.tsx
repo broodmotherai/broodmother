@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import type { TreeEntry } from '@/src/contracts/doc'
+import type { TreeEntry } from '@broodmother/types/doc'
 import { displayName } from '@/components/ui'
 
 /** The name typed into where it shows — a tree row or a tab — editable as far as it is

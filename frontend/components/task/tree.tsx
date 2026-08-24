@@ -1,14 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import type { TaskSummary } from '@/src/contracts/api/tasks'
+import type { TaskSummary } from '@broodmother/types/api/tasks'
 import {
   repoOf,
   type DocPath,
   type DocRef,
   type DocRoot,
   type TreeEntry,
-} from '@/src/contracts/doc'
+} from '@broodmother/types/doc'
 import { entriesOf, flatten, refKey, type TreeRoot } from '../layout'
 import { displayName, FileIcon, Icon, ROW } from '@/components/ui'
 import Caret from '@/components/ui/core/Icon'

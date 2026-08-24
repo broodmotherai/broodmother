@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
-import { repoRoot, type TreeEntry } from '@/tree'
+import { repoRoot, type TreeEntry } from '@broodmother/types/doc'
 import { Explorer } from '@/components/layout/track/Explorer'
 import { fileRefs, type TreeRoot } from '@/components/layout/track/paths'
 

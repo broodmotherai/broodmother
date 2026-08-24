@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
-import type { Branch } from '@/branch'
-import type { DiffBasis } from '@/git'
+import type { Branch } from '@broodmother/types/branch'
+import type { DiffBasis } from '@broodmother/types/git'
 import { DiffBar } from '@/components/diff/bar'
 
 const branches: Branch[] = [

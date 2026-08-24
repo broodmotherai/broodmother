@@ -10,7 +10,7 @@ import {
   type WheelEvent as ReactWheelEvent,
 } from 'react'
 import { track } from './track'
-import { GRID, snap } from '@/src/contracts/grid'
+import { GRID, snap } from '@broodmother/types/grid'
 
 /** The grid both canvases walk — the dots stand on it here, and a file written anywhere
  *  else lands on it too, which is why the number lives in the shared types. */

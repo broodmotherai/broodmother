@@ -1,7 +1,7 @@
 import type { BroodmotherConfig } from '@broodmother/types/config'
 import type { AccessCheck, GitSettings, GitState } from '@broodmother/types/git'
-import type { SyncStatus } from '@broodmother/sync'
-import type { DocRoot } from '@broodmother/tree'
+import type { SyncStatus } from '../sync'
+import type { DocRoot } from '../doc'
 
 export interface GetConfig {
   request: null

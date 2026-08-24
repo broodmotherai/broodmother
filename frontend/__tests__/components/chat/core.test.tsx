@@ -1,10 +1,10 @@
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
-import type { Profile } from '@/src/contracts/profile'
+import type { Profile } from '@broodmother/types/profile'
 import { createMockClient, type MockClient } from '@/src/services/mock'
 import { AppProvider } from '@/state'
-import { ChatView } from '@/components/chat/core'
+import { ChatView } from '@/components/chat/ChatView'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),

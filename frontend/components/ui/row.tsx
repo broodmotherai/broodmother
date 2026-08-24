@@ -20,7 +20,7 @@ export const ROW = 'row'
  * rows changed.
  *
  * What being chosen looks like stays with the caller: the Explorer tints a selected row to
- * its depth, a tab fills, and the settings rail fills and hangs an accent bar off its left.
+ * its depth, and a tab and the settings rail fill.
  * They are the same row; they are not the same list.
  */
 export function Row({

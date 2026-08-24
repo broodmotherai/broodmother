@@ -1,5 +1,5 @@
 import type { BroodmotherConfig } from '@broodmother/types/config'
-import type { DocRoot } from '@broodmother/tree'
+import type { DocRoot } from '../doc'
 
 /**
  * Where you are working: the project, or one of its repos. Every repo is open at once,

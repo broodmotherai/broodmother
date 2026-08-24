@@ -1,6 +1,6 @@
-import type { Branch } from '@broodmother/branch'
+import type { Branch } from '../branch'
 import type { BroodmotherConfig } from '@broodmother/types/config'
-import type { DocRoot } from '@broodmother/tree'
+import type { DocRoot } from '../doc'
 
 /** Whose branches: the project's, or the open repo's. */
 interface Of {

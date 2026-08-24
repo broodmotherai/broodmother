@@ -9,19 +9,19 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react'
-import { TASK_EXTENSION, emptyTask, isTaskPath } from '@/src/contracts/task/schema'
+import { TASK_EXTENSION, emptyTask, isTaskPath } from '@broodmother/types/task/schema'
 import {
   CANVAS_EXTENSION,
   emptyCanvas,
   isCanvasPath,
-} from '@/src/contracts/canvas/schema'
-import { serializeTask } from '@/src/contracts/task/codec'
-import { serializeCanvas } from '@/src/contracts/canvas/codec'
-import { tilde } from '@/path'
-import { repoOf, repoRoot, type DocRef, type DocRoot } from '@/src/contracts/doc'
-import type { DiffBasis, DiffFile } from '@/git'
-import { isImage } from '@/media'
-import { isNotebookPath } from '@/src/notebook/path'
+} from '@broodmother/types/canvas/schema'
+import { serializeTask } from '@broodmother/types/task/codec'
+import { serializeCanvas } from '@broodmother/types/canvas/codec'
+import { tilde } from '@broodmother/path'
+import { repoOf, repoRoot, type DocRef, type DocRoot } from '@broodmother/types/doc'
+import type { DiffBasis, DiffFile } from '@broodmother/types/git'
+import { isImage } from '@broodmother/media'
+import { isNotebookPath } from '@broodmother/notebook/path'
 import { useApp } from '@/state'
 
 import { deleteFlow, type Flow, type FlowCtx, Palette } from '../palette'

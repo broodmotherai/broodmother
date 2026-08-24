@@ -4,7 +4,7 @@ import { expect, it, vi } from 'vitest'
 import { createMockClient, type MockClient } from '@/src/services/mock'
 import { AppProvider } from '@/state'
 import { CoworkersView } from '@/components/coworkers/core'
-import { initialsOf } from '@/components/chat/avatar'
+import { initialsOf } from '@/components/chat/Avatar'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),

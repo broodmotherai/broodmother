@@ -1,12 +1,12 @@
 'use client'
 
-import { canChat, type ChatModel, CHAT_MODELS } from '@/src/contracts/api/chat'
-import type { CoworkerSummary } from '@/src/contracts/api/coworkers'
+import { canChat, type ChatModel, CHAT_MODELS } from '@broodmother/types/api/chat'
+import type { CoworkerSummary } from '@broodmother/types/api/coworkers'
 import { useApp } from '@/state'
-import { Avatar } from '@/components/chat/avatar'
-import { ChatThread } from '@/components/chat/thread'
-import { Composer } from '@/components/chat/composer'
-import { useConversation } from '@/components/chat/conversation'
+import { Avatar } from '@/components/chat/Avatar'
+import { ChatThread } from '@/components/chat/ChatThread'
+import { Composer } from '@/components/chat/Composer'
+import { useConversation } from '@/components/chat/Conversation'
 
 /**
  * Who you are talking to, across the top of the page — over the rail and the thread both, the
@@ -49,9 +49,13 @@ export function CoworkerHeader({
 export function CoworkerView({
   coworker,
   error,
+  onModel,
 }: {
   coworker: CoworkerSummary
   error: string | null
+  /** Picking another model for them. The thread is kept — the persona is who they are, and
+   *  the model is only what is behind the voice. */
+  onModel: (model: string) => void
 }) {
   const app = useApp()
   const conversation = useConversation({ open: coworker.chat, model: coworker.model })
@@ -75,6 +79,7 @@ export function CoworkerView({
       <Composer
         model={coworker.model}
         connected={app.profile?.models ?? []}
+        onModel={onModel}
         onSend={(text) => void conversation.send(text)}
         onStop={conversation.stop}
         replying={conversation.reply !== null}

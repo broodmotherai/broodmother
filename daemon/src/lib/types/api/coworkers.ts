@@ -61,3 +61,10 @@ export interface PostCoworkerClear {
   request: { coworker: string }
   response: { ok: true }
 }
+
+/** Which model answers as them, changed on a coworker who already exists. The thread is kept:
+ *  who they are is the persona, and the model is only what is behind the voice. */
+export interface PostCoworkerModel {
+  request: { coworker: string; model: string }
+  response: { coworker: Coworker }
+}

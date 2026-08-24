@@ -3,16 +3,16 @@ import type {
   ApiRequest,
   ApiResponse,
   ApiRoute,
-} from '@/src/contracts/api/routes'
+} from '@broodmother/types/api/routes'
 import type {
   ChatClientMessage,
   ChatServerMessage,
-} from '@/src/contracts/api/chat'
+} from '@broodmother/types/api/chat'
 import type {
   TerminalClientMessage,
   TerminalServerMessage,
-} from '@/src/contracts/api/terminal'
-import type { ServerMessage, WsRoute } from '@/src/contracts/api/ws'
+} from '@broodmother/types/api/terminal'
+import type { ServerMessage, WsRoute } from '@broodmother/types/api/ws'
 import type { ApiClient, Connection } from './DataSource'
 
 /** Where the backend is. Exported because bytes are fetched by the browser directly —

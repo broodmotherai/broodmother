@@ -1,7 +1,7 @@
 'use client'
 
 import { render } from '@/src/markdown/render'
-import type { CellOutput } from '@/src/notebook/codec'
+import type { CellOutput } from '@broodmother/notebook/codec'
 import { ansiSpans } from './ansi'
 
 /** MIME bundle values arrive as a string or a list of lines, like sources do. */

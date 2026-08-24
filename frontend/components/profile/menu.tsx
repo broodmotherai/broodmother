@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { Profile } from '@/src/contracts/profile'
+import type { Profile } from '@broodmother/types/profile'
 import { Icon, Menu, type MenuSection } from '@/components/ui'
 
 const initial = (name: string) => name.trim().charAt(0).toUpperCase() || '?'

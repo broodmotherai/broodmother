@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { DiffEditor } from './editor'
-import { basename } from '@/path'
-import type { DocRef } from '@/src/contracts/doc'
-import { isImage } from '@/media'
-import type { DiffBasis } from '@/git'
+import { basename } from '@broodmother/path'
+import type { DocRef } from '@broodmother/types/doc'
+import { isImage } from '@broodmother/media'
+import type { DiffBasis } from '@broodmother/types/git'
 import { useApp } from '@/state'
 
 interface Sides {

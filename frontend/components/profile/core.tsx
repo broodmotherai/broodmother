@@ -1,8 +1,8 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import type { GitAuthor } from '@/src/contracts/git'
-import type { Profile } from '@/src/contracts/profile'
+import type { GitAuthor } from '@broodmother/types/git'
+import type { Profile } from '@broodmother/types/profile'
 import { opal } from '@/colors'
 import { Button, Modal } from '@/components/ui'
 import { type ProfileDraft, ProfileForm, type ProfileFormState } from './form'

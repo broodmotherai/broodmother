@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { DocRef } from '@/src/contracts/doc'
+import type { DocRef } from '@broodmother/types/doc'
 import { API_BASE } from '@/src/services/ApiDataSource'
 
 /** The URL the server serves a file's bytes from. */

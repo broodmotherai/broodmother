@@ -172,6 +172,14 @@ describe('openBranch', () => {
     expect(listed.find((one) => one.primary)!.name).toBe('main')
   })
 
+  /* git's own ref rules, refused here rather than reaching the caller as whatever
+     `git worktree add` printed. */
+  it('refuses a name git will not take as a ref', async () => {
+    const { checkouts } = await project()
+    await expect(createBranch(checkouts, 'work.lock')).rejects.toThrow(BranchError)
+    await expect(createBranch(checkouts, 'a..b')).rejects.toThrow(BranchError)
+  })
+
   it('refuses a branch nobody has', async () => {
     const { checkouts } = await project()
     await expect(openBranch(checkouts, 'nope')).rejects.toThrow(BranchError)

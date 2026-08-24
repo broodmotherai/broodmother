@@ -16,7 +16,7 @@ import type {
   Task,
   TaskNode,
 } from './schema'
-import { isSlug } from '@broodmother/github'
+import { isSlug } from '../github'
 
 export class TaskError extends Error {}
 

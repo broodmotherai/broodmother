@@ -1,6 +1,6 @@
 'use client'
 
-import type { NotebookCell } from '@/src/notebook/codec'
+import type { NotebookCell } from '@broodmother/notebook/codec'
 import { Icon } from '@/components/ui'
 
 /**

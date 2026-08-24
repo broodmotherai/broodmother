@@ -1,8 +1,8 @@
 'use client'
 
-import type { CoworkerSummary } from '@/src/contracts/api/coworkers'
+import type { CoworkerSummary } from '@broodmother/types/api/coworkers'
 import { Icon, Menu } from '@/components/ui'
-import { Avatar } from '@/components/chat/avatar'
+import { Avatar } from '@/components/chat/Avatar'
 
 /**
  * The people this project has, beside the one you are talking to. A coworker you cannot find

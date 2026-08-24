@@ -158,7 +158,6 @@
      `color-mix(… var(--ink) N%, transparent)` below derives from it and flips with it. */
   --ink: var(--color-ink);
   --black: #1f1f1f;
-  --dark: #0f0f0f;
   --opal-violet: #c084fc;
   --opal-indigo: #818cf8;
   --opal-cyan: #22d3ee;
@@ -1272,7 +1271,10 @@ body[data-resizing='column'] {
 }
 
 /* The plus at the end of the strip is a tab-sized button, not a smaller one wearing the
-   same corner: it stands in the same run and is the same height as what it makes. */
+   same corner: it stands in the same run and is the same height as what it makes.
+
+   Inked a step past the strip's other quiet marks: a hairline glyph on its own at the end of
+   the run has no label beside it to be found by, and at `--faint` it read as disabled. */
 .tab-new {
   display: flex;
   align-items: center;
@@ -1284,7 +1286,7 @@ body[data-resizing='column'] {
   border: none;
   border-radius: var(--row-radius);
   background: transparent;
-  color: var(--faint);
+  color: var(--muted);
 }
 
 .tab-new:hover {
@@ -1322,6 +1324,15 @@ body[data-resizing='column'] {
 .terminal-tab-pane {
   flex: 1;
   min-height: 0;
+}
+
+/* Nothing on top: the track above already keeps the gap, as its own inset under the row of
+   tabs, and the panel's own margin on top of that stands a terminal half a gap lower than
+   the document pane the same strip hands over to. Both classes, because the panel's margin
+   is set further down the sheet and would otherwise be the later word. The bottom panel
+   keeps its margin — it stands under the document rather than under the track. */
+.terminal.terminal-tab-pane {
+  margin-top: 0;
 }
 
 /* Panes tile the tab from their rects rather than nesting in boxes: a shell that moves in
@@ -1484,7 +1495,13 @@ body[data-resizing='column'] {
   border-color: var(--line-hover);
 }
 
-/* The document's own ground is the pane's; in a field it is the field's. */
+/* The document's own ground is the pane's; in a field it is the field's.
+   `.monaco-host` belongs in this list: it paints `--editor-ground`, which is the page's own
+   ground, so leaving it out filled the field with the colour of the page behind it while the
+   border and the side padding stayed the field's. The box read as a hole punched through to
+   the page rather than as somewhere to write. Transparent here, so what shows is the
+   `input` ground the container already carries. */
+.inline-editor .monaco-host,
 .inline-editor .monaco-editor,
 .inline-editor .monaco-editor .monaco-editor-background,
 .inline-editor .monaco-editor .margin {
@@ -4548,11 +4565,15 @@ p.palette-label {
 /* The row is the box: it lights as one, the mark at its end included, and where you clicked
    inside it is the only thing that decides between opening the conversation and opening what
    can be done to it. */
+/* The room at the end of the row is the room above it: 0.3rem is what the name button below
+   pads with, and it is what the fill stands off the words by at the top and bottom, so the
+   mark at the other end is inset by the same. At 0.15rem the mark sat nearly against the
+   edge while the words had twice that above them, and the row read as leaning right. */
 .chat-history li {
   display: flex;
   align-items: center;
   gap: 0.15rem;
-  padding-right: 0.15rem;
+  padding-right: 0.3rem;
   border-radius: var(--row-radius);
 }
 
@@ -4796,6 +4817,20 @@ p.palette-label {
   word-break: break-word;
 }
 
+/* An answer is markdown, and markdown's blocks arrive carrying their own margins. Inside a
+   bubble those land on top of its padding, so what the box is actually padded by is the
+   padding plus whatever block happened to fall first and last — a paragraph and a list do
+   not agree, which is why a bubble could be roomier at the top than at the bottom. The
+   margins between blocks are what set the prose; the ones facing the edges are the box's to
+   set, so they are dropped. */
+.chat-bubble > :first-child {
+  margin-top: 0;
+}
+
+.chat-bubble > :last-child {
+  margin-bottom: 0;
+}
+
 /* What an answer did on its way to being written, above the words rather than woven through
    them. Quieter than the prose it sits over — this is the working, and the answer is the
    thing you came to read. */
@@ -4902,8 +4937,8 @@ p.palette-label {
 
 /* The box stays where it is while the conversation moves under it. No border: what separates
    it from the page is being a shade lighter than one, which is a quieter line than a drawn
-   one and does not box in the thing you are typing. The shadow is slight — the page under it
-   is already black, so what a shadow can do here is seat the box rather than lift it. */
+   one and does not box in the thing you are typing. The shadow is slight — the sheet is only
+   one step off the page, so what a shadow can do here is seat the box rather than lift it. */
 .chat-composer {
   flex: none;
   display: flex;
@@ -4913,7 +4948,7 @@ p.palette-label {
   padding: 0.6rem;
   border: 0;
   border-radius: var(--surface-radius);
-  background: var(--dark);
+  background: var(--panel);
   box-shadow: 0 2px 8px rgb(31 31 31 / 12%);
 }
 
@@ -4949,7 +4984,9 @@ p.palette-label {
 
 /* Square, on the app's one radius: a circle would be the only round thing on the page. */
 /* The button that says the thing you are saying: yours, so it wears the profile's colour.
-   White where no profile has answered yet, which is the colour it always was. */
+   The ink where no profile has answered yet — and the page's own cream over it, since a
+   button in the text colour needs the page colour to be read against, not the text colour
+   again. The pair was written the other way round when the app stood on black. */
 .chat-send {
   display: flex;
   align-items: center;
@@ -4960,7 +4997,7 @@ p.palette-label {
   border: 0;
   border-radius: var(--row-radius);
   background: var(--accent-fill, var(--ink));
-  color: var(--accent-ink, var(--black));
+  color: var(--accent-ink, var(--color-sand-50));
 }
 
 /* Lit, rather than swapped for another colour: a hover that changed the fill would be a
@@ -4975,12 +5012,37 @@ p.palette-label {
   color: var(--faint);
 }
 
+/* `.icon` sets its own colour, so `currentColor` in the glyph resolves there rather than on
+   the button — which is how a white arrow ended up drawn in `--faint` on a dark profile. */
 .chat-send .icon {
   width: 0.9rem;
   height: 0.9rem;
+  color: inherit;
 }
 
 /* ---- Coworkers -------------------------------------------------------------------------- */
+
+/* The people stand beside the conversation rather than under a bar across the top of it. A
+   coworker's name heads their thread, not the page — so the list of them begins level with
+   that name instead of a header's height below it. */
+.coworker-page {
+  flex-direction: row;
+}
+
+.coworker-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* In the row rather than hanging off it. The chats' rail is placed out of the flow so the
+   thread keeps the middle of the pane with the list in its margin; here there is a column
+   beside it to stand against, at every width, so there is nothing left for that to do. */
+.chat-history.coworker-rail {
+  position: static;
+}
 
 /* The people, in the rail of their own page. It is the chats' rail wearing faces: the same
    width, the same rows, the same place on the pane — so moving between the two tabs moves
@@ -5058,11 +5120,16 @@ p.palette-label {
   animation: chat-waiting 1.2s ease-in-out infinite;
 }
 
-/* Across the top of the page: who you are talking to, and whether they are at something. */
+/* Across the top of the page: who you are talking to, and whether they are at something.
+   Set off by the room around it rather than by a rule under it — a line under every heading
+   in the app adds up to a page of them, and the one thing this has to be separate from is
+   the thread, which already begins a couple of rooms down.
+
+   Nothing on top: it runs up against the track, which is what says it belongs to the window
+   rather than standing at the head of the conversation under it. */
 .coworker-header {
   flex: none;
-  padding: 0.85rem 1.5rem 0.75rem;
-  border-bottom: 1px solid var(--dark);
+  padding: 0 1.5rem 0.75rem;
 }
 
 .coworker-header-row {
@@ -5132,11 +5199,13 @@ p.palette-label {
   font-weight: 500;
 }
 
+/* A coworker's words get the ground yours do, on the other side of the column: a person is
+   answering, so their turn is a bubble rather than the page the model writes onto. */
 .chat-message[data-who='true'] .chat-bubble[data-role='assistant'] {
   width: fit-content;
   padding: 0.5rem 0.75rem;
   border-radius: var(--row-radius);
-  background: var(--dark);
+  background: var(--raised);
 }
 
 /* Their bubbles are close together in a run, the way messages typed one after another are. */

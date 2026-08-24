@@ -12,6 +12,7 @@ import type {
   DeleteCoworker,
   GetCoworkers,
   PostCoworkerClear,
+  PostCoworkerModel,
   PostCoworkers,
 } from './coworkers'
 import type { GetDiagrams } from './canvas'
@@ -99,6 +100,7 @@ interface ApiRoutes {
   'POST /api/coworkers': PostCoworkers
   'DELETE /api/coworker': DeleteCoworker
   'POST /api/coworker/clear': PostCoworkerClear
+  'POST /api/coworker/model': PostCoworkerModel
   'GET /api/diagrams': GetDiagrams
   'GET /api/agents': GetAgents
   'GET /api/personas': GetPersonas

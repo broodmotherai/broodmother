@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState, type FormEvent } from 'react'
-import type { GitAuthor } from '@/src/contracts/git'
-import type { Identity, Profile } from '@/src/contracts/profile'
+import { nameProblem } from '@broodmother/path'
+import type { GitAuthor } from '@broodmother/types/git'
+import type { Identity, Profile } from '@broodmother/types/profile'
 import { opal } from '@/colors'
 import { ColorField } from '@/components/ui'
 
@@ -82,10 +83,10 @@ export function ProfileForm({
     const trimmed = name.trim()
     if (existing.some((profile) => profile.name.toLowerCase() === trimmed.toLowerCase()))
       return setError(`A profile named ${trimmed} already exists.`)
-    if (trimmed.startsWith('.') || /[/\\]/.test(trimmed))
-      return setError(
-        'The name becomes a file, so it cannot be a path or start with a dot.',
-      )
+    // The same question the daemon asks before it makes the folder, asked here so the
+    // answer arrives while the name is still on screen.
+    const problem = nameProblem(trimmed)
+    if (problem) return setError(`The name becomes a folder, so it ${problem}.`)
     if (!author.email.includes('@'))
       return setError('The git author email needs an @ in it.')
     onSubmit({

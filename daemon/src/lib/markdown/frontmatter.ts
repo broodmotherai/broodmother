@@ -1,5 +1,6 @@
-/** One line between two `---` fences is a regex, not a parser. */
-const FENCE = /^---\n([\s\S]*?)\n---/
+/** One line between two `---` fences is a regex, not a parser. The fences are allowed
+ *  their trailing spaces and a CRLF, because a document typed on Windows has both. */
+const FENCE = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/
 
 /** What a `key:` line in the frontmatter says, or null when the document has neither. */
 export function frontmatterField(text: string, key: string): string | null {

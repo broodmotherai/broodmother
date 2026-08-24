@@ -1,4 +1,4 @@
-import type { KernelState } from '@/src/contracts/api/kernel'
+import type { KernelState } from '@broodmother/types/api/kernel'
 
 export interface KernelStatus {
   state: KernelState

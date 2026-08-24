@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import type { Profile } from '@/src/contracts/profile'
+import type { Profile } from '@broodmother/types/profile'
 import { ProfilePicker } from '@/components/profile/core'
 
 const existing: Profile[] = [
@@ -165,14 +165,15 @@ it('takes what is typed over what git said', async () => {
   })
 })
 
-/* The name becomes a file in the profiles folder, so it has to survive being one. */
+/* The name becomes a folder in the broodmother home, so it has to survive being one — the
+   same question `nameProblem` asks on the way in, asked while the name is still on screen. */
 it('refuses a name that would not be a plain file', async () => {
   const { onCreate } = show()
   await fill('../escape', 'you@example.com')
 
   await userEvent.click(screen.getByRole('button', { name: 'Add Profile' }))
 
-  expect(screen.getByRole('alert')).toHaveTextContent('cannot be a path')
+  expect(screen.getByRole('alert')).toHaveTextContent('must not start with a dot')
   expect(onCreate).not.toHaveBeenCalled()
 })
 

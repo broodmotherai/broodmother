@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { AccessCheck, GitSettings, GitState } from '@/src/contracts/git'
+import type { AccessCheck, GitSettings, GitState } from '@broodmother/types/git'
 import { useApp } from '@/state'
 import { Button } from '@/components/ui'
 import { Check, Field, Group, Hint, Row, Section, Verdict } from './layout'

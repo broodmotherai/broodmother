@@ -2,25 +2,12 @@ import { mkdir, readdir, rm, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { Git } from './git'
 import { nameProblem } from './path'
+import { branchNameProblem } from '@broodmother/types/branch'
+import type { Branch } from '@broodmother/types/branch'
+
+export type { Branch } from '@broodmother/types/branch'
 
 export class BranchError extends Error {}
-
-/**
- * A branch of a repository, checked out or not. The branch is the identity: a checkout is
- * only where one happens to live, and every branch git knows about is offered whether or
- * not this machine has given it a folder yet.
- *
- * The same shape describes a project's branches and a repo's — the two differ in where
- * their checkouts go, not in what a branch is.
- */
-export interface Branch {
-  name: string
-  /** Where its checkout is, or would go once it has one. */
-  path: string
-  checkedOut: boolean
-  /** The repository itself, which cannot be removed. */
-  primary: boolean
-}
 
 /**
  * Where a repository's checkouts are. A project keeps its own beside the clone; a repo's
@@ -197,7 +184,7 @@ export async function findBranch(
 }
 
 function assertBranchName(checkouts: Checkouts, name: string): void {
-  const problem = nameProblem(folderFor(name))
+  const problem = branchNameProblem(name) ?? nameProblem(folderFor(name))
   if (problem) throw new BranchError(`branch name ${problem}`)
   if (worktreePath(checkouts, name) === checkouts.primary)
     throw new BranchError(`"${folderFor(name)}" is the repository's own checkout`)

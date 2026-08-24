@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import type { DiffFile } from '@/git'
+import type { DiffFile } from '@broodmother/types/git'
 import { changesOf, entriesFor } from '@/components/diff/tree'
 
 const file = (path: string, change: DiffFile['change'] = 'modified'): DiffFile => ({

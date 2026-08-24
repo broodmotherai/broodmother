@@ -218,6 +218,15 @@ export class ChatStore {
     return row ? toCoworker(row) : null
   }
 
+  /** Another model behind the same voice. The chat row carries it too, since that is what a
+   *  conversation reopened without a client's word falls back to. */
+  setCoworkerModel(id: string, model: string): void {
+    const held = this.coworker(id)
+    if (!held) return
+    this.db.prepare(`UPDATE coworkers SET model = ? WHERE id = ?`).run(model, rowIdOf(id))
+    this.db.prepare(`UPDATE chats SET model = ? WHERE id = ?`).run(model, rowIdOf(held.chat))
+  }
+
   /** Whose thread a chat is, or null for a conversation that is nobody's. */
   coworkerOfChat(chat: string): Coworker | null {
     const row = this.db

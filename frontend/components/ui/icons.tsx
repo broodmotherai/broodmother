@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { extensionOf } from '@/path'
+import { extensionOf } from '@broodmother/path'
 import { setiGlyph } from './seti'
 
 export type IconName =

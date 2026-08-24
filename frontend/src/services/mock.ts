@@ -1,13 +1,13 @@
-import type { Branch } from '@/branch'
-import { defaultGitSettings } from '@/src/contracts/git'
-import { fires, triggerLabel } from '@/src/contracts/task/schema'
-import { parseTask } from '@/src/contracts/task/codec'
-import { parseCanvas } from '@/src/contracts/canvas/codec'
-import { runOrder } from '@/src/contracts/task/graph'
-import type { Persona } from '@/src/contracts/api/personas'
-import type { CoworkerSummary } from '@/src/contracts/api/coworkers'
-import type { ApiRequest, ApiResponse, ApiRoute } from '@/src/contracts/api/routes'
-import type { TaskRun } from '@/src/contracts/api/tasks'
+import type { Branch } from '@broodmother/types/branch'
+import { defaultGitSettings } from '@broodmother/types/git'
+import { fires, triggerLabel } from '@broodmother/types/task/schema'
+import { parseTask } from '@broodmother/types/task/codec'
+import { parseCanvas } from '@broodmother/types/canvas/codec'
+import { runOrder } from '@broodmother/types/task/graph'
+import type { Persona } from '@broodmother/types/api/personas'
+import type { CoworkerSummary } from '@broodmother/types/api/coworkers'
+import type { ApiRequest, ApiResponse, ApiRoute } from '@broodmother/types/api/routes'
+import type { TaskRun } from '@broodmother/types/api/tasks'
 import {
   DEFAULT_CHAT_MODEL,
   type Chat,
@@ -15,26 +15,26 @@ import {
   type ChatMessage,
   type ChatServerMessage,
   type ChatStep,
-} from '@/src/contracts/api/chat'
-import type { TerminalServerMessage } from '@/src/contracts/api/terminal'
-import type { ServerMessage } from '@/src/contracts/api/ws'
-import type { AgentStates } from '@/src/contracts/api/agents'
-import { basename } from '@/path'
+} from '@broodmother/types/api/chat'
+import type { TerminalServerMessage } from '@broodmother/types/api/terminal'
+import type { ServerMessage } from '@broodmother/types/api/ws'
+import type { AgentStates } from '@broodmother/types/api/agents'
+import { basename } from '@broodmother/path'
 import {
   repoOf,
   repoRoot,
   type DocPath,
   type DocRoot,
   type TreeEntry,
-} from '@/src/contracts/doc'
-import type { DiffBasis, DiffFile, TreeChanges } from '@/git'
-import type { GithubRepo } from '@/github'
-import type { SyncStatus } from '@/sync'
-import type { BroodmotherConfig } from '@/src/contracts/config'
-import type { GitAuthor, GitSettings, GitState } from '@/src/contracts/git'
-import type { Identity, Profile } from '@/src/contracts/profile'
-import type { RepoSummary } from '@/src/contracts/repo'
-import type { ProjectSummary } from '@/src/contracts/project'
+} from '@broodmother/types/doc'
+import type { DiffBasis, DiffFile, TreeChanges } from '@broodmother/types/git'
+import type { GithubRepo } from '@broodmother/types/github'
+import type { SyncStatus } from '@broodmother/types/sync'
+import type { BroodmotherConfig } from '@broodmother/types/config'
+import type { GitAuthor, GitSettings, GitState } from '@broodmother/types/git'
+import type { Identity, Profile } from '@broodmother/types/profile'
+import type { RepoSummary } from '@broodmother/types/repo'
+import type { ProjectSummary } from '@broodmother/types/project'
 import type { ApiClient, Connection } from './DataSource'
 
 export interface MockClient extends ApiClient {
@@ -775,6 +775,13 @@ export function createMockClient(
       'POST /api/coworker/clear': async ({ coworker }) => {
         chatOf(coworkerOf(coworker).chat).messages = []
         return { ok: true } as const
+      },
+      'POST /api/coworker/model': async ({ coworker, model }) => {
+        const held = coworkerOf(coworker)
+        held.model = model
+        chatOf(held.chat).model = model
+        const { working: _working, lastAt: _lastAt, ...changed } = held
+        return { coworker: changed }
       },
       'POST /api/chats': async ({ model }) => {
         const chat: Chat = {

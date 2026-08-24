@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { ProjectSummary } from '@/src/contracts/project'
+import type { ProjectSummary } from '@broodmother/types/project'
 import { Confirm, Icon, Menu, type MenuSection } from '@/components/ui'
 
 const logo = <img className="logo" src="/logo.png" alt="" width={20} height={20} />

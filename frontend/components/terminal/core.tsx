@@ -2,10 +2,10 @@
 
 import '@xterm/xterm/css/xterm.css'
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import type { DocRoot } from '@/src/contracts/doc'
+import type { DocRoot } from '@broodmother/types/doc'
 import { useApp } from '@/state'
 import { Icon, Resizer } from '@/components/ui'
-import { command, KINDS, type TerminalKind, TERMINALS } from './kinds'
+import { agentCommand, TERMINAL_KINDS, type TerminalKind, TERMINALS } from './kinds'
 import { arranged, arrangement, closed, expected, opened, panelShell } from './known'
 import {
   close,
@@ -98,7 +98,7 @@ export function TerminalPanel({
      showing a bare shell with a claude session running behind a tab nobody drew. Read after
      mount, because the server rendering this page has no store to read. */
   useEffect(() => {
-    const kinds = KINDS.filter((kind) => expected(panelShell(scope, kind)))
+    const kinds = TERMINAL_KINDS.filter((kind) => expected(panelShell(scope, kind)))
     if (kinds.length) setLive((open) => [...new Set([...open, ...kinds])])
   }, [scope])
   const exit = useRef(onExit)
@@ -123,7 +123,7 @@ export function TerminalPanel({
     <section className="terminal" hidden={!visible} style={{ height }}>
       <Resizer axis="panel" size={height} onSize={onHeight} />
       <header className="terminal-head">
-        {KINDS.map((kind) => (
+        {TERMINAL_KINDS.map((kind) => (
           <button
             key={kind}
             type="button"
@@ -149,7 +149,7 @@ export function TerminalPanel({
           ✕
         </button>
       </header>
-      {KINDS.filter((kind) => live.includes(kind) && shown.current.has(kind)).map(
+      {TERMINAL_KINDS.filter((kind) => live.includes(kind) && shown.current.has(kind)).map(
         (kind) => (
           <Session
             key={kind}
@@ -338,7 +338,7 @@ function Session({
   onEnd: () => void
 }) {
   const app = useApp()
-  const run = useRef(command(kind))
+  const run = useRef(agentCommand(kind))
   // Taken once for the same reason the soul is: this shell stands where it was opened, and
   // the scope moving afterwards is not a reason to move a folder out from under it.
   const where = useRef(root)

@@ -1,4 +1,4 @@
-import type { DocPath, DocRef, DocRoot } from '@/src/contracts/doc'
+import type { DocPath, DocRef, DocRoot } from '@broodmother/types/doc'
 
 /** Everything the palette can set in motion. It holds no state of its own: a flow returns
  *  the next one, or null when the work is done and the palette closes. */

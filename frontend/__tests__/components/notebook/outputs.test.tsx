@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 import { expect, it } from 'vitest'
-import type { CellOutput } from '@/src/notebook/codec'
+import type { CellOutput } from '@broodmother/notebook/codec'
 import { Outputs } from '@/components/notebook/outputs'
 
 function show(...outputs: CellOutput[]) {

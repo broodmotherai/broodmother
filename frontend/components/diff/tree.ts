@@ -1,5 +1,5 @@
-import type { DocPath, TreeEntry } from '@/src/contracts/doc'
-import type { DiffChange, DiffFile } from '@/git'
+import type { DocPath, TreeEntry } from '@broodmother/types/doc'
+import type { DiffChange, DiffFile } from '@broodmother/types/git'
 import { entriesOf } from '../layout'
 
 /**

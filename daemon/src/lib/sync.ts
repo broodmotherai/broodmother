@@ -1,16 +1,9 @@
 import type { GitAuthor, GitSettings } from '@broodmother/types/git'
 import type { Git } from './git'
-import type { DocPath } from './tree'
+import type { DocPath } from './types/doc'
+import type { SyncStatus } from '@broodmother/types/sync'
 
-// off is a project that does not sync
-type SyncState = 'off' | 'idle' | 'syncing' | 'conflict' | 'error' | 'offline'
-
-export interface SyncStatus {
-  state: SyncState
-  lastSyncedAt?: number
-  conflicted: DocPath[] // non-empty only in `conflict`, which latches until explicitly cleared
-  message?: string
-}
+export type { SyncState, SyncStatus } from '@broodmother/types/sync'
 
 const same = (a: SyncStatus, b: SyncStatus) =>
   a.state === b.state &&

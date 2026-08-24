@@ -37,15 +37,11 @@ components/     Feature UI, by domain — tree, editor, terminal, palette, chat,
                 github, settings
 services/       DataSource (the interface naming every call), ApiDataSource (the one
                 implementation, and the only place a route path is written), mock
-contracts/      The wire types the daemon also compiles against
 surface/        Pointer and viewport helpers, which are not components
 editor/         The browser half of the editor — Monaco, lists, preview, tables
 markdown/       Rendering, wikilinks, math
-notebook/       Codec and paths
 hooks/          What more than one feature listens with
 state.tsx       App-wide state
-git|branch|sync|github.ts   Contracts mirrored from the daemon
-tree.ts         Re-exports the document address types from the contract
 styles/         Proprium's token set — see styles/README.md
 __tests__/      Mirrors the source
 wasm/           The task kernel, AssemblyScript, built by `npm run wasm`
@@ -54,14 +50,36 @@ wasm/           The task kernel, AssemblyScript, built by `npm run wasm`
 The layering rules, from proprium's `apps/AGENTS.md`:
 
 - **A page never calls `fetch`.** It calls a `DataSource` method.
-- **A component moves to `components/ui/` the moment it names nothing from `contracts/`
-  and nothing from Next.** What is left in `components/` is the app's own, by domain.
+- **A component moves to `components/ui/` the moment it names nothing from
+  `@broodmother/types/` and nothing from Next.** What is left in `components/` is the app's own, by domain.
 - **Avoid `useCallback` and `useMemo`** unless there is a measured reason.
 
 And broodmother's own, which `__tests__/no-node-apis.test.ts` enforces: **the frontend renders
 and nothing else.** Nothing the browser is served — every source tree at the root, and the
 loose modules beside them — may import `node:fs` or `node:child_process`. Every disk touch is
 the daemon's. The build configs are the exception the test names, and the only one.
+
+## The shared layer
+
+The domain is the daemon's, and this app reads it rather than keeping a copy. `@broodmother/*`
+resolves to `../daemon/src/lib/*` — one tsconfig path, one vitest alias — so the wire types,
+the task and canvas codecs, the notebook codec, `path`, `media` and the rules about what makes
+a name are compiled from the same file both sides run.
+
+They were two copies before this: `contracts/` was `daemon/src/lib/types/` file for file, and
+`path.ts`, `media.ts` and `notebook/codec.ts` were byte-identical to theirs. The header on the
+mirrored `git.ts` named a `__tests__/contracts.test.ts` that was supposed to catch a drift; no
+such test existed.
+
+What keeps a browser out of `node:fs` is no longer where a file sits, because the app's module
+graph now crosses into a package full of them. `__tests__/no-node-apis.test.ts` follows the
+imports instead: from every shipped source, through `@broodmother/*` and the relative steps
+taken inside that tree, and it reads whatever it reaches. `daemon/src/lib/types/` is written to
+be reachable — a declaration shared with the browser lives there, and the module that talks to
+git re-exports it.
+
+Because the graph leaves this directory, `turbopack.root` and `outputFileTracingRoot` are the
+repo rather than the app.
 
 ## The design system
 
@@ -108,15 +126,9 @@ The two token sets share no variable name.
   `src/components/ui` → `components/ui/`; `src/components/surface` → `surface/`;
   `src/{state,editor,colors}` → the root; `src/api/{client,http}` →
   `services/{DataSource,ApiDataSource}`.
-- **One alias.** `@broodmother/types/*` became `@/contracts/*` and `@broodmother/*` became
-  `@/*` at every call site; `@/*` → `./*` is the only path left in the tsconfig, and the
-  vitest alias is the same single line.
-- **Four server modules became contracts.** The frontend imported `git`, `branch`, `sync` and
-  `github` for their types only; those declarations are mirrored at the root rather than
-  dragging `execa` and `node:fs` into a browser bundle.
 - **`__tests__/no-node-apis.test.ts` scans every shipped tree** — `app`, `components`,
-  `contracts`, `editor`, `hooks`, `markdown`, `notebook`, `services`, `surface`, `test` and
-  the loose modules at the root. It scanned `app` and `src`.
+  `editor`, `hooks`, `markdown`, `notebook`, `services`, `surface`, `test` and the loose
+  modules at the root. It scanned `app` and `src`.
 - **`wasm/` is excluded from tsc.** It is AssemblyScript, and `asc` is what compiles it.
 - **The daemon is on 4242**; this app is on 4243.
 - **`app/globals.css` came across whole**, recovered from the checkout under

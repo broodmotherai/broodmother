@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { Identity } from '@/src/contracts/profile'
+import type { Identity } from '@broodmother/types/profile'
 import { useApp } from '@/state'
 import { Button, ColorField } from '@/components/ui'
 import { DangerZone } from './danger'

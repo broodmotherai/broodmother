@@ -1,4 +1,4 @@
-import { basename, extensionOf } from '@/path'
+import { basename, extensionOf } from '@broodmother/path'
 
 export interface FileGlyph {
   character: string

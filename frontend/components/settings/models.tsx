@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CHAT_PROVIDERS } from '@/src/contracts/api/chat'
+import { CHAT_PROVIDERS } from '@broodmother/types/api/chat'
 import { useApp } from '@/state'
 import { Button, Input, LinkButton } from '@/components/ui'
 import { Hint, Section } from './layout'

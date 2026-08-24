@@ -1,5 +1,5 @@
 import type { TaskKind } from '../task/schema'
-import type { DocRef } from '@broodmother/tree'
+import type { DocRef } from '../doc'
 
 export type TaskStepState =
   | 'waiting'

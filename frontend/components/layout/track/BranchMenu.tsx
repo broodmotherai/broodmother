@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
-import type { Branch } from '@/branch'
-import type { AgentStates } from '@/src/contracts/api/agents'
+import type { Branch } from '@broodmother/types/branch'
+import type { AgentStates } from '@broodmother/types/api/agents'
 import { Button, Confirm, Icon, Menu, type MenuSection, Modal } from '@/components/ui'
+import { branchNameProblem } from '@broodmother/types/branch'
 import { TRACK_CONTROL } from './Track'
 
-const VALID_NAME = /^(?!\/|.*(\.\.|@\{|\/\/|\.lock$|\/$))[\w./-]+$/
 const SEARCHABLE = 8
 
 type Standing = 'busy' | 'live' | 'quiet'
@@ -151,7 +151,8 @@ function NewBranch({
 
     if (branches.some((one) => one.name.toLowerCase() === target.toLowerCase()))
       return setError(`${target} is already a branch here.`)
-    if (!VALID_NAME.test(target)) return setError('git will not take that as a branch name.')
+    const problem = branchNameProblem(target)
+    if (problem) return setError(`A branch name ${problem}.`)
 
     setBusy(true)
     void onCreate(target).then((reason) => {

@@ -1,5 +1,5 @@
 import type { Profile } from '@broodmother/types/profile'
-import type { GithubDevice, GithubRepo } from '@broodmother/github'
+import type { GithubDevice, GithubRepo } from '../github'
 
 /** Opens the device flow: what comes back is a code and the page to type it into. */
 export interface PostGithubDevice {

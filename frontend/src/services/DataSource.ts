@@ -1,14 +1,14 @@
-import type { ApiRequest, ApiResponse, ApiRoute } from '@/src/contracts/api/routes'
+import type { ApiRequest, ApiResponse, ApiRoute } from '@broodmother/types/api/routes'
 import type {
   ChatClientMessage,
   ChatServerMessage,
-} from '@/src/contracts/api/chat'
+} from '@broodmother/types/api/chat'
 import type {
   TerminalClientMessage,
   TerminalServerMessage,
-} from '@/src/contracts/api/terminal'
-import type { ServerMessage } from '@/src/contracts/api/ws'
-import type { DocRoot } from '@/src/contracts/doc'
+} from '@broodmother/types/api/terminal'
+import type { ServerMessage } from '@broodmother/types/api/ws'
+import type { DocRoot } from '@broodmother/types/doc'
 
 export interface Connection<Message = never> {
   send(message: Message): void

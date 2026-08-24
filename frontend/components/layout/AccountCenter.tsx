@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import type { Profile } from '@/src/contracts/profile'
-import type { ProjectSummary } from '@/src/contracts/project'
+import type { Profile } from '@broodmother/types/profile'
+import type { ProjectSummary } from '@broodmother/types/project'
 import Avatar from '@/components/ui/core/Avatar'
 import Collapse, { snap } from '@/components/ui/core/Collapse'
 import CoreIcon from '@/components/ui/core/Icon'

@@ -1,7 +1,7 @@
 'use client'
 
-import { basename } from '@/path'
-import type { DocRef, DocRoot } from '@/src/contracts/doc'
+import { basename } from '@broodmother/path'
+import type { DocRef, DocRoot } from '@broodmother/types/doc'
 import {
   ContextMenu,
   displayName,
@@ -182,9 +182,12 @@ export function TabStrip({
         </ContextMenu>
       ))}
       {/* The same menu the tree opens on a right click, for the one gesture that has no row
-          to sit on: what a new tab could be. */}
+          to sit on: what a new tab could be. Opened by arriving at it: the plus does nothing
+          but open this, so a click to see the list and a click to pick from it is one click
+          more than the gesture is worth. */}
       {onNew && (
         <Menu
+          hover
           label="New tab"
           anchorLabel="New tab"
           anchorClass="tab-new"

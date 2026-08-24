@@ -1,4 +1,4 @@
-import type { DocRoot } from '@/src/contracts/doc'
+import type { DocRoot } from '@broodmother/types/doc'
 import { DocView } from '@/components/doc'
 import { HomeView } from '@/components/doc'
 

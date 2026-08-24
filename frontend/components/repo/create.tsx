@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
-import type { NewRepo, RepoGit } from '@/src/contracts/repo'
+import type { NewRepo, RepoGit } from '@broodmother/types/repo'
 import { useApp } from '@/state'
 import { RemoteField } from '../github'
 import { Button, Choices, Modal, Select, type Choice } from '@/components/ui'

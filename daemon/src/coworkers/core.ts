@@ -97,6 +97,19 @@ export class Coworkers {
     this.deps.chats.clear(this.require(id).chat)
   }
 
+  /**
+   * Which model answers as them, changed on someone who already exists. Refused for a model
+   * the app does not serve, the way hiring is — a coworker pointed at nothing is a name that
+   * answers nothing, and it would only be found out at the next thing said to them.
+   */
+  setModel(id: string, model: string): Coworker {
+    const held = this.require(id)
+    if (!CHAT_MODELS.some((one) => one.id === model))
+      throw new ChatError(`no such model: ${model}`)
+    this.deps.store.setCoworkerModel(held.id, model)
+    return this.require(held.id)
+  }
+
   /** Whose conversation this is, or null for the page's own. */
   of(chat: Chat): Coworker | null {
     return this.deps.store.coworkerOfChat(chat.id)

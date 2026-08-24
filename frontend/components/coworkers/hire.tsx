@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState, type FormEvent } from 'react'
-import { CHAT_MODELS, DEFAULT_CHAT_MODEL } from '@/src/contracts/api/chat'
-import type { NewCoworker } from '@/src/contracts/api/coworkers'
-import type { Persona } from '@/src/contracts/api/personas'
+import { CHAT_MODELS, DEFAULT_CHAT_MODEL } from '@broodmother/types/api/chat'
+import type { NewCoworker } from '@broodmother/types/api/coworkers'
+import type { Persona } from '@broodmother/types/api/personas'
 import { opal } from '@/colors'
 import { useApp } from '@/state'
 import { PersonaPicker } from '@/components/task/persona'

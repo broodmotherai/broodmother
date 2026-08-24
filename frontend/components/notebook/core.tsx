@@ -7,8 +7,8 @@ import {
   serializeNotebook,
   type Notebook,
   type NotebookCell,
-} from '@/src/notebook/codec'
-import type { DocRef } from '@/src/contracts/doc'
+} from '@broodmother/notebook/codec'
+import type { DocRef } from '@broodmother/types/doc'
 import { Editor } from '@/editor'
 import { CodeCell } from './code-cell'
 import { CellGutter, InsertHere } from './controls'

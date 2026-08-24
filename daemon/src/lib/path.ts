@@ -1,4 +1,4 @@
-import type { DocPath } from './tree'
+import type { DocPath } from './types/doc'
 
 export function basename(path: string): string {
   return path.slice(path.lastIndexOf('/') + 1)

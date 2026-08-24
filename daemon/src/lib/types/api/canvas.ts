@@ -1,4 +1,4 @@
-import type { DocRef } from '@broodmother/tree'
+import type { DocRef } from '../doc'
 
 /** One diagram in the open project or one of its repos. The tree says where the `.canvas`
  *  files are; this says what is drawn on them, and what is wrong with one that will not

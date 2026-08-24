@@ -9,7 +9,10 @@ export default defineConfig({
   plugins: [react()],
   // next reads the tsconfig paths; vite does not, so it is spelled out here.
   resolve: {
-    alias: [{ find: /^@\/(.*)$/, replacement: `${here}/$1` }],
+    alias: [
+      { find: /^@broodmother\/(.*)$/, replacement: `${here}/../daemon/src/lib/$1.ts` },
+      { find: /^@\/(.*)$/, replacement: `${here}/$1` },
+    ],
   },
   test: {
     name: '@broodmother/frontend',

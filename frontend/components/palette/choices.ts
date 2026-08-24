@@ -1,5 +1,5 @@
-import { basename } from '@/path'
-import { repoOf, type DocRef } from '@/src/contracts/doc'
+import { basename } from '@broodmother/path'
+import { repoOf, type DocRef } from '@broodmother/types/doc'
 import { displayName, fileTag, type IconName } from '@/components/ui'
 import { deleteFlow, type Flow, type FlowCtx, moveFlow } from './flows'
 

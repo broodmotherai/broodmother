@@ -1,5 +1,5 @@
-import type { SyncStatus } from '@broodmother/sync'
-import type { DocRoot, TreeEvent } from '@broodmother/tree'
+import type { SyncStatus } from '../sync'
+import type { DocRoot, TreeEvent } from '../doc'
 import type { AgentStates } from './agents'
 
 export type WsRoute = '/ws' | '/terminal' | '/kernel' | '/chat'

@@ -1,7 +1,7 @@
 'use client'
 
-import type { NotebookCell } from '@/src/notebook/codec'
-import type { KernelState } from '@/src/contracts/api/kernel'
+import type { NotebookCell } from '@broodmother/notebook/codec'
+import type { KernelState } from '@broodmother/types/api/kernel'
 import { Icon } from '@/components/ui'
 
 export function Toolbar({

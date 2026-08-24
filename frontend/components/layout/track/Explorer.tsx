@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, type KeyboardEvent, type ReactNode } from 'react'
-import type { DocRef, DocRoot } from '@/src/contracts/doc'
+import type { DocRef, DocRoot } from '@broodmother/types/doc'
 import { ContextMenu, type MenuSection } from '@/components/ui'
 
 import { ancestorsOf, flatten, refKey, sameRef, type Row, type TreeRoot } from './paths'

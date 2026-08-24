@@ -1,6 +1,6 @@
 'use client'
 
-import type { Persona } from '@/src/contracts/api/personas'
+import type { Persona } from '@broodmother/types/api/personas'
 import { Icon, Menu, type MenuAction } from '@/components/ui'
 
 /**

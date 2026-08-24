@@ -1,8 +1,8 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import type { Branch } from '@/branch'
-import type { AgentStates } from '@/src/contracts/api/agents'
+import type { Branch } from '@broodmother/types/branch'
+import type { AgentStates } from '@broodmother/types/api/agents'
 import { BranchMenu } from '@/components/layout/track/BranchMenu'
 
 const branches: Branch[] = [
@@ -180,7 +180,7 @@ describe('a new branch', () => {
     await userEvent.type(await screen.findByRole('textbox'), 'bad name')
     await userEvent.click(screen.getByRole('button', { name: 'Create Branch' }))
 
-    expect(await screen.findByText(/will not take/)).toBeVisible()
+    expect(await screen.findByText(/A branch name may only hold/)).toBeVisible()
     expect(onCreate).not.toHaveBeenCalled()
   })
 })

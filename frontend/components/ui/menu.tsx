@@ -271,12 +271,44 @@ function Branch({
   )
 }
 
+/** Long enough to cross the few pixels between a trigger and the surface under it, short
+ *  enough that a menu you have walked away from does not sit there. */
+const HOVER_GRACE_MS = 140
+
+/**
+ * Opening on the pointer rather than on a click. The surface is portaled a few pixels below
+ * the trigger, so the pointer leaves the trigger on the way to it: closing on that would
+ * shut the menu under the hand reaching for it, which is what the grace is for. Entering the
+ * surface calls the same enter and cancels it.
+ */
+function useHoverOpen(enabled: boolean, tell: (open: boolean) => void) {
+  const leaving = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const stop = () => {
+    if (leaving.current) clearTimeout(leaving.current)
+    leaving.current = null
+  }
+  useEffect(() => stop, [])
+
+  if (!enabled) return {}
+  return {
+    onPointerEnter: () => {
+      stop()
+      tell(true)
+    },
+    onPointerLeave: () => {
+      stop()
+      leaving.current = setTimeout(() => tell(false), HOVER_GRACE_MS)
+    },
+  }
+}
+
 export function Menu({
   label,
   sections,
   align = 'start',
   anchorClass,
   anchorLabel,
+  hover = false,
   open,
   onOpenChange,
   children,
@@ -287,22 +319,52 @@ export function Menu({
   anchorClass?: string
   /** Needed where the trigger is an icon and has no text of its own to be named by. */
   anchorLabel?: string
+  /** The pointer arriving is the whole gesture: a control that exists to open a menu and
+   *  does nothing else should not ask for a click first, and the tip that would have named
+   *  it on hover goes too — the menu itself is a better answer to "what is this" than a
+   *  word floating over it, and the two cannot share the hover. */
+  hover?: boolean
   /** Controlled only where a row does something other than pick and close. */
   open?: boolean
   onOpenChange?: (open: boolean) => void
   children: ReactNode
 }) {
   const field = useRef<HTMLInputElement>(null)
+  const anchor = useRef<HTMLButtonElement>(null)
   const searching = sections.some((section) => section.search !== undefined)
+  const [hovered, setHovered] = useState(false)
+  const tell = (next: boolean) => {
+    if (hover) setHovered(next)
+    onOpenChange?.(next)
+  }
+  const pointer = useHoverOpen(hover, tell)
 
   return (
-    <Dropdown.Root open={open} onOpenChange={onOpenChange}>
-      <Dropdown.Trigger asChild>
+    <Dropdown.Root
+      open={open ?? (hover ? hovered : undefined)}
+      onOpenChange={tell}
+      // A hover menu cannot make the window inert behind it: the pointer has to be able to
+      // leave, and leaving is how it closes.
+      modal={hover ? false : undefined}
+    >
+      {/* A hover menu is already open by the time the trigger is pressed, and the two things
+          that would then shut it are both a press on the trigger: the primitive's own toggle,
+          and the surface treating that press as a click away from itself. The first is
+          refused here — handed to the trigger rather than to the button inside it, because
+          the primitive drops its own handler when what it was given has refused the event,
+          where the slot underneath would run both. The second is refused on the surface,
+          below. The keys it opens on are its own and are untouched. */}
+      <Dropdown.Trigger
+        asChild
+        onPointerDown={hover ? (event) => event.preventDefault() : undefined}
+      >
         <button
+          ref={anchor}
           type="button"
           className={anchorClass}
           aria-label={anchorLabel}
-          data-tip={anchorLabel}
+          data-tip={hover ? undefined : anchorLabel}
+          {...pointer}
         >
           {children}
         </button>
@@ -310,6 +372,18 @@ export function Menu({
 
       <Dropdown.Portal>
         <Dropdown.Content
+          {...pointer}
+          // The trigger is outside the surface, so pressing it reads as a click away. It is
+          // not: it is a press on the thing this belongs to, and the surface stays.
+          onInteractOutside={
+            hover
+              ? (event) => {
+                  const at = event.detail.originalEvent.target
+                  if (at instanceof Node && anchor.current?.contains(at))
+                    event.preventDefault()
+                }
+              : undefined
+          }
           className="menu-surface"
           // The primitive names the surface after its trigger, which for a menu whose
           // trigger is the current choice says the choice rather than what is on offer.

@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import type { Branch } from '@/branch'
-import type { DiffBasis } from '@/git'
+import type { Branch } from '@broodmother/types/branch'
+import type { DiffBasis } from '@broodmother/types/git'
 import { Icon, Menu, type IconName, type MenuSection } from '@/components/ui'
 import { Track, TrackButton, TRACK_CONTROL } from '../layout'
 

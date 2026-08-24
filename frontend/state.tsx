@@ -8,9 +8,9 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import type { GithubDevice, GithubRepo } from '@/github'
-import type { SyncStatus } from '@/sync'
-import type { AgentStates } from '@/src/contracts/api/agents'
+import type { GithubDevice, GithubRepo } from '@broodmother/types/github'
+import type { SyncStatus } from '@broodmother/types/sync'
+import type { AgentStates } from '@broodmother/types/api/agents'
 import {
   repoOf,
   repoRoot,
@@ -19,15 +19,15 @@ import {
   type DocRoot,
   type TreeEntry,
   type TreeEvent,
-} from '@/src/contracts/doc'
-import type { TreeChanges } from '@/git'
-import type { BroodmotherConfig } from '@/src/contracts/config'
-import type { GitAuthor, GitSettings, GitState } from '@/src/contracts/git'
-import type { Identity, Profile } from '@/src/contracts/profile'
-import type { NewRepo, RepoSummary } from '@/src/contracts/repo'
-import type { ProjectSummary } from '@/src/contracts/project'
-import type { Branch } from '@/branch'
-import { defaultGitSettings } from '@/src/contracts/git'
+} from '@broodmother/types/doc'
+import type { TreeChanges } from '@broodmother/types/git'
+import type { BroodmotherConfig } from '@broodmother/types/config'
+import type { GitAuthor, GitSettings, GitState } from '@broodmother/types/git'
+import type { Identity, Profile } from '@broodmother/types/profile'
+import type { NewRepo, RepoSummary } from '@broodmother/types/repo'
+import type { ProjectSummary } from '@broodmother/types/project'
+import type { Branch } from '@broodmother/types/branch'
+import { defaultGitSettings } from '@broodmother/types/git'
 import { api, type ApiClient, type Connection } from './src/services'
 
 /** Why an action failed, or null when it did not. */
