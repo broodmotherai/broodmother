@@ -9,6 +9,7 @@ import {
   fileTag,
   Icon,
   type MenuSection,
+  ROW,
 } from '@/components/ui'
 import { RenameRow } from './rename'
 import { dropFolder, sameRef } from './paths'
@@ -165,6 +166,7 @@ export function TreeRow({
   return (
     <ContextMenu label={entry.name} sections={menuFor(ref, entry, onCommand, isRoot)}>
       <li
+        className={ROW}
         role="treeitem"
         // The row shows basename and extension apart; assistive tech gets the name whole.
         aria-label={entry.name}
@@ -202,11 +204,13 @@ export function TreeRow({
         ))}
         {entry.kind === 'dir' ? (
           /* proprium's caret, which morphs between its two states rather than swapping one
-             glyph for another — the same mark the account centre turns over. */
+             glyph for another. Shut it is the one chevron it is drawn as; open, a second
+             grows in above it — the mark says the folder gave up what it was holding, which
+             a chevron swinging through a right angle only says by convention. */
           <Caret
             name="caret-down"
             size={14}
-            className={cx('tree-caret', !expanded && '-rotate-90')}
+            className={cx('tree-caret', expanded && '[--icon-d:var(--icon-d-active)]')}
           />
         ) : (
           <FileIcon path={entry.path} />

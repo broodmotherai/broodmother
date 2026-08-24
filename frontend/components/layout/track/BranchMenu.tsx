@@ -54,7 +54,9 @@ export function BranchMenu({
 
   const sections: MenuSection[] = [
     {
-      heading: label,
+      /* No heading: the anchor this drops from already says it is the branch, and the
+         repository it belongs to is named at the head of the tree. A menu that repeats
+         both spends its first line saying where you already know you are. */
       search: branches.length > SEARCHABLE ? 'search branches' : undefined,
       actions: listed.map((branch) => ({
         id: branch.name,

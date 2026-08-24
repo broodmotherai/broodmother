@@ -6,7 +6,7 @@ import type { NewCoworker } from '@/src/contracts/api/coworkers'
 import type { Persona } from '@/src/contracts/api/personas'
 import { opal } from '@/colors'
 import { useApp } from '@/state'
-import { PersonaPicker } from '../task/persona'
+import { PersonaPicker } from '@/components/task/persona'
 import { Button, ColorField, Modal, Select } from '@/components/ui'
 
 /** What a coworker is called when nothing is typed, in the placeholder that says so. */

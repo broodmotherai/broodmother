@@ -3,12 +3,12 @@ import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
 import { createMockClient, type MockClient } from '@/src/services/mock'
 import { AppProvider } from '@/state'
-import { ChatView } from '@/components/chat/core'
+import { CoworkersView } from '@/components/coworkers/core'
 import { initialsOf } from '@/components/chat/avatar'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => '/chat',
+  usePathname: () => '/coworkers',
 }))
 
 const PRIYA = {
@@ -31,24 +31,23 @@ async function show(
 ) {
   render(
     <AppProvider client={client}>
-      <ChatView />
+      <CoworkersView />
     </AppProvider>,
   )
-  await screen.findByRole('textbox', { name: 'Message' })
-  // The rail fills in a beat after the page: the lists are asked for once the project is known.
-  await within(await screen.findByRole('region', { name: 'Coworkers' })).findByRole('button', {
-    name: 'Priya Rao',
-  })
+  // The rail fills in a beat after the page: it is asked for once the project is known.
+  await within(await screen.findByRole('complementary', { name: 'Coworkers' })).findByRole(
+    'button',
+    { name: 'Priya Rao' },
+  )
   return client
 }
 
 const settle = () => act(async () => await Promise.resolve())
 
-/* Under the chats, the people: each with a face in their colour, and one thread to open. */
-it('lists the coworkers under the chats and opens the thread held with one', async () => {
+/* The page is the people: each with a face in their colour, and one thread to open. */
+it('lists the coworkers and opens the thread held with one', async () => {
   const client = await show()
-  const rail = screen.getByRole('complementary', { name: 'Conversations' })
-  const people = within(rail).getByRole('region', { name: 'Coworkers' })
+  const people = screen.getByRole('complementary', { name: 'Coworkers' })
   expect(within(people).getByRole('img', { name: 'Priya Rao' })).toHaveTextContent('PR')
   expect(people).toHaveTextContent('research/aggregator')
 
@@ -121,7 +120,7 @@ it('draws a turn that arrives as more than one message', async () => {
 /* Presence is the socket's word, and it moves whether or not the thread is on screen. */
 it('shows a coworker at work when the app says so', async () => {
   const client = await show()
-  const people = screen.getByRole('region', { name: 'Coworkers' })
+  const people = screen.getByRole('complementary', { name: 'Coworkers' })
   expect(within(people).getByRole('img', { name: 'Priya Rao' })).toBeInTheDocument()
   act(() => client.emit({ type: 'coworker', id: 'coworker-1', working: true }))
   expect(within(people).getByRole('img', { name: 'Priya Rao, working' })).toBeInTheDocument()
@@ -149,7 +148,7 @@ it('makes a coworker from the dialog and opens their thread', async () => {
   expect(add).toBeEnabled()
   await userEvent.click(add)
 
-  const people = screen.getByRole('region', { name: 'Coworkers' })
+  const people = screen.getByRole('complementary', { name: 'Coworkers' })
   await within(people).findByRole('button', { name: 'Sam' })
   await screen.findByRole('region', { name: 'Conversation with Sam' })
   const made = (await client.request('GET /api/coworkers', null)).coworkers
@@ -161,7 +160,7 @@ it('makes a coworker from the dialog and opens their thread', async () => {
    coworker gone — and gone takes the thread with it. */
 it('clears a thread and removes a coworker from the row’s menu', async () => {
   const client = await show()
-  const people = screen.getByRole('region', { name: 'Coworkers' })
+  const people = screen.getByRole('complementary', { name: 'Coworkers' })
   await userEvent.click(within(people).getByRole('button', { name: 'Priya Rao' }))
   const thread = await screen.findByRole('region', { name: 'Conversation with Priya Rao' })
   await within(thread).findByText('on it')
@@ -182,12 +181,13 @@ it('clears a thread and removes a coworker from the row’s menu', async () => {
   expect((await client.request('GET /api/coworkers', null)).coworkers).toEqual([])
 })
 
-/* A coworker's thread is not one of the chats: the rail lists it once, under them. */
-it('keeps a coworker’s thread out of the chats', async () => {
+/* Its own tab, so the rail holds people and nothing else: the project's chats are on the
+   page next door and do not sort in among them. */
+it('lists people and not the project’s chats', async () => {
   await show()
-  const rail = screen.getByRole('complementary', { name: 'Conversations' })
-  expect(within(rail).getAllByRole('button', { name: 'Priya Rao' })).toHaveLength(1)
-  expect(within(rail).getByRole('button', { name: 'a chat' })).toBeInTheDocument()
+  const people = screen.getByRole('complementary', { name: 'Coworkers' })
+  expect(within(people).getAllByRole('button', { name: 'Priya Rao' })).toHaveLength(1)
+  expect(within(people).queryByRole('button', { name: 'a chat' })).not.toBeInTheDocument()
 })
 
 it('takes initials from a name', () => {

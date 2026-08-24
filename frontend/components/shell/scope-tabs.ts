@@ -20,6 +20,11 @@ const numberOf = (id: string) => Number(id.split(':')[1]) || 0
 // One array, so a scope with nothing open does not get a new one every render.
 const EMPTY: Tab[] = []
 
+/** The app's own chrome: pages about the app rather than places in any tree. Nothing here is
+ *  opened in a tab or run in a shell, and a scope change while one is up changes what the page
+ *  is about rather than where you are. */
+export const APP_PAGES = ['/settings', '/tasks', '/coworkers', '/chat']
+
 const isRoot = (value: string): value is DocRoot =>
   value === 'project' || /^repo:.+$/.test(value)
 
@@ -153,15 +158,12 @@ export function useScopeTabs({
     // A real move between scopes. The click that made it may have already said where it
     // wants to be; failing that, back to whatever was open here, or to the home screen
     // when nothing was — the document from the scope you left is not this one's.
-    // Settings, Tasks and Chat are the exception: they are the app's own chrome rather than
-    // a place in any tree, so a switch made while one is open changes what it is about, not
-    // where you are.
+    // The app's own pages are the exception: they are chrome rather than a place in any
+    // tree, so a switch made while one is open changes what it is about, not where you are.
     pendingMove.current = false
     const going =
       asked.current ??
-      (pathname === '/settings' || pathname === '/tasks' || pathname === '/chat'
-        ? pathname
-        : (lastRoute.current[scopeKey] ?? '/'))
+      (APP_PAGES.includes(pathname) ? pathname : (lastRoute.current[scopeKey] ?? '/'))
     asked.current = null
     if (going !== pathname) navigate(going)
     // `pathname` is deliberately absent: this runs when the scope changes, and reading the

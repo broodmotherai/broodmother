@@ -46,7 +46,7 @@ import {
 import { Confirm, Icon, Resizer, useStoredSize } from '@/components/ui'
 import { type NewTab, type Tab, TabStrip } from './tabs'
 import { forget, TerminalPanel, TerminalTab } from '../terminal'
-import { currentDoc, docRoute, useScopeTabs } from './scope-tabs'
+import { APP_PAGES, currentDoc, docRoute, useScopeTabs } from './scope-tabs'
 
 const SIDEBAR_KEY = 'broodmother.sidebar'
 const TERMINAL_KEY = 'broodmother.terminal'
@@ -119,12 +119,11 @@ export function Shell({ children }: { children: ReactNode }) {
 
   const doc = currentDoc(pathname)
 
-  /* Settings, Tasks and Chat are pages about the app rather than places in it: nothing here is
-     opened in a tab or run in a shell, so the plus and the terminal have nothing to offer
-     while one is up. The terminal is hidden rather than closed — a pty that unmounts dies,
-     and reading a page is not asking for the shell to end. */
-  const appPage =
-    pathname === '/settings' || pathname === '/tasks' || pathname === '/chat'
+  /* Settings, Tasks, Coworkers and Chat are pages about the app rather than places in it:
+     nothing here is opened in a tab or run in a shell, so the plus and the terminal have
+     nothing to offer while one is up. The terminal is hidden rather than closed — a pty that
+     unmounts dies, and reading a page is not asking for the shell to end. */
+  const appPage = APP_PAGES.includes(pathname)
 
   /* The task editor and the diagram both take the bottom panel for their own options, so
      ⌘J is theirs there and the terminal stays hidden the way it does on an app page —
@@ -323,6 +322,7 @@ export function Shell({ children }: { children: ReactNode }) {
     syncNow: () => void app.syncNow(),
     settings: () => router.push('/settings'),
     tasks: () => router.push('/tasks'),
+    coworkers: () => router.push('/coworkers'),
     chat: () => router.push('/chat'),
     projects: () => setPicker(true),
     repos: () => setWhereMenu(true),
@@ -392,12 +392,15 @@ export function Shell({ children }: { children: ReactNode }) {
           />
         }
         top={
-          /* A page about the app rather than a place in the project, so it sits above the
-             rows rather than among them — set like one, because it is still the tree. */
+          /* Pages about the app rather than places in the project, so they sit above the
+             rows rather than among them — set like rows, because this is still the tree.
+
+             The people before the conversations: you go to a coworker, and a chat is
+             something you go back to, so the one that is a door comes first. */
           <>
             <button
               type="button"
-              className="explorer-tab"
+              className="row explorer-tab"
               aria-label="Tasks"
               aria-pressed={pathname === '/tasks'}
               onClick={ctx.tasks}
@@ -405,11 +408,21 @@ export function Shell({ children }: { children: ReactNode }) {
               <Icon name="clock" />
               <span className="name">Tasks</span>
             </button>
-            {/* Beside it, for the same reason: talking to a model is about the app rather
+            <button
+              type="button"
+              className="row explorer-tab"
+              aria-label="Coworkers"
+              aria-pressed={pathname === '/coworkers'}
+              onClick={ctx.coworkers}
+            >
+              <Icon name="users" />
+              <span className="name">Coworkers</span>
+            </button>
+            {/* Beside them, for the same reason: talking to a model is about the app rather
                 than about any one document in it. */}
             <button
               type="button"
-              className="explorer-tab"
+              className="row explorer-tab"
               aria-label="Chat"
               aria-pressed={pathname === '/chat'}
               onClick={ctx.chat}

@@ -532,6 +532,19 @@ body[data-resizing='column'] {
   white-space: nowrap;
 }
 
+/* What you are working in, at the top of the Explorer, and who you are working as, in the
+   corner of the track: the two selectors the window opens with. They are set together here
+   rather than each inheriting its own surroundings — the account centre stands in the track,
+   where the page's 400 and -0.006em reach it, and the project anchor stands in the head,
+   where --display's 600 and -0.018em do. Left to inherit they read as two different voices
+   saying the same kind of thing. */
+.project-anchor,
+.account-name {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: -0.018em;
+}
+
 /* The repo reads as something the project is holding rather than a second name of equal
    weight, so it is quieter and gives up its room first when the sidebar narrows. */
 .project-anchor .icon {
@@ -551,8 +564,12 @@ body[data-resizing='column'] {
   /* One size for every glyph that stands at the head of a row in here — a file's mark, a
      folder's caret, the icon on Tasks and Chat. They sit in one column down the side of the
      pane, and a column of glyphs that disagree about how big they are reads as a ragged
-     edge long before anyone can say which one is wrong. */
-  --tree-icon: 1rem;
+     edge long before anyone can say which one is wrong.
+
+     Under the name they stand beside rather than level with it: a glyph is what the row is
+     read past on the way to the word, and one drawn as large as the text competes with it
+     for the same job. */
+  --tree-icon: 0.85rem;
 
   overflow: hidden;
   display: flex;
@@ -652,20 +669,48 @@ body[data-resizing='column'] {
 
 /* Inset from the sidebar edge and softly cornered, so the row a selection paints sits in
    the pane rather than spanning it wall to wall. */
-.tree > ul li {
+/* One row, worn by every column of names the app lets you move through: the Explorer's
+   files, the Tasks and Chat entries above them, and the settings rail. `Row` in the kit is
+   this rule with an element around it; wear the class directly where the row has to be its
+   own element, as the Explorer's <li> does with its drag and menu handlers on it.
+
+   The figures are the Explorer's, and the padding in particular is not free to change: the
+   indent guides are cut to it — `.tree > ul .indent` closes this padding again with a
+   negative block margin so a guide runs unbroken between rows, and the two numbers have to
+   be read together.
+
+   `font: inherit` before the weight is what lets a <button> wear this and still be set in
+   the page's type rather than the browser's; the weight then follows, a step heavier than
+   the page, the same as the head above and the profile below.
+
+   The sidebar is a column of names read at a glance rather than a passage of prose, which
+   is what the weight is for, and why the cursor stays an arrow: these are places, not
+   controls. */
+.row {
   display: flex;
   align-items: center;
   gap: 0.35rem;
   margin: 1px 0.25rem;
   padding: 0.22rem 0.4rem;
+  border: 0;
   border-radius: var(--row-radius);
+  background: none;
   color: color-mix(in srgb, var(--ink) 78%, transparent);
-  /* The sidebar is a column of names read at a glance rather than a passage of prose, and
-     it is set a step heavier than the page for it — the same weight the head above and the
-     profile below are, so the whole panel speaks in one voice. */
+  font: inherit;
   font-weight: 600;
+  text-align: left;
   cursor: default;
 }
+
+/* Under the pointer, wherever the row is. The Explorer's cursor row lights the same way and
+   is kept apart below, because it stays lit when the pointer has gone. What being *chosen*
+   looks like is each list's own — the Explorer tints to its depth, a tab and a settings
+   section do not. */
+.row:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
+
 
 .tree > ul .name {
   min-width: 0;
@@ -742,17 +787,13 @@ body[data-resizing='column'] {
   color: var(--faint);
 }
 
+/* No transition here: the mark does not turn, it grows its second chevron, and the tween
+   that does that is on the path inside it. */
 .tree > ul .tree-caret {
   flex: none;
   width: var(--tree-icon);
   height: var(--tree-icon);
-  color: var(--muted);
-  transition: transform 260ms var(--ease-snap, ease);
-}
-
-.tree > ul li:hover .tree-caret,
-.tree > ul li[data-cursor] .tree-caret {
-  color: var(--ink);
+  color: inherit;
 }
 
 /* The mark at the far end of a heading row, which is a label rather than the row's own
@@ -827,11 +868,6 @@ body[data-resizing='column'] {
   font-family: var(--mono);
   font-size: 0.6rem;
   line-height: 1.2;
-}
-
-.tree > ul li:hover {
-  background: var(--raised);
-  color: var(--ink);
 }
 
 .tree > ul li[data-cursor] {
@@ -914,15 +950,6 @@ body[data-resizing='column'] {
   transform: translateY(0.17em);
 }
 
-.tree > ul li:hover .icon,
-.tree > ul li[data-cursor] .icon {
-  color: var(--muted);
-}
-
-.tree > ul li[aria-selected='true'] .icon {
-  color: inherit;
-}
-
 .tree > ul .icon,
 .tree > ul .icon.seti {
   width: var(--tree-icon);
@@ -930,29 +957,18 @@ body[data-resizing='column'] {
   font-size: var(--tree-icon);
 }
 
-/* Held down enough to sit behind the name and no further: a glyph at half strength is one
-   you have to look for, and a column of them is the thing you read the tree by. */
+/* The name's own colour, so the row reads as one thing: the glyph belongs to the word it
+   stands in front of, and a column held at a different ink from the names beside it is a
+   second column to read. Centred in the box it is given, so the marks line up down the
+   pane whatever shape each one happens to be.
+
+   Seti's glyphs are the exception, and they say so themselves: the language's colour
+   arrives inline, which outranks this. */
 .tree > ul .icon {
-  color: var(--tint);
-  opacity: 0.8;
-  transition: opacity 120ms ease;
-}
-
-/* The depth tint is what an outline has instead of a colour of its own. A language glyph
-   arrives with one, and dimming it takes the thing it was there to say. */
-.tree > ul .icon.seti {
-  opacity: 0.92;
-}
-
-.tree > ul li:hover .icon,
-.tree > ul li[data-cursor] .icon,
-.tree > ul li[aria-selected='true'] .icon {
-  opacity: 1;
-}
-
-/* The fold indicator carries the colour of the guides it opens onto. */
-.tree > ul li[aria-expanded] > .icon {
-  color: var(--tint);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
 }
 
 /* ---------- document ---------- */
@@ -1093,7 +1109,7 @@ body[data-resizing='column'] {
 .tabs {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 0.5rem;
   flex: 1;
   min-width: 0;
   height: 100%;
@@ -4966,28 +4982,10 @@ p.palette-label {
 
 /* ---- Coworkers -------------------------------------------------------------------------- */
 
-/* Under the conversations, set off by a heading rather than a rule: the rail is one list of
-   places to go, and this is the second half of it. Pushed to the foot when there is room, so
-   the people sit under the chats the way they sit under them in the sentence. */
-.coworker-rail {
-  display: flex;
-  flex-direction: column;
-  flex: none;
-  gap: 0.15rem;
-  margin-top: 1rem;
-}
-
-.coworker-heading {
-  margin: 0 0 0.2rem;
-  padding: 0 0.45rem;
-  color: var(--faint);
-  font-family: var(--sans);
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
+/* The people, in the rail of their own page. It is the chats' rail wearing faces: the same
+   width, the same rows, the same place on the pane — so moving between the two tabs moves
+   what is in the list rather than where the list is. A row is taller than a chat's because
+   it carries two lines, the name over who they are being. */
 .coworker-rail ul {
   margin: 0;
 }
@@ -5156,29 +5154,13 @@ p.palette-label {
 /* A way somewhere rather than a row in the project — Tasks is a page about the app. Set
    exactly as a row of the tree is, down to the margin and the radius, so the side menu reads
    as one list; what marks it out is that it lights while its page is up. */
+/* A tab wears `.row` for its shape. What is left is the two things that are its own: it
+   has to fill the width the rows under it fill — they are list items and it is not — and
+   it never gives up height when the list above is long. */
 .explorer-tab {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
   width: calc(100% - 0.5rem);
   flex: none;
-  margin: 1px 0.25rem;
-  padding: 0.22rem 0.4rem;
-  border: 0;
-  border-radius: var(--row-radius);
-  background: none;
   backdrop-filter: none;
-  color: color-mix(in srgb, var(--ink) 78%, transparent);
-  font: inherit;
-  /* The rows under it are set a step heavier; these are rows too. */
-  font-weight: 600;
-  text-align: left;
-  cursor: default;
-}
-
-.explorer-tab:hover {
-  background: var(--raised);
-  color: var(--ink);
 }
 
 .explorer-tab[aria-pressed='true'] {
@@ -5190,6 +5172,5 @@ p.palette-label {
   width: var(--tree-icon);
   height: var(--tree-icon);
   flex: none;
-  color: var(--muted);
-  opacity: 1;
+  color: inherit;
 }

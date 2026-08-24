@@ -3,10 +3,10 @@
 import { canChat, type ChatModel, CHAT_MODELS } from '@/src/contracts/api/chat'
 import type { CoworkerSummary } from '@/src/contracts/api/coworkers'
 import { useApp } from '@/state'
-import { Avatar } from './avatar'
-import { ChatThread } from './thread'
-import { Composer } from './composer'
-import { useConversation } from './conversation'
+import { Avatar } from '@/components/chat/avatar'
+import { ChatThread } from '@/components/chat/thread'
+import { Composer } from '@/components/chat/composer'
+import { useConversation } from '@/components/chat/conversation'
 
 /**
  * Who you are talking to, across the top of the page — over the rail and the thread both, the

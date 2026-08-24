@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react'
 import { useApp, type App } from '@/state'
-import { Icon, type IconName } from '@/components/ui'
+import { Icon, Row, type IconName } from '@/components/ui'
 import { ProfilePanel } from './profile'
 import { RepoPanel } from './repo'
 import { SoulPanel } from './soul'
@@ -71,16 +71,17 @@ const page =
 const rail =
   'sticky top-0 col-start-1 row-start-1 flex w-52 flex-col gap-px justify-self-end @max-[76rem]/pane:row-start-2 @max-[76rem]/pane:justify-self-stretch'
 
-/* A row of the rail. The `!` are the app's own `button` and `.icon` rules, which are
-   unlayered and so outrank a utility whatever its specificity — a row of the rail is a
-   place to go rather than a button, and takes none of a button's chrome. */
-const row =
-  'relative flex cursor-pointer items-center gap-[0.55rem] rounded-[var(--row-radius)] border-transparent! bg-transparent! px-[0.55rem]! py-[0.35rem]! text-[0.85rem] hover:bg-[var(--raised)]! [&_.icon]:size-[0.9rem]!'
+/* A row of the rail is the app's row — the same one the Explorer's files and the Tasks and
+   Chat entries above them wear, from the kit rather than restated here. What is left is
+   what belongs to this rail: the glyph is a step down from the Explorer's, and `relative`
+   is what the accent bar below hangs off. */
+const row = 'relative [&_.icon]:size-[0.9rem]!'
 
-/* Selected is a fill and a weight, and the accent bar outside it is what carries down the
-   rail: the fill alone is easy to lose against the panel. */
+/* Selected is a fill and the accent bar outside it, which is what carries down the rail:
+   the fill alone is easy to lose against the panel. Not a weight any more — every row is
+   set in the row's own 600 now, so a heavier one was no longer the odd one out. */
 const chosen =
-  "aria-selected:bg-[var(--active)]! aria-selected:font-semibold aria-selected:[&_.icon]:text-[var(--ink)]! aria-selected:after:absolute aria-selected:after:top-[0.2rem] aria-selected:after:bottom-[0.2rem] aria-selected:after:-left-[0.6rem] aria-selected:after:w-0.5 aria-selected:after:rounded-[var(--row-radius)] aria-selected:after:bg-[var(--accent)] aria-selected:after:content-['']"
+  "aria-selected:bg-[var(--active)]! aria-selected:[&_.icon]:text-[var(--ink)]! aria-selected:after:absolute aria-selected:after:top-[0.2rem] aria-selected:after:bottom-[0.2rem] aria-selected:after:-left-[0.6rem] aria-selected:after:w-0.5 aria-selected:after:rounded-[var(--row-radius)] aria-selected:after:bg-[var(--accent)] aria-selected:after:content-['']"
 
 export function SettingsView() {
   const app = useApp()
@@ -99,9 +100,8 @@ export function SettingsView() {
           it would say "Settings" twice on every panel. */}
       <div className={rail} role="tablist" aria-label="Settings sections">
         {sections.map((section) => (
-          <button
+          <Row
             key={section.id}
-            type="button"
             role="tab"
             className={`${row} ${chosen}`}
             aria-selected={section.id === current.id}
@@ -110,7 +110,7 @@ export function SettingsView() {
           >
             <Icon name={section.icon} />
             {section.label}
-          </button>
+          </Row>
         ))}
       </div>
 

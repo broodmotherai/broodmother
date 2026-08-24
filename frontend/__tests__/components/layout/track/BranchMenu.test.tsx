@@ -58,12 +58,12 @@ it('lists branches that have no checkout yet', async () => {
   expect(screen.getByRole('menuitemradio', { name: /feat\/sync/ })).toBeInTheDocument()
 })
 
-/* One repository in the menu, headed by its name: whose branches these are is the thing
-   the scope decides, and it is not asked again here. */
-it('heads the list with the repository the scope is in', async () => {
+/* The anchor says it is the branch and the tree's head says which repository: a heading
+   here would be the third place on screen saying where you already are. */
+it('does not name the repository over the list', async () => {
   show()
   await open()
-  expect(screen.getByRole('menu')).toHaveTextContent('handbook')
+  expect(screen.getByRole('menu')).not.toHaveTextContent('handbook')
 })
 
 it('switches on pick', async () => {

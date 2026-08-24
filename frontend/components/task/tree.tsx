@@ -10,7 +10,7 @@ import {
   type TreeEntry,
 } from '@/src/contracts/doc'
 import { entriesOf, flatten, refKey, type TreeRoot } from '../layout'
-import { displayName, FileIcon, Icon } from '@/components/ui'
+import { displayName, FileIcon, Icon, ROW } from '@/components/ui'
 import Caret from '@/components/ui/core/Icon'
 import { cx } from '@/cx'
 
@@ -111,6 +111,7 @@ export function TaskTree({
           return (
             <li
               key={key}
+              className={ROW}
               role="treeitem"
               aria-label={entry.name}
               aria-expanded={folder ? !collapsed.has(key) : undefined}

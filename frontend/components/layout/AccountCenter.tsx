@@ -153,7 +153,7 @@ export function AccountCenter({
             }}
             className="group flex cursor-pointer items-center gap-2 rounded-md border-0 bg-transparent px-2 py-1 text-left text-[13px] text-charcoal hover:bg-surface-active hover:text-foreground"
           >
-            <span aria-hidden>
+            <span aria-hidden className="flex shrink-0">
               <Avatar initials={initials(one.name)} size={16} className="text-cream" style={{ background: one.color }} />
             </span>
             <span className="min-w-0 truncate">{one.name}</span>
@@ -186,7 +186,12 @@ export function AccountCenter({
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
-        <span aria-hidden>
+        {/* `flex`, not the bare span it was: a flex item with an inline-flex mark inside it
+            builds a line box, and the room that leaves under the baseline is not room the
+            mark fills — so the row centres the line box and the mark itself rides high by a
+            pixel or two. No line box, nothing to be off-centre against. `CoreIcon` beside it
+            has said `block` for the same reason all along. */}
+        <span aria-hidden className="flex shrink-0">
           <Avatar
             initials={initials(profile.name)}
             /* Inside the control rather than filling it. The head is `--track-control` tall
@@ -199,11 +204,11 @@ export function AccountCenter({
             style={{ background: profile.color }}
           />
         </span>
-        {/* The name is set in the body's own type, which is what the profile selector at the
-            foot of the tree reads in: whoever you are working as is the same word in the same
-            voice wherever the app says it. Stated by saying nothing — the button inherits the
-            page's font, so there is no second figure here to drift from the first. */}
-        <span className="min-w-0 truncate">{profile.name}</span>
+        {/* Set as the project selector at the top of the Explorer is — same family, size,
+            weight and tracking. `.account-name` is the other half of a rule in the stylesheet
+            that sets both at once, so the pairing survives a change to either: the figures
+            live in one place rather than being copied here where they could drift. */}
+        <span className="account-name min-w-0 truncate">{profile.name}</span>
         <CoreIcon
           name="caret-down"
           size={13}
