@@ -414,21 +414,21 @@ textarea:focus-visible {
 }
 
 /* The seam here is the sidebar's own right border, which is the last pixel of the track
-   rather than the first of the next one — so the strip starts 4px back, not 3, and its
-   middle lands on the border instead of a pixel past it. */
+   rather than the first of the next one. */
 .resizer[data-axis='sidebar'] {
   top: 0;
   bottom: 0;
-  /* On the tree's own right edge — the panel floats, so that edge is its margin in from
-     the track. The strip is 7px, so half of it sits either side of the line. */
-  left: calc(var(--sidebar, 17rem) - var(--chrome-gap) - 3.5px);
+  /* Off the tree's own right edge — the panel floats, so that edge is its margin in from
+     the track — and then a quarter rem further out, which is half the strip: the whole 7px
+     stands in the gap between the two panels rather than over the one it resizes. */
+  left: calc(var(--sidebar, 17rem) - var(--chrome-gap) + 0.25rem - 3.5px);
 }
 
 /* The seam here is the panel's own top border, and `top` is measured from inside it — so the
-   strip starts 4px back, not 3, and its middle pixel lands on the border rather than the row
-   under it. Three pixels of handle sitting one low reads as off-centre; nine hides it. */
+   strip starts 4px back, and then a quarter rem further up, which is half of it: the whole
+   7px stands in the gap above the panel rather than over the shell it resizes. */
 .resizer[data-axis='panel'] {
-  top: -4px;
+  top: calc(-4px - 0.25rem);
   left: 0;
   right: 0;
 }
@@ -2305,9 +2305,9 @@ body[data-resizing='column'] {
 
 /* Hidden, not unmounted: ⌘J puts the panel away without killing the shell. */
 .terminal {
-  /* What the shell is held off the panel's edges by. Wider than the app's gap: a terminal
-     is a wall of text, and a hairline of margin reads as text jammed into a corner. */
-  --terminal-inset: 0.75rem;
+  /* What the shell is held off the panel's edges by: the app's one gap, so the text inside
+     the panel stands off it by the same distance the panel stands off the window. */
+  --terminal-inset: var(--chrome-gap);
 
   grid-column: 2;
   grid-row: 2;
