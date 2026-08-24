@@ -9,7 +9,7 @@ import {
   type DocRoot,
   type TreeEntry,
 } from '@/src/contracts/doc'
-import { entriesOf, flatten, refKey, type TreeRoot } from '../tree'
+import { entriesOf, flatten, refKey, type TreeRoot } from '../layout'
 import { displayName, FileIcon, Icon } from '@/components/ui'
 import Caret from '@/components/ui/core/Icon'
 import { cx } from '@/cx'

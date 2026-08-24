@@ -12,7 +12,7 @@ import {
   type MenuSection,
 } from '@/components/ui'
 import { type TerminalKind, TERMINALS } from '../terminal'
-import { RenameRow, sameRef } from '../tree'
+import { RenameRow, sameRef } from '../layout'
 
 export type Tab =
   | { id: string; kind: 'doc'; ref: DocRef }

@@ -2,8 +2,8 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { repoRoot, type TreeEntry } from '@/tree'
-import { FileTree } from '@/components/tree/core'
-import { fileRefs, type TreeRoot } from '@/components/tree/paths'
+import { Explorer } from '@/components/layout/track/Explorer'
+import { fileRefs, type TreeRoot } from '@/components/layout/track/paths'
 
 const entries: TreeEntry[] = [
   {
@@ -69,7 +69,7 @@ function show(renaming: string | null = null, trees: TreeRoot[] = roots) {
   const onRename = vi.fn()
   const onCreateRepo = vi.fn()
   render(
-    <FileTree
+    <Explorer
       roots={trees}
       current={project('README.md')}
       scope="project"

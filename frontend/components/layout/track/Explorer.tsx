@@ -23,7 +23,7 @@ const PROJECT_TOP: DocRef = { root: 'project', path: '' }
  * so the tabs, the branch selector and the next shell are about the tree you just clicked
  * in. Clicking is the whole gesture; there is no separate control that says where you are.
  */
-export function FileTree({
+export function Explorer({
   roots,
   current,
   scope,

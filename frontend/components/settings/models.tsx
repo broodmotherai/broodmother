@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { CHAT_PROVIDERS } from '@/src/contracts/api/chat'
 import { useApp } from '@/state'
-import { Button, LinkButton } from '@/components/ui'
+import { Button, Input, LinkButton } from '@/components/ui'
 import { Hint, Section } from './layout'
 
 /**
@@ -84,7 +84,7 @@ export function ModelKeys() {
                   ) : (
                     /* The field fills its cell, so the row reads as one line rather than a
                        box floating in one. */
-                    <input
+                    <Input
                       type="password"
                       className="w-full min-w-[8rem]"
                       aria-label={`${provider.label} key`}

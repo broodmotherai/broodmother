@@ -23,22 +23,26 @@ import type { DiffBasis, DiffFile } from '@/git'
 import { isImage } from '@/media'
 import { isNotebookPath } from '@/src/notebook/path'
 import { useApp } from '@/state'
-import {
-  fileRefs,
-  FileTree,
-  folderOf,
-  isFolder,
-  parentOf,
-  type TreeCommand,
-  type TreeRoot,
-  untitledIn,
-} from '../tree'
+
 import { deleteFlow, type Flow, type FlowCtx, Palette } from '../palette'
 import { changesOf, DiffBar, DiffView, entriesFor } from '../diff'
 import { CreateRepo } from '../repo'
 import { ProjectMenu, ProjectPicker } from '../project'
 import { ProfilePicker } from '../profile'
-import { AccountCenter, BranchMenu, Track, TrackButton } from '../layout'
+import {
+  AccountCenter,
+  BranchMenu,
+  Explorer,
+  fileRefs,
+  folderOf,
+  isFolder,
+  parentOf,
+  Track,
+  TrackButton,
+  type TreeCommand,
+  type TreeRoot,
+  untitledIn,
+} from '../layout'
 import { Confirm, Icon, Resizer, useStoredSize } from '@/components/ui'
 import { type NewTab, type Tab, TabStrip } from './tabs'
 import { forget, TerminalPanel, TerminalTab } from '../terminal'
@@ -372,7 +376,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="shell" style={{ '--sidebar': `${sidebar}px` } as CSSProperties}>
-      <FileTree
+      <Explorer
         roots={roots}
         current={doc}
         scope={app.scope}
@@ -393,7 +397,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <>
             <button
               type="button"
-              className="tree-tab"
+              className="explorer-tab"
               aria-label="Tasks"
               aria-pressed={pathname === '/tasks'}
               onClick={ctx.tasks}
@@ -405,7 +409,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 than about any one document in it. */}
             <button
               type="button"
-              className="tree-tab"
+              className="explorer-tab"
               aria-label="Chat"
               aria-pressed={pathname === '/chat'}
               onClick={ctx.chat}

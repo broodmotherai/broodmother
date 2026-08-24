@@ -472,13 +472,13 @@ body[data-resizing='column'] {
 /* ---------- sidebar ---------- */
 
 /* The trigger is the whole row, so its hover and open states fill it instead of starting
-   partway across. It owns the head's padding, which is why this outranks .tree-head.
+   partway across. It owns the head's padding, which is why this outranks .explorer-head.
 
    In the desktop app the window's close/minimise/zoom buttons land on exactly this row,
    so the app declares how much room they take and the project starts after them. The gap
    they leave is the one part of the row that is not a button, which makes it the place to
    drag the window by. In a browser tab the variable is unset and neither applies. */
-.tree-head.project {
+.explorer-head.project {
   padding: 0 0 0 var(--titlebar-inset, 0px);
   -webkit-app-region: drag;
 }
@@ -493,11 +493,11 @@ body[data-resizing='column'] {
    is spent first, being the part that shows: what is left over is padding, which is what a
    browser tab gets — no inset there, so the logo stands off the edge by the same 0.85rem
    the chevron does at the other end. */
-.tree-head.project .project-anchor {
+.explorer-head.project .project-anchor {
   padding-left: max(0px, 0.85rem - var(--titlebar-inset, 0px) - 0.3rem);
 }
 
-.tree-head .logo {
+.explorer-head .logo {
   flex: none;
   width: 1.25rem;
   height: 1.25rem;
@@ -568,7 +568,7 @@ body[data-resizing='column'] {
   backdrop-filter: var(--raised-blur);
 }
 
-.tree-head {
+.explorer-head {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -584,7 +584,7 @@ body[data-resizing='column'] {
 /* The head's mirror: who you work as, pinned under the rows and read left to right the
    way the project is at the top. No border of its own — the anchor's hover already says
    where the control is, and a second line under the rows boxed the whole sidebar in. */
-.tree-foot {
+.explorer-foot {
   display: flex;
   align-items: center;
   height: var(--head);
@@ -627,7 +627,7 @@ body[data-resizing='column'] {
   height: 14px;
 }
 
-.tree-head .dot {
+.explorer-head .dot {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
@@ -5156,7 +5156,7 @@ p.palette-label {
 /* A way somewhere rather than a row in the project — Tasks is a page about the app. Set
    exactly as a row of the tree is, down to the margin and the radius, so the side menu reads
    as one list; what marks it out is that it lights while its page is up. */
-.tree-tab {
+.explorer-tab {
   display: flex;
   align-items: center;
   gap: 0.35rem;
@@ -5176,17 +5176,17 @@ p.palette-label {
   cursor: default;
 }
 
-.tree-tab:hover {
+.explorer-tab:hover {
   background: var(--raised);
   color: var(--ink);
 }
 
-.tree-tab[aria-pressed='true'] {
+.explorer-tab[aria-pressed='true'] {
   background: var(--active);
   color: var(--ink);
 }
 
-.tree-tab .icon {
+.explorer-tab .icon {
   width: var(--tree-icon);
   height: var(--tree-icon);
   flex: none;

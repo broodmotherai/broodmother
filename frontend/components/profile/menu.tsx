@@ -61,7 +61,7 @@ export function ProfileMenu({
 
   return (
     <div
-      className="tree-foot"
+      className="explorer-foot"
       onContextMenu={(event) => {
         event.preventDefault()
         setOpen(true)

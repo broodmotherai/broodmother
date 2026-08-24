@@ -1,6 +1,6 @@
 import type { DocPath, TreeEntry } from '@/src/contracts/doc'
 import type { DiffChange, DiffFile } from '@/git'
-import { entriesOf } from '../tree'
+import { entriesOf } from '../layout'
 
 /**
  * The tree a comparison draws: the paths that differ, and the folders on the way to them.

@@ -101,7 +101,7 @@ export function ProjectMenu({
   const label = options ? options.project.name : 'Where you work'
 
   return (
-    <div className="tree-head project">
+    <div className="explorer-head project">
       {/* Opens whether or not there is a project to name. A machine with none is where you
           most need the row that makes one, and hiding the menu until one exists is what
           made the first project a gate instead of a choice. */}

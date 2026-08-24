@@ -1,6 +1,7 @@
 'use client'
 
 import type { InputHTMLAttributes, ReactNode } from 'react'
+import { Input } from '@/components/ui'
 import { cx } from '@/cx'
 
 /**
@@ -104,10 +105,11 @@ const caption = 'flex flex-col gap-[0.3rem] text-[0.8rem] font-semibold text-for
 /**
  * A field: its name over its control.
  *
- * The control is the app's own — the stylesheet's unlayered `input` rule is what makes a
- * box look like somewhere to write, here and in every other form in the app. That rule
- * carries `font: inherit`, which would hand the input the label's weight and size, and an
- * unlayered rule outranks a utility: the two `!` are what say otherwise.
+ * The control is the kit's `Input`, which is the app's own field with the padding wound in
+ * — a settings panel is a column of a dozen of these and a tenth of a line each is what
+ * decides whether it is read at a glance or scrolled through. The measure is this form's
+ * own business: a name or a path is short, and a box the width of the page for one reads
+ * as a mistake.
  */
 export function Field({
   label,
@@ -116,7 +118,7 @@ export function Field({
   return (
     <label className={caption}>
       {label}
-      <input className="max-w-[26rem] text-[0.9rem]! font-normal!" {...rest} />
+      <Input className="max-w-[26rem]" {...rest} />
     </label>
   )
 }
