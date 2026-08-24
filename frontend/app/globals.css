@@ -4353,29 +4353,6 @@ p.palette-label {
   font-size: 0.85rem;
 }
 
-.tasks-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
-
-.tasks-table th {
-  text-align: left;
-  padding: 0.35rem 0.55rem;
-  color: var(--faint);
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-bottom: 1px solid var(--line);
-}
-
-.tasks-table td {
-  padding: 0.45rem 0.55rem;
-  border-bottom: 1px solid var(--line);
-  vertical-align: baseline;
-}
-
 /* The scheduled panel is the sidebar's explorer in miniature: it wears `.tree` so the
    rows, guides and tints are the ones the sidebar teaches, and this strips the pane
    chrome those rows arrived wrapped in. Keep the row padding inherited — the indent
