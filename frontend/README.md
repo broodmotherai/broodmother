@@ -15,7 +15,7 @@ npm install
 npm run dev        # 4243, or $PORT; needs the daemon on 4242
 npm run build
 npm run typecheck
-npm test           # vitest — 431 tests
+npm test           # vitest — 451 tests
 ```
 
 Start the daemon first (`cd ../daemon && npm run dev`). `NEXT_PUBLIC_API_URL` overrides where

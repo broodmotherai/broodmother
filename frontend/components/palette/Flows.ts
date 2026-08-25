@@ -20,6 +20,8 @@ export interface FlowCtx {
   tasks(): void
   /** The agents page: the people this project has hired, and the thread held with each. */
   agents(): void
+  /** The org chart: the same people, and who each of them reports to. */
+  agentOrg(): void
   /** The chat page: this project's conversations with a model. */
   chat(): void
   /** The entities page: what this project has written down, and what each came from. */

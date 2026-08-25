@@ -29,6 +29,7 @@ const ALLOWED = new Set([
   'GET /api/entities',
   'GET /api/entities/catalogue',
   'GET /api/personas',
+  'GET /api/agents/org',
   'GET /api/activity',
   'GET /api/diff',
   'GET /api/diff/file',
@@ -62,7 +63,10 @@ const ALLOWED = new Set([
  *   /api/chat, /api/chats       a conversation reading or deleting conversations, its own
  *                               included, while its reply is still being written into one
  *   /api/agent, /api/agents     an agent making, clearing or removing agents — itself
- *                               included, mid-sentence
+ *                               included, mid-sentence. The org chart is the exception and
+ *                               is above: who reports to whom is worth an agent knowing,
+ *                               while POST /api/agent/lead and /api/agent/place are a
+ *                               decision about the team, which the person makes
  *   GET /api/file               bytes rather than JSON; nothing a model can read
  */
 

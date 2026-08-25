@@ -44,6 +44,7 @@ function commands(ctx: FlowCtx): Choice[] {
     command('Switch or create project', 'layout-dashboard', () => done(() => ctx.projects())),
     command('Tasks', 'clock', () => done(() => ctx.tasks())),
     command('Agents', 'users', () => done(() => ctx.agents())),
+    command('Org chart', 'fork', () => done(() => ctx.agentOrg())),
     command('Chat', 'message-square', () => done(() => ctx.chat())),
     command('Entities', 'library', () => done(() => ctx.entities())),
     command('Settings', 'settings', () => done(() => ctx.settings())),

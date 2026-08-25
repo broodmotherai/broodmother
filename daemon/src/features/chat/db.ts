@@ -7,7 +7,7 @@ import type {
   ChatStep,
   ChatSummary,
 } from '@daemon/types/api/chat'
-import type { Agent, NewAgent } from '@daemon/types/api/agents'
+import type { Agent, AgentPlaced, NewAgent } from '@daemon/types/api/agents'
 
 /** How long a title taken from what you said is allowed to be. */
 const TITLE_MAX = 60
@@ -22,6 +22,10 @@ const MIGRATIONS: ((db: DatabaseSync) => void)[] = [
   (db) => addColumn(db, 'messages', 'steps', 'TEXT'),
   // A chat may be an agent's one running conversation, which the chats list leaves out.
   (db) => addColumn(db, 'chats', 'agent', 'INTEGER'),
+  // Where an agent stands on the org chart. Null is nobody has placed it, which is every
+  // agent until somebody drags one.
+  (db) => addColumn(db, 'agents', 'x', 'INTEGER'),
+  (db) => addColumn(db, 'agents', 'y', 'INTEGER'),
 ]
 
 /**
@@ -114,6 +118,11 @@ export class ChatStore {
         created_at INTEGER NOT NULL
       );
       CREATE INDEX IF NOT EXISTS agents_by_project ON agents (project, id);
+      CREATE TABLE IF NOT EXISTS reports (
+        agent INTEGER NOT NULL,
+        lead INTEGER NOT NULL
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS reports_by_agent ON reports (agent);
     `)
     for (const migrate of MIGRATIONS) migrate(this.db)
   }
@@ -279,11 +288,55 @@ export class ChatStore {
     return row?.at ?? null
   }
 
+  /** Every agent in the project, with who they report to and where they stand. One query
+   *  rather than one per agent, because a board draws all of it or none. */
+  org(project: string): AgentPlaced[] {
+    return this.db
+      .prepare(
+        `SELECT agents.*, reports.lead AS lead FROM agents
+         LEFT JOIN reports ON reports.agent = agents.id
+         WHERE agents.project = ?
+         ORDER BY agents.name COLLATE NOCASE, agents.id`,
+      )
+      .all(project)
+      .map(toPlaced)
+  }
+
+  /** Who an agent reports to, or nobody. The unique index is what makes it one lead: a
+   *  second is the same row rewritten rather than a second line into the same agent. */
+  setLead(agent: string, lead: string | null): void {
+    if (lead === null) {
+      this.db.prepare(`DELETE FROM reports WHERE agent = ?`).run(rowIdOf(agent))
+      return
+    }
+    this.db
+      .prepare(
+        `INSERT INTO reports (agent, lead) VALUES (?, ?)
+         ON CONFLICT (agent) DO UPDATE SET lead = excluded.lead`,
+      )
+      .run(rowIdOf(agent), rowIdOf(lead))
+  }
+
+  /** Where it stands. Written by a drag and by nothing else — until one, the board lays the
+   *  agent out itself and this stays null. */
+  place(agent: string, x: number, y: number): void {
+    this.db.prepare(`UPDATE agents SET x = ?, y = ? WHERE id = ?`).run(x, y, rowIdOf(agent))
+  }
+
+  /** Their reports come up under their own lead, which is what an org does when somebody
+   *  leaves — and where they had none, the reports have none either. */
   removeAgent(id: string): void {
     const held = this.agent(id)
     if (!held) return
+    const row = rowIdOf(id)
+    const above = this.db
+      .prepare(`SELECT lead FROM reports WHERE agent = ?`)
+      .get(row) as { lead: number } | undefined
+    if (above) this.db.prepare(`UPDATE reports SET lead = ? WHERE lead = ?`).run(above.lead, row)
+    else this.db.prepare(`DELETE FROM reports WHERE lead = ?`).run(row)
+    this.db.prepare(`DELETE FROM reports WHERE agent = ?`).run(row)
     this.remove(held.chat)
-    this.db.prepare(`DELETE FROM agents WHERE id = ?`).run(rowIdOf(id))
+    this.db.prepare(`DELETE FROM agents WHERE id = ?`).run(row)
   }
 
   close(): void {
@@ -339,6 +392,16 @@ function toAgent(row: Record<string, unknown>): Agent {
     chat: chatId(row.chat as number),
     attachments: attachmentsOf(name),
     createdAt: row.created_at as number,
+  }
+}
+
+function toPlaced(row: Record<string, unknown>): AgentPlaced {
+  const lead = row.lead as number | null
+  const [x, y] = [row.x as number | null, row.y as number | null]
+  return {
+    ...toAgent(row),
+    lead: lead === null ? null : agentId(lead),
+    place: x === null || y === null ? null : { x, y },
   }
 }
 

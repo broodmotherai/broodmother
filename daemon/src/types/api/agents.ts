@@ -31,6 +31,21 @@ export interface AgentSummary extends Agent {
   lastAt: number | null
 }
 
+/** Where an agent stands on the org chart: who they report to, and where they stand.
+ *  A forest — several agents with no lead at all is the ordinary state of a small project —
+ *  and one lead each, since the question the chart is asked is who to escalate to. */
+export interface OrgPlace {
+  /** An agent id, or null at the top of a tree. */
+  lead: string | null
+  /** Where it was dragged to, or null where nobody has placed it and the board is free to
+   *  lay it out. */
+  place: { x: number; y: number } | null
+}
+
+export interface AgentPlaced extends Agent, OrgPlace {}
+
+export interface AgentInOrg extends AgentSummary, OrgPlace {}
+
 export interface NewAgent {
   name: string
   persona: string
@@ -67,4 +82,25 @@ export interface PostAgentClear {
 export interface PostAgentModel {
   request: { agent: string; model: string }
   response: { agent: Agent }
+}
+
+/** The whole chart at once: a board draws all of it or none. */
+export interface GetAgentOrg {
+  request: null
+  response: { agents: AgentInOrg[] }
+}
+
+/** Who an agent reports to; `null` is nobody, which is how a line is cleared. Refused where
+ *  it would make a loop, direct or through others — the chart answers "who do I escalate
+ *  to", and a cycle has no answer. */
+export interface PostAgentLead {
+  request: { agent: string; lead: string | null }
+  response: { ok: true }
+}
+
+/** Its own route rather than a write of the whole chart, so a drag is one row and two
+ *  windows arranging at once do not overwrite each other. */
+export interface PostAgentPlace {
+  request: { agent: string; x: number; y: number }
+  response: { ok: true }
 }

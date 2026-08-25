@@ -3,7 +3,12 @@ import path from 'node:path'
 import type { ToolSet } from 'ai'
 import type { Chat } from '@daemon/types/api/chat'
 import { CHAT_MODELS } from '@daemon/types/api/chat'
-import type { Agent, AgentSummary, NewAgent } from '@daemon/types/api/agents'
+import type {
+  Agent,
+  AgentInOrg,
+  AgentSummary,
+  NewAgent,
+} from '@daemon/types/api/agents'
 import type { Persona } from '@daemon/types/api/personas'
 import type { Tree } from '@daemon/services/Tree'
 import { ChatError } from '../chat/error'
@@ -49,13 +54,43 @@ export class Agents {
   list(): { agents: AgentSummary[] } {
     const project = this.deps.project()
     if (!project) return { agents: [] }
-    return {
-      agents: this.deps.store.agents(project.path).map((one) => ({
-        ...one,
-        working: this.deps.chats.working(one.chat),
-        lastAt: this.deps.store.lastSaidAt(one.chat),
-      })),
-    }
+    return { agents: this.deps.store.agents(project.path).map((one) => this.summarize(one)) }
+  }
+
+  /** The chart: everyone, with who they report to and where they stand. */
+  org(): { agents: AgentInOrg[] } {
+    const project = this.deps.project()
+    if (!project) return { agents: [] }
+    return { agents: this.deps.store.org(project.path).map((one) => this.summarize(one)) }
+  }
+
+  /**
+   * Who somebody reports to, or nobody. A loop is refused by walking upward from the
+   * proposed lead: meeting the agent on the way is the line closing on itself, and a chart
+   * asked who to escalate to would have no answer. Both ends have to be in this project —
+   * the chart is per-project the way the agents are.
+   */
+  setLead(agent: string, lead: string | null): void {
+    const project = this.deps.project()
+    if (!project) throw new ChatError('no project is open')
+    const chart = new Map(this.deps.store.org(project.path).map((one) => [one.id, one]))
+    const held = chart.get(agent)
+    if (!held) throw new ChatError('no such agent')
+    if (lead === null) return this.deps.store.setLead(agent, null)
+    if (lead === agent) throw new ChatError(`${held.name} cannot report to themselves`)
+    const above = chart.get(lead)
+    if (!above) throw new ChatError('no such agent')
+    for (let step = above.lead; step; step = chart.get(step)?.lead ?? null)
+      if (step === agent)
+        throw new ChatError(
+          `that would make a loop: ${above.name} already reports to ${held.name}`,
+        )
+    this.deps.store.setLead(agent, lead)
+  }
+
+  /** Where they stand, after a drag. */
+  place(agent: string, x: number, y: number): void {
+    this.deps.store.place(this.require(agent).id, x, y)
   }
 
   /**
@@ -140,6 +175,16 @@ export class Agents {
       progress,
     })
     return { system, tools, maxRounds: AGENT_ROUNDS }
+  }
+
+  /** An agent as a page asks for one: what they are, plus whether they are answering right
+   *  now and when they last did. */
+  private summarize<T extends Agent>(one: T): T & { working: boolean; lastAt: number | null } {
+    return {
+      ...one,
+      working: this.deps.chats.working(one.chat),
+      lastAt: this.deps.store.lastSaidAt(one.chat),
+    }
   }
 
   private require(id: string): Agent {

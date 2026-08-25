@@ -12,6 +12,25 @@ async function store() {
   return { store: new ChatStore(file), file }
 }
 
+const hired = (name: string) => ({
+  name,
+  persona: 'research/open-aggregator',
+  model: 'claude-opus-5',
+  color: '#c084fc',
+})
+
+const rowOf = (id: string) => Number(id.replace('agent-', ''))
+
+/** The `reports` rows as SQLite holds them: an upsert that quietly wrote a second line
+ *  rather than rewriting the first would only show up here. */
+async function leadsIn(file: string) {
+  const { DatabaseSync } = await import('node:sqlite')
+  const raw = new DatabaseSync(file)
+  const rows = raw.prepare(`SELECT agent, lead FROM reports ORDER BY agent`).all()
+  raw.close()
+  return rows
+}
+
 it('keeps a conversation and everything said in it, and reads it back whole', async () => {
   const { store: chats, file } = await store()
   const chat = chats.create(PROJECT, 'claude-opus-5', 1000)
@@ -171,4 +190,69 @@ it('carries the coworkers of an older file over as agents, with their threads', 
   expect(again.agentOfChat(made.chat)?.id).toBe(made.id)
   expect(again.chat(made.chat)?.messages.map((one) => one.text)).toEqual(['morning'])
   expect(again.list(PROJECT).map((one) => one.id)).toEqual([chat.id])
+})
+
+/* The chart is rows beside the agents: who reports to whom, and where the card was dragged
+   to. A second lead is not a second line — the unique index makes it the same row rewritten,
+   which is what "one lead each" means when nobody is looking. */
+it('keeps who reports to whom, and one lead each', async () => {
+  const { store: chats, file } = await store()
+  const sam = chats.createAgent(PROJECT, hired('Sam'))
+  const priya = chats.createAgent(PROJECT, hired('Priya'))
+  const ada = chats.createAgent(PROJECT, hired('Ada'))
+
+  chats.setLead(priya.id, sam.id)
+  chats.place(priya.id, 256, 144)
+  expect(new ChatStore(file).org(PROJECT)).toEqual([
+    { ...ada, lead: null, place: null },
+    { ...priya, lead: sam.id, place: { x: 256, y: 144 } },
+    { ...sam, lead: null, place: null },
+  ])
+
+  chats.setLead(priya.id, ada.id)
+  expect(await leadsIn(file)).toEqual([{ agent: rowOf(priya.id), lead: rowOf(ada.id) }])
+
+  chats.setLead(priya.id, null)
+  expect(chats.org(PROJECT).map((one) => one.lead)).toEqual([null, null, null])
+})
+
+/* What an org does when somebody leaves: their reports come up under their own lead. The
+   alternative loses the fact that they were under that part of the tree at all. */
+it('brings the reports of a removed agent up under its lead', async () => {
+  const { store: chats } = await store()
+  const sam = chats.createAgent(PROJECT, hired('Sam'))
+  const priya = chats.createAgent(PROJECT, hired('Priya'))
+  const ada = chats.createAgent(PROJECT, hired('Ada'))
+  chats.setLead(priya.id, sam.id)
+  chats.setLead(ada.id, priya.id)
+
+  chats.removeAgent(priya.id)
+  expect(chats.org(PROJECT).map((one) => [one.name, one.lead])).toEqual([
+    ['Ada', sam.id],
+    ['Sam', null],
+  ])
+
+  // The top of the tree going leaves what was under it with nobody, which is the same rule.
+  chats.removeAgent(sam.id)
+  expect(chats.org(PROJECT).map((one) => [one.name, one.lead])).toEqual([['Ada', null]])
+})
+
+/* The chart is additive: a file written before there was one has no `reports` table and no
+   place on its agents, and opening it adds both without touching anybody. */
+it('gives an older file a chart without losing anyone', async () => {
+  const { store: first, file } = await store()
+  const sam = first.createAgent(PROJECT, hired('Sam'), 1000)
+  first.close()
+
+  const { DatabaseSync } = await import('node:sqlite')
+  const raw = new DatabaseSync(file)
+  raw.exec(`
+    DROP TABLE reports;
+    ALTER TABLE agents DROP COLUMN x;
+    ALTER TABLE agents DROP COLUMN y;
+  `)
+  raw.close()
+
+  const again = new ChatStore(file)
+  expect(again.org(PROJECT)).toEqual([{ ...sam, lead: null, place: null }])
 })

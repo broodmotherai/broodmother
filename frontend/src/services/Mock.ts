@@ -18,7 +18,7 @@ import {
 import { resolveTarget } from '@broodmother/markdown/links'
 import { runOrder } from '@broodmother/types/task/graph'
 import type { Persona } from '@broodmother/types/api/personas'
-import type { AgentSummary } from '@broodmother/types/api/agents'
+import type { AgentInOrg } from '@broodmother/types/api/agents'
 import type { EntitySummary } from '@broodmother/types/api/entities'
 import type { ApiRequest, ApiResponse, ApiRoute } from '@broodmother/types/api/routes'
 import type { TaskRun } from '@broodmother/types/api/tasks'
@@ -180,12 +180,15 @@ export function createMockClient(
      *  in, which is the order they read in. */
     chats?: { title?: string; messages: Pick<ChatMessage, 'role' | 'text'>[] }[]
 
-    /** Agents already in the open project, each with the thread held with them. */
+    /** Agents already in the open project, each with the thread held with them. `lead` is
+     *  another of them by name, and `place` is a card somebody has already dragged. */
     agents?: {
       name: string
       persona: string
       color?: string
       working?: boolean
+      lead?: string
+      place?: { x: number; y: number }
       messages?: Pick<ChatMessage, 'role' | 'text'>[]
     }[]
 
@@ -295,8 +298,9 @@ export function createMockClient(
     if (!found) throw new Error('no such chat')
     return found
   }
-  /** The agents, each holding a chat that is kept apart from the chats list. */
-  const agents: AgentSummary[] = (seed.agents ?? []).map((one, index) => {
+  /** The agents, each holding a chat that is kept apart from the chats list. Where they
+   *  stand on the org chart rides on the same rows, the way the daemon keeps it. */
+  const agents: AgentInOrg[] = (seed.agents ?? []).map((one, index) => {
     const chat: Chat = {
       id: `chat-${String(++numbered)}`,
       title: one.name,
@@ -320,8 +324,16 @@ export function createMockClient(
       createdAt: 1500 + index,
       working: one.working ?? false,
       lastAt: one.messages?.length ? 1500 + one.messages.length - 1 : null,
+      lead: null,
+      place: one.place ?? null,
     }
   })
+  // A seed names a lead by name, since the ids are handed out here rather than written down.
+  for (const [index, one] of (seed.agents ?? []).entries()) {
+    if (!one.lead) continue
+    const above = agents.find((held) => held.name === one.lead)
+    if (above) agents[index].lead = above.id
+  }
   const agentOf = (id: string) => {
     const found = agents.find((one) => one.id === id)
     if (!found) throw new Error('no such agent')
@@ -888,6 +900,29 @@ export function createMockClient(
           .map(({ messages: _held, ...summary }) => summary),
       }),
       'GET /api/agents': async () => ({ agents: agents.map((one) => ({ ...one })) }),
+      'GET /api/agents/org': async () => ({
+        agents: [...agents]
+          .sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id))
+          .map((one) => ({ ...one })),
+      }),
+      'POST /api/agent/lead': async ({ agent, lead }) => {
+        const held = agentOf(agent)
+        if (lead === null) {
+          held.lead = null
+          return { ok: true } as const
+        }
+        const above = agentOf(lead)
+        if (above.id === held.id) throw new Error(`${held.name} cannot report to themselves`)
+        for (let step = above.lead; step; step = agentOf(step).lead)
+          if (step === held.id)
+            throw new Error(`that would make a loop: ${above.name} already reports to ${held.name}`)
+        held.lead = above.id
+        return { ok: true } as const
+      },
+      'POST /api/agent/place': async ({ agent, x, y }) => {
+        agentOf(agent).place = { x, y }
+        return { ok: true } as const
+      },
       'POST /api/agents': async ({ name, persona, model, color }) => {
         if (!(seed.personas ?? []).some((one) => one.name === persona))
           throw new Error(`no persona called ${persona} in this project`)
@@ -899,7 +934,7 @@ export function createMockClient(
           messages: [],
         }
         chats.push(chat)
-        const agent: AgentSummary = {
+        const agent: AgentInOrg = {
           id: `agent-${String(agents.length + 1)}`,
           name,
           persona,
@@ -910,13 +945,17 @@ export function createMockClient(
           createdAt: 2000 + agents.length,
           working: false,
           lastAt: null,
+          lead: null,
+          place: null,
         }
         agents.push(agent)
-        const { working: _working, lastAt: _lastAt, ...made } = agent
+        const { working: _working, lastAt: _lastAt, lead: _lead, place: _place, ...made } = agent
         return { agent: made }
       },
       'DELETE /api/agent': async ({ agent }) => {
         const held = agentOf(agent)
+        // Their reports come up under their own lead, the way the daemon does it.
+        for (const under of agents) if (under.lead === held.id) under.lead = held.lead
         chats.splice(chats.indexOf(chatOf(held.chat)), 1)
         agents.splice(agents.indexOf(held), 1)
         return { ok: true } as const
@@ -929,7 +968,7 @@ export function createMockClient(
         const held = agentOf(agent)
         held.model = model
         chatOf(held.chat).model = model
-        const { working: _working, lastAt: _lastAt, ...changed } = held
+        const { working: _working, lastAt: _lastAt, lead: _lead, place: _place, ...changed } = held
         return { agent: changed }
       },
       'POST /api/chats': async ({ model }) => {

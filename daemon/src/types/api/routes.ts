@@ -10,9 +10,12 @@ import type { GetTaskLog, GetTaskRuns, GetTasks, PostTaskRun } from './tasks'
 import type { DeleteChat, GetChat, GetChats, PostChats } from './chat'
 import type {
   DeleteAgent,
+  GetAgentOrg,
   GetAgents,
   PostAgentClear,
+  PostAgentLead,
   PostAgentModel,
+  PostAgentPlace,
   PostAgents,
 } from './agents'
 import type { GetDiagrams } from './canvas'
@@ -115,6 +118,9 @@ interface ApiRoutes {
   'DELETE /api/agent': DeleteAgent
   'POST /api/agent/clear': PostAgentClear
   'POST /api/agent/model': PostAgentModel
+  'GET /api/agents/org': GetAgentOrg
+  'POST /api/agent/lead': PostAgentLead
+  'POST /api/agent/place': PostAgentPlace
   'GET /api/entities': GetEntities
   'POST /api/entities': PostEntities
   'GET /api/entities/catalogue': GetEntitiesCatalogue
