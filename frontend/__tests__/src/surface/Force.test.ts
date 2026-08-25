@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { expect, it } from 'vitest'
-import { createForce, type Body, type Link, type Placeable } from '@/components/agents/Force'
+import { createForce, type Body, type Link, type Placeable } from '@/src/surface/Force'
 
 const team = (count: number, placed: Record<number, { x: number; y: number }> = {}): Placeable[] =>
   Array.from({ length: count }, (_, i) => ({
@@ -101,4 +101,25 @@ it('redraws the shape when it has to and only gives way when it does not', () =>
   redrawn.rearrange()
   for (let i = 0; i < 400; i++) redrawn.step()
   expect(where(redrawn)).not.toEqual(was)
+})
+
+/* And a board that would rather settle than float says so, which is the whole of what the
+   tuning is for: the same shape, arrived at and then held exactly, frame after frame. */
+it('comes to a standstill where nothing is asked to wander', () => {
+  const RESTFUL = { wander: 0, decay: 0.9 }
+  const links = [{ from: 'agent-1', to: 'agent-2' }]
+  const still = createForce(RESTFUL)
+  still.hold(team(6), links)
+  for (let i = 0; i < 600; i++) still.step()
+
+  const before = where(still)
+  for (let i = 0; i < 200; i++) still.step()
+  still.bodies.forEach((one, at) =>
+    expect(Math.hypot(one.x - before[at][0], one.y - before[at][1])).toBeLessThan(0.01),
+  )
+
+  const again = createForce(RESTFUL)
+  again.hold(team(6), links)
+  for (let i = 0; i < 800; i++) again.step()
+  expect(where(again)).toEqual(where(still))
 })

@@ -30,6 +30,16 @@ export interface Point {
 const ZOOM_LOW = 0.2
 const ZOOM_HIGH = 2.5
 
+/** A line stops short of what it points at rather than running under it: `by` world units
+ *  back along itself from `to`. Both graphs draw their lines this way. */
+export function trimmed(from: Point, to: Point, by: number): Point {
+  const distance = Math.hypot(to.x - from.x, to.y - from.y) || 1
+  return {
+    x: to.x - ((to.x - from.x) / distance) * by,
+    y: to.y - ((to.y - from.y) / distance) * by,
+  }
+}
+
 export interface Viewport {
   view: View
   setView: (next: View) => void

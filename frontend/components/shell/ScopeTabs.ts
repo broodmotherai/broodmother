@@ -30,11 +30,14 @@ const EMPTY: Tab[] = []
  *  is about rather than where you are. */
 const APP_PAGES = ['/settings', '/tasks', '/agents', '/chat', '/entities']
 
-/** And everything under one: the org chart lives at `/agents/org` and is chrome the way the
- *  page it is reached from is. Matched as a prefix rather than by name so a page opened
- *  under another needs nothing added here. */
-export const isAppPage = (pathname: string) =>
-  APP_PAGES.some((page) => pathname === page || pathname.startsWith(`${page}/`))
+/** Whether the route is that page or one opened under it. The org chart lives at
+ *  `/agents/org` and the entity graph at `/entities/graph`, and both are the page they are
+ *  reached from as far as the chrome is concerned — so a tab is pressed on either, and a page
+ *  opened under another needs nothing added anywhere. */
+export const under = (pathname: string, page: string) =>
+  pathname === page || pathname.startsWith(`${page}/`)
+
+export const isAppPage = (pathname: string) => APP_PAGES.some((page) => under(pathname, page))
 
 const isRoot = (value: string): value is DocRoot =>
   value === 'project' || /^repo:.+$/.test(value)

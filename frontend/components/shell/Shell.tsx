@@ -45,7 +45,7 @@ import { type NewTab, type Tab, TabStrip } from './TabStrip'
 import { TerminalPanel, TerminalTab } from '@/components/terminal/TerminalPanel'
 import { BrowserTab } from '@/components/browser/BrowserView'
 import { closed as forget } from '@/components/terminal/Known'
-import { currentDoc, docRoute, isAppPage, useScopeTabs } from './ScopeTabs'
+import { currentDoc, docRoute, isAppPage, under, useScopeTabs } from './ScopeTabs'
 
 const SIDEBAR_KEY = 'broodmother.sidebar'
 const TERMINAL_KEY = 'broodmother.terminal'
@@ -331,6 +331,7 @@ export function Shell({ children }: { children: ReactNode }) {
     agentOrg: () => show('/agents/org'),
     chat: () => show('/chat'),
     entities: () => show('/entities'),
+    entityGraph: () => show('/entities/graph'),
     projects: () => setPicker(true),
     repos: () => setWhereMenu(true),
     createRepo: () => setCreating(true),
@@ -422,7 +423,7 @@ export function Shell({ children }: { children: ReactNode }) {
               type="button"
               className="row explorer-tab"
               aria-label="Agents"
-              aria-pressed={pathname === '/agents'}
+              aria-pressed={under(pathname, '/agents')}
               onClick={ctx.agents}
             >
               <Icon name="users" />
@@ -446,7 +447,7 @@ export function Shell({ children }: { children: ReactNode }) {
               type="button"
               className="row explorer-tab"
               aria-label="Entities"
-              aria-pressed={pathname === '/entities'}
+              aria-pressed={under(pathname, '/entities')}
               onClick={ctx.entities}
             >
               <Icon name="library" />

@@ -56,6 +56,20 @@ export function EntitiesView() {
           been recorded under is still visible as a kind you could record under. It is the
           chats' rail and the agents': same width, same rows, same place on the pane. */}
       <aside className="chat-history entity-rail" aria-label="Kinds">
+        {/* The way to the picture, at the head of the rail: the list is where the day is
+            spent — you come here to find what you knew — and the graph is where you go to
+            see the shape of it, which is rarely. */}
+        <div className="entity-rail-head">
+          <button
+            type="button"
+            className="entity-graph-button"
+            aria-label="Entity graph"
+            data-tip="what came from what"
+            onClick={() => router.push('/entities/graph')}
+          >
+            <Icon name="spline" />
+          </button>
+        </div>
         <ul>
           <li>
             <button

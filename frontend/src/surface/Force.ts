@@ -1,13 +1,17 @@
 /**
- * The layout under the org chart: nodes push apart, a line pulls its two ends together, and
- * none of it ever quite stops. Every pair is compared, which at the size a team is — a few
- * dozen — is cheaper than a quadtree.
+ * The layout under a graph: nodes push apart, a line pulls its two ends together, and none of
+ * it ever quite stops. Every pair is compared, which at the size a team is — a few dozen — is
+ * cheaper than a quadtree.
  *
  * Two things here are not obvious. It cools to a floor rather than to a stop, because a graph
  * that freezes reads as a picture of one; once the shape stops changing every node takes where
  * it ended up as its own and floats about that, so the picture stays put while the network
  * stays alive. And nothing is random: the same chart, the same number of frames in, is the
  * same picture, which is what lets somebody learn where their people are.
+ *
+ * Both of those are the org chart's bargain at a few dozen faces, and the wrong one for a few
+ * hundred records — which is why the numbers are an argument rather than the module's own.
+ * `wander: 0` is a graph that settles into its shape and stops.
  */
 
 export interface Body {
@@ -53,26 +57,51 @@ export interface Force {
   find(id: string): Body | undefined
 }
 
-/** How far apart a line wants its ends, and how hard everything pushes off. */
-const LINK = 168
-const SPRING = 0.035
-const REPEL = 24000
-/** Weak enough that a lone pair still spreads, firm enough that nothing sails away. */
-const CENTER = 0.0025
-const DAMP = 0.86
+/** What a board can say about how its own physics feels. Every one of these is a number the
+ *  org chart arrived at with a few dozen faces on screen; a board with a different number of
+ *  nodes, or one that would rather settle than float, says so here. */
+export interface Tuning {
+  /** How far apart a line wants its ends, and how hard everything pushes off. */
+  link: number
+  spring: number
+  repel: number
+  /** Weak enough that a lone pair still spreads, firm enough that nothing sails away. */
+  center: number
+  damp: number
+  /** An anchor rather than a nail: a few units of float, and always the way back. */
+  anchor: number
+  /** And what holds one somebody put down. Firmer, because a spot chosen by hand is an answer
+   *  rather than a place the layout happened to stop at, and a line pulling on it hard enough
+   *  to drag it off would make the gesture a suggestion. */
+  grip: number
+  /** The float: a slow circle of acceleration, a turn every few hundred frames. Zero is a
+   *  graph that comes to rest and stays where it is. */
+  wander: number
+  /** Cold enough to hold the shape still, warm enough that it never sets. */
+  floor: number
+  /** How fast it cools. Nearer 1 is a shape that takes longer to find and longer to leave. */
+  decay: number
+}
+
+export const TUNING: Tuning = {
+  link: 168,
+  spring: 0.035,
+  repel: 24_000,
+  center: 0.0025,
+  damp: 0.86,
+  anchor: 0.005,
+  grip: 0.06,
+  wander: 0.03,
+  floor: 0.04,
+  decay: 0.982,
+}
+
 /** Two nodes at one spot would divide by nothing; below this they are simply apart. */
 const CLOSEST = 24
-/** An anchor rather than a nail: a few units of float, and always the way back. */
-const ANCHOR = 0.005
-/** The float: a slow circle of acceleration, a turn every few hundred frames. */
-const WANDER = 0.03
 const DRIFT = 0.012
 
 const HOT = 1
 const WARM = 0.5
-/** Cold enough to hold the shape still, warm enough that it never sets. */
-const FLOOR = 0.04
-const DECAY = 0.982
 
 /** The golden angle, which is the tidiest way to put n things down when nothing yet says
  *  where any of them go. */
@@ -82,7 +111,8 @@ const GAP = 96
 const sameAs = (one: { x: number; y: number } | null, other: { x: number; y: number }) =>
   one !== null && one.x === other.x && one.y === other.y
 
-export function createForce(): Force {
+export function createForce(tuning: Partial<Tuning> = {}): Force {
+  const tune = { ...TUNING, ...tuning }
   let bodies: Body[] = []
   let links: Link[] = []
   let alpha = HOT
@@ -139,10 +169,10 @@ export function createForce(): Force {
     find: (id) => bodies.find((body) => body.id === id),
 
     step() {
-      run(bodies, links, alpha, tick++)
-      const cooled = Math.max(FLOOR, alpha * DECAY)
+      run(bodies, links, alpha, tick++, tune)
+      const cooled = Math.max(tune.floor, alpha * tune.decay)
       // The frame the shape stops changing on: everybody belongs where they have ended up.
-      if (alpha > FLOOR && cooled === FLOOR)
+      if (alpha > tune.floor && cooled === tune.floor)
         for (const body of bodies) body.at ??= { x: body.x, y: body.y }
       alpha = cooled
     },
@@ -150,14 +180,14 @@ export function createForce(): Force {
   return force
 }
 
-function run(bodies: Body[], links: Link[], alpha: number, tick: number) {
+function run(bodies: Body[], links: Link[], alpha: number, tick: number, tune: Tuning) {
   const at = new Map(bodies.map((body) => [body.id, body]))
   for (let i = 0; i < bodies.length; i++)
     for (let j = i + 1; j < bodies.length; j++) {
       const one = bodies[i]
       const other = bodies[j]
       const distance = Math.max(CLOSEST, Math.hypot(other.x - one.x, other.y - one.y))
-      const push = (REPEL / (distance * distance)) * alpha
+      const push = (tune.repel / (distance * distance)) * alpha
       const ux = ((other.x - one.x) / distance) * push
       const uy = ((other.y - one.y) / distance) * push
       one.vx -= ux
@@ -171,7 +201,7 @@ function run(bodies: Body[], links: Link[], alpha: number, tick: number) {
     const to = at.get(link.to)
     if (!from || !to) continue
     const distance = Math.max(CLOSEST, Math.hypot(to.x - from.x, to.y - from.y))
-    const pull = (distance - LINK) * SPRING * alpha
+    const pull = (distance - tune.link) * tune.spring * alpha
     const ux = ((to.x - from.x) / distance) * pull
     const uy = ((to.y - from.y) / distance) * pull
     from.vx += ux
@@ -187,14 +217,16 @@ function run(bodies: Body[], links: Link[], alpha: number, tick: number) {
       continue
     }
     if (body.at) {
-      body.vx += (body.at.x - body.x) * ANCHOR
-      body.vy += (body.at.y - body.y) * ANCHOR
+      const back = body.placed ? tune.grip : tune.anchor
+      body.vx += (body.at.x - body.x) * back
+      body.vy += (body.at.y - body.y) * back
     } else {
-      body.vx -= body.x * CENTER * alpha
-      body.vy -= body.y * CENTER * alpha
+      body.vx -= body.x * tune.center * alpha
+      body.vy -= body.y * tune.center * alpha
     }
-    body.vx = (body.vx + Math.cos(tick * DRIFT + body.phase) * WANDER) * DAMP
-    body.vy = (body.vy + Math.sin(tick * DRIFT * 1.3 + body.phase * 1.7) * WANDER) * DAMP
+    body.vx = (body.vx + Math.cos(tick * DRIFT + body.phase) * tune.wander) * tune.damp
+    body.vy =
+      (body.vy + Math.sin(tick * DRIFT * 1.3 + body.phase * 1.7) * tune.wander) * tune.damp
     body.x += body.vx
     body.y += body.vy
   }
