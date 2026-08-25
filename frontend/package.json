@@ -5,9 +5,9 @@
   "type": "module",
   "engines": { "node": ">=20.9.0" },
   "scripts": {
-    "dev": "next dev -H 127.0.0.1 -p 4243",
+    "dev": "next dev -H 127.0.0.1 -p ${PORT:-4243}",
     "build": "next build",
-    "start": "next start -H 127.0.0.1 -p 4243",
+    "start": "next start -H 127.0.0.1 -p ${PORT:-4243}",
     "wasm": "asc src/wasm/Kernel.ts -o public/task-kernel.wasm -O3 --runtime stub --initialMemory 8 --use abort=",
     "typecheck": "tsc --noEmit -p .",
     "lint": "eslint",
