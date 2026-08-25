@@ -6,6 +6,7 @@ import { CHAT_MODELS } from '@daemon/types/api/chat'
 import type {
   Agent,
   AgentInOrg,
+  AgentPlaced,
   AgentSummary,
   NewAgent,
 } from '@daemon/types/api/agents'
@@ -15,7 +16,8 @@ import type { Tree } from '@daemon/services/Tree'
 import { ChatError } from '../chat/error'
 import type { Chats, Turn } from '@daemon/features/chat/Chats'
 import type { ChatStore } from '../chat/db'
-import { agentBrief, type AgentTeam } from './brief'
+import { agentBrief, type AgentTeam, type Colleague } from './brief'
+import { send as sendMessage } from './messages'
 import { agentTools, type AgentToolDeps } from './tools'
 
 export interface AgentSite {
@@ -45,7 +47,14 @@ export interface AgentsDeps {
     by: Actor,
   ) => Omit<
     AgentToolDeps,
-    'checkout' | 'env' | 'brief' | 'persona' | 'name' | 'attachments' | 'progress'
+    | 'checkout'
+    | 'env'
+    | 'brief'
+    | 'persona'
+    | 'name'
+    | 'attachments'
+    | 'progress'
+    | 'message'
   >
 }
 
@@ -170,7 +179,7 @@ export class Agents {
       profile: this.deps.profile(),
       attachmentsAbs,
       attachments: agent.attachments,
-      team: project ? this.team(agent, project.path) : undefined,
+      team: project ? this.team(agent, project) : undefined,
     })
     const tools: ToolSet = agentTools({
       ...this.deps.tools({
@@ -189,6 +198,16 @@ export class Agents {
       by: `agent/${agent.name}`,
       attachments: attachmentsAbs,
       progress,
+      message: (to, message) =>
+        sendMessage(
+          { chats: this.deps.chats, roster: () => this.org().agents },
+          {
+            from: agent.id,
+            to,
+            message,
+            hops: this.deps.chats.hopsIn(agent.chat),
+          },
+        ),
     })
     return { system, tools, maxRounds: AGENT_ROUNDS }
   }
@@ -203,15 +222,19 @@ export class Agents {
     }
   }
 
-  /** Where an agent stands, for their own prompt: the rungs either side of them, by name.
-   *  Nothing where they are the only one — an agent alone is told about no room. */
-  private team(agent: Agent, project: string): AgentTeam | undefined {
-    const chart = this.deps.store.org(project)
+  /** Where an agent stands, for their own prompt: the rungs either side of them by name, and
+   *  everyone else as a row they can message. Nothing where they are the only one — an agent
+   *  alone is told about no room. */
+  private team(agent: Agent, project: AgentSite): AgentTeam | undefined {
+    const chart = this.deps.store.org(project.path)
     if (chart.length < 2) return undefined
     const mine = chart.find((one) => one.id === agent.id)
+    const named = new Map(chart.map((one) => [one.id, one.name]))
+    const purposes = new Map(project.personas.map((one) => [one.name, one.description]))
     return {
       lead: chart.find((one) => one.id === mine?.lead)?.name ?? null,
       reports: chart.filter((one) => one.lead === agent.id).map((one) => one.name),
+      everyone: downFrom(chart, purposes, named, agent.id),
     }
   }
 
@@ -220,4 +243,37 @@ export class Agents {
     if (!held) throw new ChatError('no such agent')
     return held
   }
+}
+
+/**
+ * The chart top to bottom: everyone with nobody above them, each followed by whoever reports to
+ * them, so the order an agent reads is the shape of the team rather than an alphabet. The agent
+ * being told is walked through and left out — they know who they are.
+ *
+ * A cycle would not end here, and cannot be made: `setLead` refuses one on the way in.
+ */
+function downFrom(
+  chart: AgentPlaced[],
+  purposes: Map<string, string>,
+  named: Map<string, string>,
+  skip: string,
+): Colleague[] {
+  const under = (lead: string | null): Colleague[] =>
+    chart
+      .filter((one) => one.lead === lead)
+      .flatMap((one) => [
+        ...(one.id === skip
+          ? []
+          : [
+              {
+                name: one.name,
+                purpose:
+                  purposes.get(one.persona) ??
+                  `wears ${one.persona}, which is not in this project any more`,
+                lead: named.get(one.lead ?? '') ?? null,
+              },
+            ]),
+        ...under(one.id),
+      ])
+  return under(null)
 }

@@ -64,6 +64,7 @@ agent gets a shell and Claude Code in an actual checkout:
 | `claude_code`      | Hands a task to Claude Code, in the checkout, with the disk and a shell |
 | `shell`            | One command — `ls`, `git status`, a script                              |
 | `list_attachments` | What is in its attachments folder, by name                              |
+| `agent_message`    | Says something to another agent in the project, by name                |
 
 The split between the first two is the interesting one, and the descriptions say it: `shell`
 is for quick things, and *anything longer than a command is a task for `claude_code`*. An
@@ -71,6 +72,33 @@ agent delegates the real work rather than driving it a command at a time.
 
 `AGENT_ROUNDS` is 24. A delegation is several tools deep — a look around, the errand, a
 check of what came back — and each of those is a round.
+
+### Messaging a colleague
+
+`agent_message` takes a name, not an id: a name is what the agent's own prompt calls them, and
+a model writing `agent-7` from memory is a model that will get it wrong. A whole name is
+matched first and a first name after it, taken only where one person answers to it — somebody
+writing to a colleague writes what they would say out loud, and two Sams get an answer asking
+which rather than a message to the wrong one. Who there is to write
+to is not a tool at all — it is a section of the system prompt, built per turn in
+`features/agents/brief.ts` from `Agents.org()` and the project's personas, ordered the way the
+chart reads downward. An agent that has to spend a call to find out its colleagues exist mostly
+will not, and the roster is a handful of lines.
+
+The message lands in the recipient's thread through `Chats.deliver` — the socket's own reply
+path, with nobody having asked for it through a socket — and is answered as a turn of theirs,
+with their persona and their hands. Where somebody does have that thread open, they watch it
+arrive: `Chats.watching` holds whoever is looking at each thread, and the delivered message is
+sent on to them, since it is the one message a page has not already drawn itself. `agent_message` does not wait for that: it answers `delivered to Priya — their
+answer will come back to you here` and the turn carries on. Waiting would block one agent's
+turn for as long as another agent's whole turn, which with `claude_code` on the other end is
+twenty minutes.
+
+Every delivery carries a hop count, one further than the message that prompted it, held on the
+reply in flight and read back through `Chats.hopsIn`. Past `MAX_HOPS` (4) a send is refused.
+**This counter is the whole of what stands between the app and two agents answering each other
+politely until the key runs out** — every round of that is a full turn with a real model. It is
+not an unnecessary check; do not remove it.
 
 ## Task Blocks
 

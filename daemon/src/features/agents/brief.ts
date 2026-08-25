@@ -4,6 +4,15 @@
  * talks, which no persona says because none was written for a chat window.
  */
 
+/** Somebody else in the project, as their colleague is told about them. */
+export interface Colleague {
+  name: string
+  /** What that voice is for, in a line — the persona's own `description`. */
+  purpose: string
+  /** Who they report to, by name, or null at the top of a tree. */
+  lead: string | null
+}
+
 export interface AgentVoice {
   name: string
   persona: string
@@ -20,14 +29,19 @@ export interface AgentVoice {
   team?: AgentTeam
 }
 
-/** The chart as the agent standing in it needs it: names, not ids, and only the two rungs
- *  either side of them. Everyone else is a question for a tool that does not exist yet. */
+/** The chart as the agent standing in it needs it: names, not ids. The rungs either side of
+ *  them are a sentence, and everyone else is a row — a name an agent can message is a name it
+ *  has to have read first. */
 export interface AgentTeam {
   lead: string | null
   reports: string[]
+  /** Everyone else in the project, deepest last, so the shape of the chart is read off the
+   *  order rather than an alphabet. */
+  everyone: Colleague[]
 }
 
-/** The system prompt for an agent's turn: the app brief, then the person. */
+/** The system prompt for an agent's turn: the app brief, then the person, then the room's
+ *  other people. */
 export function agentBrief(base: string, voice: AgentVoice): string {
   return [base, who(voice), others(voice), talking(voice), working(voice)]
     .filter(Boolean)
@@ -47,24 +61,40 @@ ${body}`
 }
 
 /**
- * That the room has other people in it. Two things only: where you stand on the chart, and
- * what to do about work you find that is not yours — the second stops at the consequence,
- * because `who_did`'s own description already says work you did not do belongs to whoever
- * did it, and a prompt paying twice for one fact is a prompt that will pay three times.
+ * That the room has other people in it: who each of them is for, where you stand among them,
+ * what to do about work you find that is not yours, and how to hand something over. The third
+ * stops at the consequence, because `who_did`'s own description already says work you did not
+ * do belongs to whoever did it, and a prompt paying twice for one fact is a prompt that will
+ * pay three times.
  *
- * Nothing here about reaching another agent: there is no tool that would, and naming one
- * that does not exist is how a model learns to stop reading its prompt.
+ * The roster is here rather than behind a tool of its own: it is a handful of lines, it is
+ * wanted on any turn that reaches for a colleague, and an agent that has to spend a call to
+ * find out its colleagues exist mostly will not.
  */
 function others({ team }: AgentVoice): string {
   if (!team) return ''
+  const rows = team.everyone.map(
+    (one) => `- **${one.name}** — ${one.purpose}${one.lead ? ` (reports to ${one.lead})` : ''}`,
+  )
   return `## Who else is here
+
+The other agents in this project. Each wears a persona of their own and has the same hands you
+do, so what you hand to one of them gets done the way you would do it yourself, in their voice.
+
+${rows.join('\n')}
 
 ${standing(team)}
 
 Other agents work in this same checkout, and you will find work you did not do — a file that
 has appeared, a branch that has moved on, a task already finished. Never redo it, and never
 report it as yours. If you are about to change it or you found it wrong, say so to the person
-first. If it blocks you, say what you are blocked on rather than working around it.`
+first. If it blocks you, say what you are blocked on rather than working around it.
+
+Use \`agent_message\` to ask one of them for something that is more theirs than yours — their
+part of the project, their persona's trade — rather than doing it yourself outside what you are
+for. It goes into their thread and they answer it as a turn of their own, so their answer comes
+back to you here in a while rather than at once, and you carry on in the meantime. Say who you
+asked and what for, so the person watching knows the work went somewhere.`
 }
 
 /** Whole lines rather than wrapped ones: the clauses join into one paragraph, so a break

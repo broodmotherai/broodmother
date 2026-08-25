@@ -36,6 +36,9 @@ export interface AgentToolDeps extends ToolDeps {
   /** A word on how an errand is going, filed by the tool call it belongs to, for the step
    *  on screen to wear while the hands are busy. */
   progress?: (toolCallId: string, note: string) => void
+  /** Says something to another agent, by the name their colleague knows them by. Answers with
+   *  what became of it — delivered, or why not. */
+  message: (to: string, message: string) => string
   /** What an errand left different, for the ledger: the paths the checkout says changed
    *  either side of it, and the errand in its own first line. Coarse on purpose — it says
    *  which errand a file was part of, never which line was whose. */
@@ -115,6 +118,22 @@ export function agentTools(deps: AgentToolDeps): ToolSet {
             )
           return cut(out || '(no output)')
         }),
+    }),
+
+    agent_message: tool({
+      description:
+        'Say something to another agent in this project, by name. Use it to ask a colleague ' +
+        'for the part of a job that is theirs rather than yours — their part of the ' +
+        'project, their persona\'s trade. It lands in their thread and they answer it as a ' +
+        'turn of their own, so their answer comes back to you here in a while rather than ' +
+        'at once: say what you asked for and carry on, do not wait.',
+      inputSchema: z.object({
+        to: z.string().describe('who, by the name you know them by'),
+        message: z
+          .string()
+          .describe('what you are asking for, written the way you would message a colleague'),
+      }),
+      execute: ({ to, message }) => Promise.resolve(deps.message(to, message)),
     }),
 
     list_attachments: tool({

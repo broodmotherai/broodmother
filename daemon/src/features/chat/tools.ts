@@ -372,6 +372,8 @@ export function titleOf(name: string, input: unknown): string {
       return `$ ${firstLine(said.command ?? '')}`
     case 'list_attachments':
       return 'list attachments'
+    case 'agent_message':
+      return `message ${said.to ?? ''}`.trim()
     default:
       return name
   }

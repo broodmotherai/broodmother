@@ -266,6 +266,7 @@ it('titles a step by what the tool was asked to do', () => {
   expect(titleOf('api', { method: 'POST', route: '/api/sync/now' })) //
     .toBe('POST /api/sync/now')
   expect(titleOf('who_did', { root: 'project', path: 'a.md' })).toBe('who did project a.md')
+  expect(titleOf('agent_message', { to: 'Priya', message: 'how is the export' })).toBe('message Priya')
 })
 
 it('records something, and hands back the path to cite rather than a message', async () => {

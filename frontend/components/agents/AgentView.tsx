@@ -48,10 +48,14 @@ export function AgentHeader({
  */
 export function AgentView({
   agent,
+  team,
   error,
   onModel,
 }: {
   agent: AgentSummary
+  /** Everybody in the project, so a message from one of them wears their own face in this
+   *  thread rather than reading as something you said. */
+  team: AgentSummary[]
   error: string | null
   /** Picking another model for them. The thread is kept — the persona is who they are, and
    *  the model is only what is behind the voice. */
@@ -75,6 +79,9 @@ export function AgentView({
         reply={conversation.reply}
         error={error ?? conversation.failed}
         who={{ name: agent.name, color: agent.color }}
+        people={Object.fromEntries(
+          team.map((one) => [one.id, { name: one.name, color: one.color }]),
+        )}
       />
       <Composer
         model={agent.model}

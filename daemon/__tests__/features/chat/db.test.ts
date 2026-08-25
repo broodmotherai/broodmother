@@ -256,3 +256,40 @@ it('gives an older file a chart without losing anyone', async () => {
   const again = new ChatStore(file)
   expect(again.org(PROJECT)).toEqual([{ ...sam, lead: null, place: null }])
 })
+
+/* A colleague's message is stored as theirs, and the person's is nobody's — which is what the
+   page reads to tell a message in your thread you did not write from one you did. */
+it('keeps who a message came from, where it was another agent', async () => {
+  const { store: chats, file } = await store()
+  const priya = chats.createAgent(PROJECT, hired('Priya'))
+  const sam = chats.createAgent(PROJECT, hired('Sam'))
+
+  const said = chats.addMessage(sam.chat, 'user', 'From Priya: how is the export', 1001, priya.id)
+  expect(said.from).toBe(priya.id)
+  const person = chats.addMessage(sam.chat, 'user', 'can you look at the export', 1002)
+  expect(person.from).toBeUndefined()
+
+  const read = new ChatStore(file).chat(sam.chat)
+  // An agent's thread is named when they are hired, so nothing said in it renames it.
+  expect(read?.title).toBe('Sam')
+  expect(read?.messages.map((one) => one.from)).toEqual([priya.id, undefined])
+})
+
+/* A file written before agents could message each other has no `from_agent` on its messages,
+   and opening it adds the column with everything that was said still in it. */
+it('gives an older file a sender column without losing what was said', async () => {
+  const { store: first, file } = await store()
+  const chat = first.create(PROJECT, 'claude-opus-5')
+  first.addMessage(chat.id, 'user', 'morning', 1001)
+  first.close()
+
+  const { DatabaseSync } = await import('node:sqlite')
+  const raw = new DatabaseSync(file)
+  raw.exec(`ALTER TABLE messages DROP COLUMN from_agent`)
+  raw.close()
+
+  const again = new ChatStore(file)
+  expect(again.chat(chat.id)?.messages).toEqual([
+    { id: expect.any(String), role: 'user', text: 'morning', at: 1001 },
+  ])
+})

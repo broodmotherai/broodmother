@@ -27,6 +27,22 @@ interface Live {
   saved: number
   /** What each running step was called before a note was hung on it, by id. */
   titles: Map<string, string>
+  /** How far along an exchange between agents this turn is, for the tools it is given to
+   *  count from. Zero for anything a person asked for. */
+  hops: number
+  /** The last message this turn finished with, where it has already handed one over and
+   *  begun another — so what it said survives a trailing row that said nothing. */
+  last: ChatMessage | null
+}
+
+/** Something said into a thread by another agent rather than by somebody typing. */
+export interface Delivery {
+  text: string
+  model: string
+  /** Who said it: an agent id. */
+  from: string
+  /** How many sends deep into an exchange this one is. */
+  hops: number
 }
 
 /** What a turn is answered with: who is speaking, and how far they may reach. Built per turn,
@@ -62,6 +78,12 @@ export interface ChatsDeps {
  */
 export class Chats {
   private readonly live = new Map<string, Live>()
+  /** The last reply asked for on each thread, so the next one can wait for it. */
+  private readonly tail = new Map<string, Promise<unknown>>()
+  /** Whoever is watching each thread right now, whether or not anything is being written into
+   *  it. A reply nobody asked for through a socket — one agent messaging another — is still
+   *  drawn as it arrives for whoever happens to have the thread open. */
+  private readonly watching = new Map<string, WebSocket>()
 
   constructor(private readonly deps: ChatsDeps) {}
 
@@ -100,11 +122,20 @@ export class Chats {
   remove(id: string): void {
     this.live.get(id)?.abort.abort()
     this.live.delete(id)
+    this.tail.delete(id)
+    this.watching.delete(id)
     this.deps.store.remove(id)
   }
 
   working(id: string): boolean {
     return this.live.has(id)
+  }
+
+  /** How far into an exchange between agents the reply being written right now is, so the
+   *  turn's own tools know what is left of the budget. Zero for a thread nobody has messaged
+   *  into, which is every thread a person is typing in. */
+  hopsIn(id: string): number {
+    return this.live.get(id)?.hops ?? 0
   }
 
   /** Emptied, and any reply on its way stopped: what it was answering is gone, so nobody is
@@ -125,6 +156,8 @@ export class Chats {
       live.socket?.close()
     }
     this.live.clear()
+    this.tail.clear()
+    this.watching.clear()
   }
 
   /**
@@ -138,8 +171,10 @@ export class Chats {
       return
     }
 
+    const held = this.watching.get(chat)
+    if (held && held !== socket) held.close()
+    this.watching.set(chat, socket)
     const live = this.live.get(chat)
-    if (live?.socket && live.socket !== socket) live.socket.close()
     if (live) live.socket = socket
 
     send(socket, {
@@ -159,43 +194,87 @@ export class Chats {
         // A frame nobody can read is dropped rather than answered, the way the terminal's are.
         return
       }
-      if (message.type === 'send') void this.send(chat, socket, message)
+      if (message.type === 'send') this.said(chat, socket, message)
       else if (message.type === 'stop') this.stop(chat)
     })
 
     // Not a stop: what closed may be a laptop lid.
     socket.on('close', () => {
+      if (this.watching.get(chat) === socket) this.watching.delete(chat)
       const held = this.live.get(chat)
       if (held?.socket === socket) held.socket = null
     })
   }
 
-  /** Somebody said something. The question is stored before the answer is asked for, so a reply
-   *  that never comes still leaves a conversation that says what was asked. */
-  private async send(
+  /**
+   * Somebody typing said something. A thread that is already answering is told so rather than
+   * put in the line: a person who pressed send twice meant it once, and the second one would
+   * arrive as an answer to a question they had forgotten asking.
+   */
+  private said(
     chat: string,
     socket: WebSocket,
     { text, model }: { text: string; model: string },
-  ): Promise<void> {
-    if (!text.trim()) return
+  ): void {
     if (this.live.has(chat)) {
       send(socket, { type: 'error', message: 'a reply is already on its way' })
       return
     }
+    void this.queue(chat, () => this.reply(chat, { text, model }))
+  }
 
-    this.deps.store.addMessage(chat, 'user', text)
+  /**
+   * Another agent said something into this thread. It is the socket's own path with nobody
+   * having asked for it through a socket: the answer is written down as it arrives whether or
+   * not anybody has the thread open, and where somebody does, they watch it arrive.
+   *
+   * It waits its turn rather than being refused: an agent handed work while it is working
+   * should get it when it is free. What comes back is the reply as it finally stood, for
+   * whoever asked to hear about it.
+   */
+  deliver(chat: string, { text, model, from, hops }: Delivery): Promise<ChatMessage | null> {
+    return this.queue(chat, () => this.reply(chat, { text, model, from, hops }))
+  }
+
+  /** One thread answers one thing at a time: the model is speaking as somebody, and two
+   *  answers being written at once is two of them. */
+  private queue(
+    chat: string,
+    reply: () => Promise<ChatMessage | null>,
+  ): Promise<ChatMessage | null> {
+    const answered = (this.tail.get(chat) ?? Promise.resolve()).then(reply)
+    this.tail.set(chat, answered.catch(() => null))
+    return answered
+  }
+
+  /** The question is stored before the answer is asked for, so a reply that never comes still
+   *  leaves a conversation that says what was asked. */
+  private async reply(
+    chat: string,
+    { text, model, from, hops = 0 }: Partial<Delivery> & { text: string; model: string },
+  ): Promise<ChatMessage | null> {
+    if (!text.trim()) return null
+
+    const asked = this.deps.store.addMessage(chat, 'user', text, Date.now(), from)
     const held = this.deps.store.chat(chat)
-    if (!held) return
+    if (!held) return null
+    // A delivery is the one message that lands in a thread without the browser having put it
+    // there itself, so it is sent on: what a person types, the page has already drawn.
+    if (from) send(this.watching.get(chat) ?? null, { type: 'said', message: asked })
 
     const reply = this.deps.store.addMessage(chat, 'assistant', '')
     const live: Live = {
-      socket,
+      // Whoever has the thread open, which for a delivery is nobody as often as not: the
+      // answer is written down either way and the next socket to ask is told what it missed.
+      socket: this.watching.get(chat) ?? null,
       text: '',
       steps: [],
       message: reply.id,
       abort: new AbortController(),
       saved: Date.now(),
       titles: new Map(),
+      hops,
+      last: null,
     }
     this.live.set(chat, live)
     this.deps.onLive?.(chat, true)
@@ -234,12 +313,21 @@ export class Chats {
       }
       this.settle(chat, live)
       done()
+      return this.ended(live)
     } catch (error) {
       // An abort is somebody pressing stop, and what arrived is theirs to keep.
       this.settle(chat, live)
       if (live.abort.signal.aborted) done()
       else send(live.socket, { type: 'error', message: reasonOf(error) })
+      return this.ended(live)
     }
+  }
+
+  /** What the turn ended up having said — the row it finished in, or the last one it handed
+   *  over where it went quiet after that. Null for a turn that said nothing at all. */
+  private ended(live: Live): ChatMessage | null {
+    if (live.text || live.steps.length) return this.finished(live)
+    return live.last
   }
 
   /**
@@ -263,7 +351,8 @@ export class Chats {
   private advance(chat: string, live: Live): void {
     if (!live.text && !live.steps.length) return
     this.save(live)
-    send(live.socket, { type: 'said', message: this.finished(live) })
+    live.last = this.finished(live)
+    send(live.socket, { type: 'said', message: live.last })
     const next = this.deps.store.addMessage(chat, 'assistant', '')
     live.message = next.id
     live.text = ''

@@ -117,6 +117,7 @@ export function AgentsView() {
           <AgentView
             key={`${agent.id}:${String(cleared)}`}
             agent={agent}
+            team={working}
             error={failed}
             onModel={(model) => retune(agent.id, model)}
           />
