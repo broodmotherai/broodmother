@@ -3,12 +3,12 @@ import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
 import { createMockClient, type MockClient } from '@/src/services/Mock'
 import { AppProvider } from '@/State'
-import { CoworkersView } from '@/components/coworkers/CoworkersView'
+import { AgentsView } from '@/components/agents/AgentsView'
 import { initialsOf } from '@/components/chat/Avatar'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => '/coworkers',
+  usePathname: () => '/agents',
 }))
 
 const PRIYA = {
@@ -25,17 +25,17 @@ const PRIYA = {
 async function show(
   client: MockClient = createMockClient({
     chats: [{ title: 'a chat', messages: [{ role: 'user', text: 'a chat' }] }],
-    coworkers: [PRIYA],
+    agents: [PRIYA],
     personas: [{ name: 'research/aggregator', description: 'pulls things together' }],
   }),
 ) {
   render(
     <AppProvider client={client}>
-      <CoworkersView />
+      <AgentsView />
     </AppProvider>,
   )
   // The rail fills in a beat after the page: it is asked for once the project is known.
-  await within(await screen.findByRole('complementary', { name: 'Coworkers' })).findByRole(
+  await within(await screen.findByRole('complementary', { name: 'Agents' })).findByRole(
     'button',
     { name: 'Priya Rao' },
   )
@@ -45,9 +45,9 @@ async function show(
 const settle = () => act(async () => await Promise.resolve())
 
 /* The page is the people: each with a face in their colour, and one thread to open. */
-it('lists the coworkers and opens the thread held with one', async () => {
+it('lists the agents and opens the thread held with one', async () => {
   const client = await show()
-  const people = screen.getByRole('complementary', { name: 'Coworkers' })
+  const people = screen.getByRole('complementary', { name: 'Agents' })
   expect(within(people).getByRole('img', { name: 'Priya Rao' })).toHaveTextContent('PR')
   expect(people).toHaveTextContent('research/aggregator')
 
@@ -66,7 +66,7 @@ it('lists the coworkers and opens the thread held with one', async () => {
   expect(within(thread).getAllByRole('img', { name: 'Priya Rao' })).toHaveLength(1)
 })
 
-/* A coworker's turn is several messages: "on it" lands as said, and the report follows as
+/* An agent's turn is several messages: "on it" lands as said, and the report follows as
    its own bubble with the errand's step over it — the way a person types. */
 it('draws a turn that arrives as more than one message', async () => {
   const client = await show()
@@ -118,27 +118,27 @@ it('draws a turn that arrives as more than one message', async () => {
 })
 
 /* Presence is the socket's word, and it moves whether or not the thread is on screen. */
-it('shows a coworker at work when the app says so', async () => {
+it('shows an agent at work when the app says so', async () => {
   const client = await show()
-  const people = screen.getByRole('complementary', { name: 'Coworkers' })
+  const people = screen.getByRole('complementary', { name: 'Agents' })
   expect(within(people).getByRole('img', { name: 'Priya Rao' })).toBeInTheDocument()
-  act(() => client.emit({ type: 'coworker', id: 'coworker-1', working: true }))
+  act(() => client.emit({ type: 'agent', id: 'agent-1', working: true }))
   expect(within(people).getByRole('img', { name: 'Priya Rao, working' })).toBeInTheDocument()
 
   await userEvent.click(within(people).getByRole('button', { name: 'Priya Rao' }))
   await screen.findByRole('region', { name: 'Conversation with Priya Rao' })
   expect(screen.getByRole('banner')).toHaveTextContent('working…')
-  act(() => client.emit({ type: 'coworker', id: 'coworker-1', working: false }))
+  act(() => client.emit({ type: 'agent', id: 'agent-1', working: false }))
   expect(screen.getByRole('banner')).toHaveTextContent('available')
 })
 
 /* Hiring: a name, a persona the project carries, and they are in the rail with their thread
    open. The persona is the one field that has to be picked; the rest have answers already. */
-it('makes a coworker from the dialog and opens their thread', async () => {
+it('makes an agent from the dialog and opens their thread', async () => {
   const client = await show()
-  await userEvent.click(screen.getByRole('button', { name: 'New coworker' }))
-  const dialog = await screen.findByRole('dialog', { name: 'New coworker' })
-  const add = within(dialog).getByRole('button', { name: 'Add coworker' })
+  await userEvent.click(screen.getByRole('button', { name: 'New agent' }))
+  const dialog = await screen.findByRole('dialog', { name: 'New agent' })
+  const add = within(dialog).getByRole('button', { name: 'Add agent' })
   expect(add).toBeDisabled()
 
   await userEvent.type(within(dialog).getByLabelText('Name'), 'Sam')
@@ -148,19 +148,19 @@ it('makes a coworker from the dialog and opens their thread', async () => {
   expect(add).toBeEnabled()
   await userEvent.click(add)
 
-  const people = screen.getByRole('complementary', { name: 'Coworkers' })
+  const people = screen.getByRole('complementary', { name: 'Agents' })
   await within(people).findByRole('button', { name: 'Sam' })
   await screen.findByRole('region', { name: 'Conversation with Sam' })
-  const made = (await client.request('GET /api/coworkers', null)).coworkers
+  const made = (await client.request('GET /api/agents', null)).agents
   expect(made.map((one) => one.name)).toEqual(['Priya Rao', 'Sam'])
   expect(made[1]).toMatchObject({ persona: 'research/aggregator', attachments: 'attachments/sam' })
 })
 
-/* What can be done to a coworker is behind the row's mark: the thread emptied, or the
-   coworker gone — and gone takes the thread with it. */
-it('clears a thread and removes a coworker from the row’s menu', async () => {
+/* What can be done to an agent is behind the row's mark: the thread emptied, or the
+   agent gone — and gone takes the thread with it. */
+it('clears a thread and removes an agent from the row’s menu', async () => {
   const client = await show()
-  const people = screen.getByRole('complementary', { name: 'Coworkers' })
+  const people = screen.getByRole('complementary', { name: 'Agents' })
   await userEvent.click(within(people).getByRole('button', { name: 'Priya Rao' }))
   const thread = await screen.findByRole('region', { name: 'Conversation with Priya Rao' })
   await within(thread).findByText('on it')
@@ -174,18 +174,18 @@ it('clears a thread and removes a coworker from the row’s menu', async () => {
   expect((await client.request('GET /api/chat', { chat: 'chat-2' })).chat.messages).toEqual([])
 
   await userEvent.click(within(people).getByRole('button', { name: 'Options for Priya Rao' }))
-  await userEvent.click(await screen.findByRole('menuitem', { name: 'Remove coworker' }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: 'Remove agent' }))
   await settle()
   expect(within(people).queryByRole('button', { name: 'Priya Rao' })).not.toBeInTheDocument()
   expect(screen.queryByRole('region', { name: 'Conversation with Priya Rao' })).not.toBeInTheDocument()
-  expect((await client.request('GET /api/coworkers', null)).coworkers).toEqual([])
+  expect((await client.request('GET /api/agents', null)).agents).toEqual([])
 })
 
 /* Its own tab, so the rail holds people and nothing else: the project's chats are on the
    page next door and do not sort in among them. */
 it('lists people and not the project’s chats', async () => {
   await show()
-  const people = screen.getByRole('complementary', { name: 'Coworkers' })
+  const people = screen.getByRole('complementary', { name: 'Agents' })
   expect(within(people).getAllByRole('button', { name: 'Priya Rao' })).toHaveLength(1)
   expect(within(people).queryByRole('button', { name: 'a chat' })).not.toBeInTheDocument()
 })

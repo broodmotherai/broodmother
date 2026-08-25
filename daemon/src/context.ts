@@ -37,7 +37,7 @@ import { Chats } from '@daemon/features/chat/Chats'
 import { ChatStore } from '@daemon/features/chat/db'
 import { chatStream } from '@daemon/features/chat/model'
 import { chatTools } from '@daemon/features/chat/tools'
-import { Coworkers } from '@daemon/features/coworkers/Coworkers'
+import { Agents } from '@daemon/features/agents/Agents'
 import { crontabScheduler } from '@daemon/features/tasks/scheduler'
 import { TriggerStore } from '@daemon/features/tasks/state'
 import {
@@ -130,7 +130,7 @@ export class AppContext {
   readonly tasks: Tasks
   readonly activityService: ActivityService
   readonly chats: Chats
-  readonly coworkers: Coworkers
+  readonly agents: Agents
   readonly branches: BranchService
   readonly profiles: ProfileService
   readonly workspace: WorkspaceService
@@ -229,11 +229,11 @@ export class AppContext {
       project: () => this.config.projectPath,
       stream,
       // The room it wakes up in, asked each turn: the project, the scope and what is
-      // syncing all move under a conversation that stays open. A coworker's thread is
-      // answered by the coworker; any other, by the page.
+      // syncing all move under a conversation that stays open. An agent's thread is
+      // answered by the agent; any other, by the page.
       turn: async (chat, note) => {
-        const coworker = this.coworkers.of(chat)
-        if (coworker) return this.coworkers.turn(coworker, note)
+        const agent = this.agents.of(chat)
+        if (agent) return this.agents.turn(agent, note)
         return {
           system: brief(this.briefState(this.here(), this.scope, 'chat')),
           tools: chatTools(reach()),
@@ -241,11 +241,11 @@ export class AppContext {
         }
       },
       onLive: (chat, working) => {
-        const coworker = this.chatStore.coworkerOfChat(chat)
-        if (coworker) this.broadcast({ type: 'coworker', id: coworker.id, working })
+        const agent = this.chatStore.agentOfChat(chat)
+        if (agent) this.broadcast({ type: 'agent', id: agent.id, working })
       },
     })
-    this.coworkers = new Coworkers({
+    this.agents = new Agents({
       store: this.chatStore,
       chats: this.chats,
       project: () =>
@@ -259,7 +259,7 @@ export class AppContext {
       persona: (name) =>
         this.projectOpen ? readPersona(this.projectOpen.path, name) : Promise.resolve(null),
       profile: () => this.profiles.active?.name ?? null,
-      brief: () => brief(this.briefState(this.here(), this.scope, 'coworker')),
+      brief: () => brief(this.briefState(this.here(), this.scope, 'agent')),
       terminalBrief: () => brief(this.briefState(this.here(), this.scope)),
       checkout: () => this.here(),
       env: () => this.agentEnv(),

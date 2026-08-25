@@ -8,10 +8,14 @@ import { type TerminalKind } from '@/components/terminal/Kinds'
 const ROUTES_KEY = 'broodmother.routes'
 const TABS_KEY = 'broodmother.tabs'
 
-/** Projects were called vaults, and what an older window wrote down says so — in the scope
- *  keys and in the routes under them. Read back under the name they have now. */
+/** Projects were called vaults and agents were called coworkers, and what an older window
+ *  wrote down says so — in the scope keys and in the routes under them. Read back under the
+ *  names they have now. */
 const adopted = (text: string) =>
-  text.replaceAll('#vault#', '#project#').replaceAll('/doc/vault/', '/doc/project/')
+  text
+    .replaceAll('#vault#', '#project#')
+    .replaceAll('/doc/vault/', '/doc/project/')
+    .replaceAll('/coworkers', '/agents')
 
 /** The count out of a `terminal:4`, so the next one made is not a name already taken. */
 const numberOf = (id: string) => Number(id.split(':')[1]) || 0
@@ -22,7 +26,7 @@ const EMPTY: Tab[] = []
 /** The app's own chrome: pages about the app rather than places in any tree. Nothing here is
  *  opened in a tab or run in a shell, and a scope change while one is up changes what the page
  *  is about rather than where you are. */
-export const APP_PAGES = ['/settings', '/tasks', '/coworkers', '/chat']
+export const APP_PAGES = ['/settings', '/tasks', '/agents', '/chat']
 
 const isRoot = (value: string): value is DocRoot =>
   value === 'project' || /^repo:.+$/.test(value)

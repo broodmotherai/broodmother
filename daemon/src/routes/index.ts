@@ -4,7 +4,7 @@ import type { AppContext } from '../context'
 import { activity } from './activity'
 import { branches } from './branches'
 import { chat } from './chat'
-import { coworkers } from './coworkers'
+import { agents } from './agents'
 import { diff } from './diff'
 import { docs } from './docs'
 import { git } from './git'
@@ -19,7 +19,7 @@ const TABLES = [
   activity,
   branches,
   chat,
-  coworkers,
+  agents,
   diff,
   docs,
   git,
@@ -34,7 +34,7 @@ type Registered =
   | keyof typeof activity
   | keyof typeof branches
   | keyof typeof chat
-  | keyof typeof coworkers
+  | keyof typeof agents
   | keyof typeof diff
   | keyof typeof docs
   | keyof typeof git

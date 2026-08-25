@@ -50,10 +50,10 @@ export interface App {
   /** What is at work in each checkout, by its path: Claude by its own account, a command by
    *  the shell's foreground. The branch menu reads it for its dots. */
   activity: ActivityStates
-  /** Which coworkers have a reply on the way, by id — the rail's presence dots, kept here so
+  /** Which agents have a reply on the way, by id — the rail's presence dots, kept here so
    *  they move while some other thread is on screen. What the socket has said since the page
    *  loaded; the list itself says where each stood when it was asked for. */
-  coworkersWorking: Record<string, boolean>
+  agentsWorking: Record<string, boolean>
   /** False until config, projects and profiles have answered — the shell gates on all three,
    *  and rendering before they land shows the home screen for a frame. */
   ready: boolean
@@ -222,7 +222,7 @@ export function AppProvider({
   const [changes, setChanges] = useState(NO_CHANGES)
   const [sync, setSync] = useState<SyncStatus>(idleSync)
   const [activity, setActivity] = useState<ActivityStates>({})
-  const [coworkersWorking, setCoworkersWorking] = useState<Record<string, boolean>>({})
+  const [agentsWorking, setAgentsWorking] = useState<Record<string, boolean>>({})
   const [ready, setReady] = useState(false)
   const [config, setConfig] = useState<BroodmotherConfig | null>(null)
   const [configReset, setConfigReset] = useState<string[]>([])
@@ -397,8 +397,8 @@ export function AppProvider({
           case 'activity':
             setActivity(message.activity)
             break
-          case 'coworker':
-            setCoworkersWorking((held) => ({ ...held, [message.id]: message.working }))
+          case 'agent':
+            setAgentsWorking((held) => ({ ...held, [message.id]: message.working }))
             break
           case 'error':
             // Nothing surfaces this now that the status bar is gone. Left as a case so the
@@ -478,7 +478,7 @@ export function AppProvider({
     changes,
     sync,
     activity,
-    coworkersWorking,
+    agentsWorking,
     ready,
     config,
     configReset,

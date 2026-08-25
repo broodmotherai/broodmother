@@ -146,7 +146,7 @@ against a temporary home.
 ## See Also
 
 - [API Reference](api.md) — every route the browser can call
-- [Subsystems](subsystems.md) — chat, coworkers, tasks, sync, terminals
+- [Subsystems](subsystems.md) — chat, agents, tasks, sync, terminals
 - [Tools](tools.md) — what an agent can do here
 - [Embedding](embedding.md) — starting the daemon from a host
 - [Exploration Guide](exploration-guide.md) — how to read this source

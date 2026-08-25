@@ -1,12 +1,12 @@
 /**
- * Coworkers: the people-shaped agents under the chats on the chat page. One wears a persona
+ * Agents: the people-shaped agents under the chats on the chat page. One wears a persona
  * from the project's `.personas/`, answers in a work chat the way a colleague types — short,
  * in the persona's voice — and does what it is handed with real hands: a shell, and Claude Code
  * running in the checkout. Each has one running conversation, the way a DM does, and a folder
  * under `attachments/` where what it makes goes.
  */
 
-export interface Coworker {
+export interface Agent {
   id: string
   /** What you call them — "Priya", not the persona's path. */
   name: string
@@ -24,47 +24,47 @@ export interface Coworker {
   createdAt: number
 }
 
-export interface CoworkerSummary extends Coworker {
+export interface AgentSummary extends Agent {
   /** Whether a reply of theirs is being written right now — the presence dot. */
   working: boolean
   /** When the last thing was said in their thread, or null when nothing has been. */
   lastAt: number | null
 }
 
-export interface NewCoworker {
+export interface NewAgent {
   name: string
   persona: string
   model: string
   color: string
 }
 
-/** Every coworker in the open project, alphabetically; none when no project is open. */
-export interface GetCoworkers {
+/** Every agent in the open project, alphabetically; none when no project is open. */
+export interface GetAgents {
   request: null
-  response: { coworkers: CoworkerSummary[] }
+  response: { agents: AgentSummary[] }
 }
 
-export interface PostCoworkers {
-  request: NewCoworker
-  response: { coworker: Coworker }
+export interface PostAgents {
+  request: NewAgent
+  response: { agent: Agent }
 }
 
-/** The coworker and their conversation go together; the attachments folder stays, since what
+/** The agent and their conversation go together; the attachments folder stays, since what
  *  they made is yours. */
-export interface DeleteCoworker {
-  request: { coworker: string }
+export interface DeleteAgent {
+  request: { agent: string }
   response: { ok: true }
 }
 
-/** The conversation emptied, the coworker kept. */
-export interface PostCoworkerClear {
-  request: { coworker: string }
+/** The conversation emptied, the agent kept. */
+export interface PostAgentClear {
+  request: { agent: string }
   response: { ok: true }
 }
 
-/** Which model answers as them, changed on a coworker who already exists. The thread is kept:
+/** Which model answers as them, changed on an agent who already exists. The thread is kept:
  *  who they are is the persona, and the model is only what is behind the voice. */
-export interface PostCoworkerModel {
-  request: { coworker: string; model: string }
-  response: { coworker: Coworker }
+export interface PostAgentModel {
+  request: { agent: string; model: string }
+  response: { agent: Agent }
 }

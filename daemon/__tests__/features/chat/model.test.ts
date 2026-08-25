@@ -224,7 +224,7 @@ it('runs a tool the model asked for, and answers with what it found', async () =
 })
 
 /** The wire for a turn that says something and then reaches for a tool — "on it", then the
- *  errand — which is what a coworker's turn looks like. */
+ *  errand — which is what an agent's turn looks like. */
 const sayingThenReaching = (said: string, id: string, name: string, input: unknown) => [
   {
     type: 'message_start',
@@ -303,7 +303,7 @@ it('breaks between what was said and the tool that followed it', async () => {
   expect(steps[0].step.summary).toBe('$ ls')
 })
 
-/* A coworker's "on it" and its report are two bubbles and one answer; a provider is owed
+/* An agent's "on it" and its report are two bubbles and one answer; a provider is owed
    turns that alternate, so they go over as one. */
 it('folds messages said back to back by one side into one turn', async () => {
   const server = await anthropic(['sure'])

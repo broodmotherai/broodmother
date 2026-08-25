@@ -89,9 +89,9 @@ function Said({
       data-lead={faced && lead ? 'true' : undefined}
     >
       {faced && lead && (
-        <div className="coworker-said-by">
+        <div className="agent-said-by">
           <Avatar name={who.name} color={who.color} />
-          <span className="coworker-said-name">{who.name}</span>
+          <span className="agent-said-name">{who.name}</span>
         </div>
       )}
       {steps && steps.length > 0 && <Steps steps={steps} />}

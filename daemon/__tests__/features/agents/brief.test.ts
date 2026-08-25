@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { coworkerBrief } from '@daemon/features/coworkers/brief'
+import { agentBrief } from '@daemon/features/agents/brief'
 
 const VOICE = {
   name: 'Priya',
@@ -13,7 +13,7 @@ const VOICE = {
 /* The room, then the person: who they are is the persona's own words, how they talk is what
    no persona says, and where their work goes is spelled out as a path they can hand on. */
 it('puts the persona, the voice and the folder after the room', () => {
-  const text = coworkerBrief('## The room', VOICE)
+  const text = agentBrief('## The room', VOICE)
   expect(text.indexOf('## The room')).toBeLessThan(text.indexOf('## Who you are'))
   expect(text).toContain('You are Priya')
   expect(text).toContain('You pull things together.')
@@ -24,10 +24,10 @@ it('puts the persona, the voice and the folder after the room', () => {
   expect(text).toContain('`claude_code` and `shell`')
 })
 
-/* A persona taken out from under a coworker is said, not swallowed: better a colleague who
+/* A persona taken out from under an agent is said, not swallowed: better a colleague who
    knows their brief has gone than one with no voice at all. */
 it('says so when the persona has gone missing', () => {
-  const text = coworkerBrief('room', { ...VOICE, personaBody: null, profile: null })
+  const text = agentBrief('room', { ...VOICE, personaBody: null, profile: null })
   expect(text).toContain('`research/aggregator` is not in the project')
   expect(text).toContain('messaging the person you work with')
 })

@@ -10,7 +10,7 @@ export type ServerMessage =
   /** The whole picture each time, not a delta: it is a handful of paths, and a client that
    *  missed one message would otherwise carry a state nothing corrects. */
   | { type: 'activity'; activity: ActivityStates }
-  /** A coworker's reply starting or landing, so the rail's presence dot moves while you are
+  /** An agent's reply starting or landing, so the rail's presence dot moves while you are
    *  in some other thread. */
-  | { type: 'coworker'; id: string; working: boolean }
+  | { type: 'agent'; id: string; working: boolean }
   | { type: 'error'; message: string }

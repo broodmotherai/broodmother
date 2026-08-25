@@ -57,7 +57,7 @@ const ALLOWED = new Set([
  *   DELETE /api/terminal        ends somebody's shell
  *   /api/chat, /api/chats       a conversation reading or deleting conversations, its own
  *                               included, while its reply is still being written into one
- *   /api/coworker, /api/coworkers   a coworker making, clearing or removing coworkers — itself
+ *   /api/agent, /api/agents     an agent making, clearing or removing agents — itself
  *                               included, mid-sentence
  *   GET /api/file               bytes rather than JSON; nothing a model can read
  */

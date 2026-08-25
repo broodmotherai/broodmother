@@ -272,26 +272,26 @@ describe('the chat surface', () => {
   })
 })
 
-/* A coworker is the chat page with hands: the same tools, and a shell and Claude Code in the
+/* An agent is the chat page with hands: the same tools, and a shell and Claude Code in the
    checkout besides — so the brief says where it is standing, and offers a skill and git as
    things it can run. */
-describe('the coworker surface', () => {
-  const COWORKER: BriefState = {
+describe('the agent surface', () => {
+  const AGENT: BriefState = {
     ...STATE,
-    surface: 'coworker',
+    surface: 'agent',
     skills: [{ name: 'deploy', description: 'ship it' }],
   }
 
   it('says which room it is in, and that its tools reach the disk', () => {
-    const text = brief(COWORKER)
-    expect(text).toContain('You are a coworker inside broodmother')
+    const text = brief(AGENT)
+    expect(text).toContain('You are an agent inside broodmother')
     expect(text).toContain('`shell` and `claude_code`')
     expect(text).not.toContain('there is no shell')
     expect(text).toContain('cwd')
   })
 
   it('offers a skill and git as things it can run', () => {
-    const text = brief(COWORKER)
+    const text = brief(AGENT)
     expect(text).toContain('through `shell` or by handing it to `claude_code`')
     expect(text).toContain('log, diff, status, blame')
     // Still reached through tools rather than curl.

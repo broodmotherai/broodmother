@@ -9,12 +9,12 @@ import type { GetDiff, GetDiffFile } from './diff'
 import type { GetTaskLog, GetTaskRuns, GetTasks, PostTaskRun } from './tasks'
 import type { DeleteChat, GetChat, GetChats, PostChats } from './chat'
 import type {
-  DeleteCoworker,
-  GetCoworkers,
-  PostCoworkerClear,
-  PostCoworkerModel,
-  PostCoworkers,
-} from './coworkers'
+  DeleteAgent,
+  GetAgents,
+  PostAgentClear,
+  PostAgentModel,
+  PostAgents,
+} from './agents'
 import type { GetDiagrams } from './canvas'
 import type { GetActivity } from './activity'
 import type { GetPersonas } from './personas'
@@ -104,11 +104,11 @@ interface ApiRoutes {
   'POST /api/chats': PostChats
   'GET /api/chat': GetChat
   'DELETE /api/chat': DeleteChat
-  'GET /api/coworkers': GetCoworkers
-  'POST /api/coworkers': PostCoworkers
-  'DELETE /api/coworker': DeleteCoworker
-  'POST /api/coworker/clear': PostCoworkerClear
-  'POST /api/coworker/model': PostCoworkerModel
+  'GET /api/agents': GetAgents
+  'POST /api/agents': PostAgents
+  'DELETE /api/agent': DeleteAgent
+  'POST /api/agent/clear': PostAgentClear
+  'POST /api/agent/model': PostAgentModel
   'GET /api/diagrams': GetDiagrams
   'GET /api/activity': GetActivity
   'GET /api/personas': GetPersonas

@@ -7,7 +7,7 @@ import { ambient } from '@daemon/services/Terminals'
 import { chatTools, type ToolDeps } from '../chat/tools'
 
 /** How long an errand handed to Claude Code may take before it is a stuck one. Longer than a
- *  task step's five minutes: a coworker is given afternoons, not commands. */
+ *  task step's five minutes: an agent is given afternoons, not commands. */
 const CLAUDE_MINUTES = 20
 
 /** A shell command is a quick thing; past this it is a job for `claude_code`. */
@@ -19,7 +19,7 @@ const MAX_ANSWER = 20_000
 /** How much of a progress note fits on a step's line. */
 const NOTE_MAX = 80
 
-export interface CoworkerToolDeps extends ToolDeps {
+export interface AgentToolDeps extends ToolDeps {
   /** Where the hands work: the checkout, asked each call. */
   checkout: () => string
   /** What the hands run with, beyond the ambient environment: `CLAUDE_CONFIG_DIR`, a key. */
@@ -28,7 +28,7 @@ export interface CoworkerToolDeps extends ToolDeps {
   brief: () => string
   /** The persona's body, which Claude Code wears too, so what it writes sounds like them. */
   persona: string | null
-  /** The coworker's name, so the errand knows whose it is. */
+  /** The agent's name, so the errand knows whose it is. */
   name: string
   /** Where deliverables go, absolute. */
   attachments: string
@@ -40,14 +40,14 @@ export interface CoworkerToolDeps extends ToolDeps {
 }
 
 /**
- * What a coworker can do: everything the chat can, and two more that the chat has not got —
+ * What an agent can do: everything the chat can, and two more that the chat has not got —
  * a shell in the checkout, and Claude Code in it. The chat is a conversation about a folder
- * of markdown; a coworker is somebody you hand work to, and hands are what work takes.
+ * of markdown; an agent is somebody you hand work to, and hands are what work takes.
  *
  * Expected failures come back as text rather than thrown, the way the chat's do: the brain
  * reads "command failed: …" and tells you, where an exception ends the turn mid-sentence.
  */
-export function coworkerTools(deps: CoworkerToolDeps): ToolSet {
+export function agentTools(deps: AgentToolDeps): ToolSet {
   return {
     ...chatTools(deps),
 
@@ -125,13 +125,13 @@ export function coworkerTools(deps: CoworkerToolDeps): ToolSet {
 
 /**
  * One Claude Code errand, headless, in the checkout — the shape of a task's Claude step, with
- * two differences. It wears the coworker's persona rather than a node's, so what it writes
+ * two differences. It wears the agent's persona rather than a node's, so what it writes
  * sounds like the person you asked; and it is watched as it goes: `stream-json` says what the
  * session is doing line by line, and the last thing said becomes the note the step on screen
  * wears, so a twenty-minute errand is not twenty minutes of a spinner.
  */
 async function runClaude(
-  deps: CoworkerToolDeps,
+  deps: AgentToolDeps,
   {
     task,
     minutes,
@@ -143,7 +143,7 @@ async function runClaude(
     deps.brief(),
     `## Whose errand this is
 
-You are the hands of ${deps.name}, a coworker in this project who was asked to do this in
+You are the hands of ${deps.name}, an agent in this project who was asked to do this in
 a chat and handed it to you. Do it fully. Anything you make — a report, a draft, an
 export, a script — goes in ${deps.attachments} unless the task says otherwise; make the
 folder if it is not there. Edits to documents that already exist stay where they are. When

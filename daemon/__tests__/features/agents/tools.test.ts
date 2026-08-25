@@ -4,7 +4,7 @@ import { afterAll, expect, it } from 'vitest'
 import type { ToolSet } from 'ai'
 import { Tree } from '@daemon/services/Tree'
 import { cleanup, tempDir } from '@daemon/test'
-import { coworkerTools } from '@daemon/features/coworkers/tools'
+import { agentTools } from '@daemon/features/agents/tools'
 import { titleOf } from '@daemon/features/chat/tools'
 
 afterAll(cleanup)
@@ -34,7 +34,7 @@ async function hands(env: Record<string, string> = {}, opts: { claude?: string }
   await writeFile(claude, FAKE_CLAUDE)
   await chmod(claude, 0o755)
   const notes: [string, string][] = []
-  const tools = coworkerTools({
+  const tools = agentTools({
     tree: () => new Tree(checkout),
     call: () => Promise.reject(new Error('not here')),
     checkout: () => checkout,
