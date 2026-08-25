@@ -1,6 +1,7 @@
 import { DatabaseSync } from 'node:sqlite'
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
+import { ATTACHMENTS_DIR } from '@daemon/constants/files'
 import type {
   Chat,
   ChatMessage,
@@ -394,7 +395,7 @@ export function attachmentsOf(name: string): string {
       .toLowerCase()
       .replace(/[^\p{L}\p{N}]+/gu, '-')
       .replace(/^-+|-+$/g, '') || 'agent'
-  return `attachments/${slug}`
+  return `${ATTACHMENTS_DIR}/${slug}`
 }
 
 function toAgent(row: Record<string, unknown>): Agent {

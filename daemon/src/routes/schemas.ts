@@ -141,3 +141,16 @@ export const entityLinkBody = z.object({
   relation: z.enum(RELATIONS),
   target: z.string().min(1),
 })
+
+export const motherVerdictBody = z.object({
+  suggestion: z.string().min(1),
+  verdict: z.enum(['accepted', 'dismissed', 'expired']),
+})
+
+/** The knobs the Mother page turns: the off switch, PRISM's C_FA worn as the frequency
+ *  slider, and the per-rule switches. All optional — a settings write says what moved. */
+export const motherSettingsBody = z.object({
+  on: z.boolean().optional(),
+  cfa: z.number().positive().max(10).optional(),
+  rules: z.record(z.string(), z.boolean()).optional(),
+})

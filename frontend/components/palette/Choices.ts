@@ -47,6 +47,8 @@ function commands(ctx: FlowCtx): Choice[] {
     command('Org chart', 'fork', () => done(() => ctx.agentOrg())),
     command('Chat', 'message-square', () => done(() => ctx.chat())),
     command('Entities', 'library', () => done(() => ctx.entities())),
+    command('Entity graph', 'spline', () => done(() => ctx.entityGraph())),
+    command('Mother', 'antenna', () => done(() => ctx.mother())),
     command('Settings', 'settings', () => done(() => ctx.settings())),
   ]
 }

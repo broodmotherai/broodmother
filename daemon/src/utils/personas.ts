@@ -1,5 +1,6 @@
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { PERSONAS_DIR } from '@daemon/constants/files'
 import type { Persona } from '@daemon/types/api/personas'
 import { frontmatterField, stripFrontmatter } from './markdown/frontmatter'
 
@@ -7,7 +8,7 @@ import { frontmatterField, stripFrontmatter } from './markdown/frontmatter'
 const NO_DESCRIPTION = 'no description — read its PERSONA.md'
 
 export async function scanPersonas(checkout: string): Promise<Persona[]> {
-  const base = path.join(checkout, '.personas')
+  const base = path.join(checkout, PERSONAS_DIR)
   const personas: Persona[] = []
   async function walk(dir: string, prefix: string) {
     const dirents = await readdir(dir, { withFileTypes: true }).catch(() => [])
@@ -47,9 +48,9 @@ export async function readPersona(
     return null
   const parts = name.split('/')
   if (parts.some((part) => !part || part.startsWith('.'))) return null
-  const file = path.join(checkout, '.personas', ...parts, 'PERSONA.md')
+  const file = path.join(checkout, PERSONAS_DIR, ...parts, 'PERSONA.md')
   const resolved = path.resolve(file)
-  const base = path.resolve(path.join(checkout, '.personas'))
+  const base = path.resolve(path.join(checkout, PERSONAS_DIR))
   if (!resolved.startsWith(base + path.sep) && resolved !== base) return null
   const persona = await readFile(file, 'utf8').catch(() => null)
   return persona === null ? null : stripFrontmatter(persona)
@@ -69,7 +70,7 @@ everything you write, so a run wearing this persona is unmistakable.
 /** The placeholder a new project is born with — its own documentation, in the format,
  *  saying so. */
 export async function seedPersonas(checkout: string): Promise<void> {
-  const dir = path.join(checkout, '.personas', 'hello')
+  const dir = path.join(checkout, PERSONAS_DIR, 'hello')
   await mkdir(dir, { recursive: true })
   await writeFile(path.join(dir, 'PERSONA.md'), HELLO_PERSONA)
 }

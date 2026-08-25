@@ -12,9 +12,9 @@ import { Avatar } from '@/components/chat/Avatar'
 import { Icon } from '@/components/core/Icons'
 import { loadKernel, type Kernel } from '@/components/task/Kernel'
 import { useApp } from '@/State'
+import { createForce } from '@/src/surface/Force'
 import { track } from '@/src/surface/Track'
-import { useViewport } from '@/src/surface/Viewport'
-import { createForce } from './Force'
+import { trimmed, useViewport } from '@/src/surface/Viewport'
 
 /** The radius of a node, which is the large avatar's — the CSS pins that face to the same
  *  40px so a world unit and a pixel mean the same thing here — and how far outside it the
@@ -67,16 +67,6 @@ function nearest(
     spot: best.spot,
     pull: 1 - best.distance / MAGNET_REACH,
     held: best.distance <= MAGNET_HOLD,
-  }
-}
-
-/** A line stops at the ring rather than the middle, so it meets the face instead of running
- *  under it. */
-function trimmed(from: { x: number; y: number }, to: { x: number; y: number }, by: number) {
-  const distance = Math.hypot(to.x - from.x, to.y - from.y) || 1
-  return {
-    x: to.x - ((to.x - from.x) / distance) * by,
-    y: to.y - ((to.y - from.y) / distance) * by,
   }
 }
 
@@ -180,6 +170,10 @@ export function AgentOrgView({ kernel: given }: { kernel?: Kernel }) {
     const lead = agent.lead ? standing.get(agent.lead) : undefined
     return lead && agent.id !== taking ? [{ agent, lead }] : []
   })
+  /* The spider at the centre: Mother oversees whoever reports to nobody. She is drawn by
+     the view rather than stored as a node — she comes pre with broodmother, and the
+     chart's data is untouched by her. The origin is where the pane centres itself. */
+  const overseen = spots.filter((spot) => !spot.lead && spot.id !== taking)
 
   async function lead(agent: string, to: string | null) {
     try {
@@ -349,6 +343,20 @@ export function AgentOrgView({ kernel: given }: { kernel?: Kernel }) {
                 </g>
               )
             })}
+            {overseen.map((agent) => {
+              const end = trimmed({ x: 0, y: 0 }, agent, NODE_R + RING)
+              return (
+                <line
+                  key={`mother-${agent.id}`}
+                  className="org-line org-mother-line"
+                  data-dim={(near !== null && near !== agent.id) || undefined}
+                  x1={0}
+                  y1={0}
+                  x2={end.x}
+                  y2={end.y}
+                />
+              )
+            })}
             {ghost && (
               <line
                 className="org-line org-ghost"
@@ -360,6 +368,24 @@ export function AgentOrgView({ kernel: given }: { kernel?: Kernel }) {
               />
             )}
           </svg>
+          {/* Fixed at the centre, and not a body the layout knows: she is not dragged,
+              nothing is wired to her by hand, and clicking her opens her page. */}
+          <div
+            className="org-node org-mother"
+            role="link"
+            aria-label="Mother"
+            data-tip="the overseer — what she has noticed, said, and kept to herself"
+            style={{ left: -NODE_R, top: -NODE_R }}
+            onPointerDown={(event) => {
+              if (event.button === 0) event.stopPropagation()
+            }}
+            onClick={() => router.push('/mother')}
+          >
+            <span className="org-mother-face">
+              <Icon name="antenna" />
+            </span>
+            <span className="org-label">Mother</span>
+          </div>
           {spots.map((spot) => (
             <AgentNode
               key={spot.id}

@@ -103,7 +103,7 @@ it('makes an agent with a thread of their own, kept out of the chats', async () 
     id: 'agent-1',
     name: 'Priya Ó Néill',
     persona: 'research/open-aggregator',
-    attachments: 'attachments/priya-ó-néill',
+    attachments: '.attachments/priya-ó-néill',
     createdAt: 1000,
   })
   chats.create(PROJECT, 'claude-opus-5', 1001)

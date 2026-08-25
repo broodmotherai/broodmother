@@ -140,7 +140,7 @@ it('stands the rail in named bands', async () => {
   // What belongs to the project rather than to whoever has it open: the project you are in,
   // and its repos — a row each, under the section they belong to.
   // Nothing under Repos in a project with none: the section is there, and it says so.
-  expect(within(organization).getAllByRole('tab').map(named)).toEqual(['Project', 'Repos'])
+  expect(within(organization).getAllByRole('tab').map(named)).toEqual(['Project', 'Skills', 'Repos'])
 })
 
 /* The one row in the rail with rows of its own, so it folds — and folds without a tween:
@@ -156,11 +156,12 @@ it('folds the repos away under the section they hang off', async () => {
   await open('Repos')
 
   expect(repos()).toHaveAttribute('aria-expanded', 'false')
-  expect(within(organization).getAllByRole('tab').map(named)).toEqual(['Project', 'Repos'])
+  expect(within(organization).getAllByRole('tab').map(named)).toEqual(['Project', 'Skills', 'Repos'])
 
   await open('Repos')
   expect(within(organization).getAllByRole('tab').map(named)).toEqual([
     'Project',
+    'Skills',
     'Repos',
     'api',
   ])
@@ -182,6 +183,43 @@ it('opens a repo’s own page off the row under the section', async () => {
 
   await open('Project')
   expect(screen.getByRole('heading', { name: 'Git sync' })).toBeVisible()
+})
+
+/* A skill is read here rather than run — the row is the name the brief hands an agent, and
+   what its description says it is for. */
+it('lists the skills the project carries, and says when there are none', async () => {
+  await show(
+    createMockClient({
+      skills: [
+        { name: 'deck', description: 'builds a deck' },
+        { name: 'dev/changelog', description: 'what changed since the last tag' },
+      ],
+    }),
+  )
+  await open('Skills')
+  expect(screen.getByText('deck')).toBeVisible()
+  expect(screen.getByText('builds a deck')).toBeVisible()
+  expect(screen.getByText('dev/changelog')).toBeVisible()
+})
+
+it('says so in a project with no skills yet', async () => {
+  await show()
+  await open('Skills')
+  expect(screen.getByText('No skills in this project yet.')).toBeVisible()
+})
+
+it('opens a skill’s SKILL.md whole off its row', async () => {
+  await show(
+    createMockClient({
+      skills: [{ name: 'deck', description: 'builds a deck' }],
+      docs: {
+        '.tools/.skills/deck/SKILL.md': '# deck\n\nRun build.py beside this file.\n',
+      },
+    }),
+  )
+  await open('Skills')
+  await userEvent.click(screen.getByRole('button', { name: 'Read' }))
+  expect(await screen.findByText('Run build.py beside this file.')).toBeVisible()
 })
 
 it('saves the sync settings for the open project', async () => {

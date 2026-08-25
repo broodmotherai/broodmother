@@ -75,10 +75,10 @@ it('makes an agent with a thread and a folder, lists them, and takes them away',
   expect(agent).toMatchObject({
     name: 'Priya',
     persona: 'research/aggregator',
-    attachments: 'attachments/priya',
+    attachments: '.attachments/priya',
   })
   // The folder is there from the first message, and in the tree.
-  expect(await readdir(path.join(root, 'attachments'))).toEqual(['priya'])
+  expect(await readdir(path.join(root, '.attachments'))).toEqual(['priya'])
 
   const listed = (await call('GET', '/api/agents')).body as ApiResponse<'GET /api/agents'>
   expect(listed.agents).toEqual([
@@ -95,7 +95,7 @@ it('makes an agent with a thread and a folder, lists them, and takes them away',
   expect((await call('GET', '/api/agents')).body).toEqual({ agents: [] })
   expect((await call('GET', `/api/chat?chat=${agent.chat}`)).status).toBe(400)
   // What they made stays: it is yours.
-  expect(await readdir(path.join(root, 'attachments'))).toEqual(['priya'])
+  expect(await readdir(path.join(root, '.attachments'))).toEqual(['priya'])
 })
 
 it('refuses a persona the project has not got, a model nobody serves, and an agent that is not there', async () => {

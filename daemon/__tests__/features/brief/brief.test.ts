@@ -140,7 +140,7 @@ describe('brief', () => {
     })
 
     expect(text).toContain('## Skills')
-    expect(text).toContain('~/.broodmother/tester/handbook/local/.skills')
+    expect(text).toContain('~/.broodmother/tester/handbook/local/.tools/.skills')
     expect(text).toContain('hello')
     expect(text).toMatch(/train-model\s+submit a training run/)
     expect(text).toContain("read a skill's SKILL.md in full")

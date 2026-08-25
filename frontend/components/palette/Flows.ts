@@ -26,6 +26,10 @@ export interface FlowCtx {
   chat(): void
   /** The entities page: what this project has written down, and what each came from. */
   entities(): void
+  /** The entity graph: the same records, drawn as the shape they make. */
+  entityGraph(): void
+  /** The Mother page: what the overseer has noticed, said, and kept to herself. */
+  mother(): void
   toggleTerminal(): void
   projects(): void
   repos(): void
