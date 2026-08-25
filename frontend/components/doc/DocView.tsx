@@ -5,6 +5,7 @@ import { isTaskPath } from '@broodmother/types/task/schema'
 import { isCanvasPath } from '@broodmother/types/canvas/schema'
 import { isNotebookPath } from '@broodmother/notebook/path'
 import type { DocRef } from '@broodmother/types/doc'
+import { isBrowserPath } from '@broodmother/browser'
 import { isImage } from '@broodmother/media'
 import { Editor } from '@/Editor'
 import { useApp, type RootEvent } from '@/State'
@@ -29,6 +30,10 @@ export function DocView({ root, path }: DocRef) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   // An image has no text to read, and reading its bytes as text is how you corrupt it.
   const picture = isImage(path)
+  // A page is both things at once: text the editor holds, and a file the browser fetches for
+  // itself when it is being looked at rather than read. So it is read like a note *and*
+  // revised like a picture — the editor stays current whichever way it is being shown.
+  const page = isBrowserPath(path)
   useEffect(() => {
     if (picture) return
     setMarkdown(null)
@@ -55,6 +60,7 @@ export function DocView({ root, path }: DocRef) {
     // A picture is refetched by the browser, and it caches by src — which is the path, and
     // the path has not changed. The revision is what makes it ask again.
     if (picture) return setRevision((was) => was + 1)
+    if (page) setRevision((was) => was + 1)
     app.client
       .request('GET /api/doc', { root, path })
       .then((result) => {
@@ -64,7 +70,7 @@ export function DocView({ root, path }: DocRef) {
         setError(null)
       })
       .catch((cause: Error) => setError(cause.message))
-  }, [app.client, app.scopeKey, root, path, picture])
+  }, [app.client, app.scopeKey, root, path, picture, page])
 
   // A write broodmother did not make — Obsidian, a shell, an agent, a sync pull — is the truth
   // about the file, so the open copy follows it. Typing that has not reached disk yet wins,
@@ -76,13 +82,14 @@ export function DocView({ root, path }: DocRef) {
     // A picture is refetched by the browser, not by this client: bumping the revision is
     // what changes the `src` it was told to cache.
     if (picture) return setRevision((was) => was + 1)
+    if (page) setRevision((was) => was + 1)
     app.client
       .request('GET /api/doc', { root, path })
       .then((result) => setMarkdown(result.markdown))
       // A read that fails once the file has been moved or deleted says so, which is the
       // truth about what is on screen.
       .catch((cause: Error) => setError(cause.message))
-  }, [app.client, event, root, path, picture])
+  }, [app.client, event, root, path, picture, page])
 
   useEffect(() => {
     return () => {
@@ -139,7 +146,13 @@ export function DocView({ root, path }: DocRef) {
   return (
     <article className="doc">
       <div className="doc-body">
-        <Editor markdown={markdown} onChange={onChange} path={path} />
+        <Editor
+          markdown={markdown}
+          onChange={onChange}
+          path={path}
+          root={root}
+          revision={revision}
+        />
       </div>
     </article>
   )

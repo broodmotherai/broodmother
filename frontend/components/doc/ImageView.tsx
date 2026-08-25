@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { DocRef } from '@broodmother/types/doc'
-import { API_BASE } from '@/src/services/ApiDataSource'
-
-/** The URL the server serves a file's bytes from. */
-const fileUrl = ({ root, path }: DocRef) =>
-  `${API_BASE}/api/file?root=${root}&path=${encodeURIComponent(path)}`
+import { fileUrl } from '@/src/services/ApiDataSource'
 
 /**
  * An image is opened by looking at it. There is nothing to edit and nothing to save, so

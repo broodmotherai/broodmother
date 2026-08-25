@@ -160,3 +160,107 @@ describe('the right-click menu', () => {
     expect(screen.queryByRole('menuitem', { name: /Rename/ })).not.toBeInTheDocument()
   })
 })
+
+describe('a browser tab', () => {
+  const browser: Tab = {
+    id: 'browser:1',
+    kind: 'browser',
+    url: 'https://github.com/anthropics',
+    root: 'project',
+  }
+
+  /* A page names itself, and until it has, the host is the most of the address worth showing
+     in a strip this narrow. */
+  it('wears the host until the page says what it is called', () => {
+    render(
+      <TabStrip
+        tabs={[browser]}
+        activeId={browser.id}
+        onPick={vi.fn()}
+        onClose={vi.fn()}
+        onRename={vi.fn()}
+        renaming={null}
+        onRenamed={vi.fn()}
+        onCloseMany={vi.fn()}
+      />,
+    )
+    expect(screen.getByRole('tab', { name: /github\.com/ })).toBeInTheDocument()
+  })
+
+  it('wears the page title once there is one', () => {
+    render(
+      <TabStrip
+        tabs={[{ ...browser, title: 'Anthropic' }]}
+        activeId={browser.id}
+        onPick={vi.fn()}
+        onClose={vi.fn()}
+        onRename={vi.fn()}
+        renaming={null}
+        onRenamed={vi.fn()}
+        onCloseMany={vi.fn()}
+      />,
+    )
+    expect(screen.getByRole('tab', { name: /Anthropic/ })).toBeInTheDocument()
+    expect(screen.queryByText('github.com')).not.toBeInTheDocument()
+  })
+
+  /* There is no page to rename: a browser tab wears a title the page chose, and renaming it
+     here would rename nothing. */
+  it('offers no rename', async () => {
+    render(
+      <TabStrip
+        tabs={[browser]}
+        activeId={browser.id}
+        onPick={vi.fn()}
+        onClose={vi.fn()}
+        onRename={vi.fn()}
+        renaming={null}
+        onRenamed={vi.fn()}
+        onCloseMany={vi.fn()}
+      />,
+    )
+    fireEvent.contextMenu(screen.getByRole('tab', { name: /github/ }))
+    expect(await screen.findByRole('menuitem', { name: /Close$/ })).toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: /Rename/ })).not.toBeInTheDocument()
+  })
+
+  /**
+   * A browser tab needs a Chromium to hold its page, and only the desktop app has one. In a
+   * plain browser the tag renders as an unknown element and sits blank, so the honest answer
+   * is not to offer the tab at all.
+   */
+  it('is not on the plus outside the desktop app', async () => {
+    show()
+    await userEvent.click(screen.getByRole('button', { name: 'New tab' }))
+    expect(await screen.findByRole('menuitem', { name: /Terminal/ })).toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: /Browser/ })).not.toBeInTheDocument()
+  })
+
+  it('is on the plus in the desktop app', async () => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
+      'Mozilla/5.0 broodmother/0.0.0 Chrome/140.0.0.0 Electron/43.4.1 Safari/537.36',
+    )
+    const { onNew } = show()
+    await userEvent.click(screen.getByRole('button', { name: 'New tab' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: /Browser/ }))
+    expect(onNew).toHaveBeenCalledWith('browser')
+  })
+})
+
+/* A tab that has not been anywhere has no host to wear, and a nameless tab is one you cannot
+   pick out of a strip. */
+it('calls a browser tab that has been nowhere a new tab', () => {
+  render(
+    <TabStrip
+      tabs={[{ id: 'browser:1', kind: 'browser', url: 'about:blank', root: 'project' }]}
+      activeId="browser:1"
+      onPick={vi.fn()}
+      onClose={vi.fn()}
+      onRename={vi.fn()}
+      renaming={null}
+      onRenamed={vi.fn()}
+      onCloseMany={vi.fn()}
+    />,
+  )
+  expect(screen.getByRole('tab', { name: /New tab/ })).toBeInTheDocument()
+})

@@ -1,9 +1,33 @@
 import { readFile } from 'node:fs/promises'
-import { imageTypeOf } from '@daemon/utils/media'
+import type { Context } from 'hono'
+import { servedTypeOf } from '@daemon/utils/browser'
 import { normalize } from '@daemon/utils/path'
+import type { AppContext } from '../context'
 import { BadRequest, parse, query, root } from './request'
 import type { RouteTable } from './route'
-import { docBody, folderBody, moveBody } from './schemas'
+import { docBody, folderBody, moveBody, rootSchema } from './schemas'
+
+/** The bytes both file routes answer with. They differ only in where they read the address
+ *  from; what may be served, and what a path is allowed to reach, is one rule. */
+async function bytesOf(
+  c: Context,
+  ctx: AppContext,
+  of: string | undefined,
+  path: string | undefined,
+) {
+  const asked = rootSchema.safeParse(of)
+  if (!asked.success) throw new BadRequest('root must be "project" or "repo:<name>"')
+  if (!path) throw new BadRequest('missing path')
+  const type = servedTypeOf(path)
+  if (!type) throw new BadRequest('not a file this serves')
+  const bytes = await readFile(await ctx.rootOf(asked.data).tree.resolve(path))
+  return c.body(bytes.buffer as ArrayBuffer, 200, {
+    'content-type': type,
+    // The file is on disk and the watcher reports writes, so the answer is only good
+    // until something changes it.
+    'cache-control': 'no-cache',
+  })
+}
 
 export const docs = {
   /** Every tree at once: they are one sidebar, and they change together. */
@@ -15,18 +39,17 @@ export const docs = {
    * losing it. The path goes through the tree's own resolution, so this reaches nothing a
    * document could not.
    */
-  'GET /api/file': async (c, ctx) => {
-    const path = query(c, 'path')
-    const type = imageTypeOf(path)
-    if (!type) throw new BadRequest('not a file this serves')
-    const bytes = await readFile(await ctx.rootOf(root(c)).tree.resolve(path))
-    return c.body(bytes.buffer as ArrayBuffer, 200, {
-      'content-type': type,
-      // The file is on disk and the watcher reports writes, so the answer is only good
-      // until something changes it.
-      'cache-control': 'no-cache',
-    })
-  },
+  'GET /api/file': async (c, ctx) => bytesOf(c, ctx, root(c), query(c, 'path')),
+
+  /**
+   * The same bytes under a path, for a document that is rendered rather than read. A page
+   * resolves its own `href` and `src` against the folder it appears to sit in, and under the
+   * query above every page appears to sit in the site root — so the stylesheet beside a
+   * report is asked for from a place it was never written. Here the address says where the
+   * file is, and the things next to it are next to it.
+   */
+  'GET /api/file/:root/:path{.+}': async (c, ctx) =>
+    bytesOf(c, ctx, c.req.param('root'), c.req.param('path')),
 
   'GET /api/doc': async (c, ctx) =>
     c.json({ markdown: await ctx.rootOf(root(c)).tree.read(query(c, 'path')) }),

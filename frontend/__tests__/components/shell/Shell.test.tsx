@@ -1152,3 +1152,66 @@ it('stops comparing when the branch moves under it', async () => {
   )
   await screen.findByRole('treeitem', { name: 'Handbook' })
 })
+
+/* A browser tab is a pane like a terminal is: it takes the whole thing, has no route of its
+   own, and the document behind it is still there when it goes. The tag is only offered in
+   the desktop app, so the agent string has to say so before the plus will show it. */
+const desktop = () =>
+  vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
+    'Mozilla/5.0 broodmother/0.0.0 Chrome/140.0.0.0 Electron/43.4.1 Safari/537.36',
+  )
+
+const openBrowser = async () => {
+  await userEvent.click(screen.getByRole('button', { name: 'New tab' }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /Browser/ }))
+}
+
+it('gives a browser tab the whole pane, and hands it back on the way out', async () => {
+  desktop()
+  show(createMockClient())
+  await screen.findByText('the project')
+
+  await openBrowser()
+
+  expect(screen.getByLabelText('Address')).toBeVisible()
+  expect(screen.getByText('the project')).not.toBeVisible()
+
+  await userEvent.click(screen.getByRole('button', { name: /^Close/ }))
+  expect(screen.getByText('the project')).toBeVisible()
+})
+
+/**
+ * The reason a pane is mounted in the background rather than rendered when it is picked. A
+ * guest that unmounts is the page you were reading and the history behind it thrown away —
+ * so going somewhere else and coming back has to find the same guest, not a new one.
+ */
+it('keeps a browser tab loaded while another tab is up', async () => {
+  desktop()
+  show(createMockClient())
+  await screen.findByText('the project')
+  await openBrowser()
+
+  const guest = document.querySelector('webview')
+  expect(guest).not.toBeNull()
+
+  await userEvent.click(screen.getByRole('button', { name: 'New tab' }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /Terminal/ }))
+  expect(screen.getByText('a running shell')).toBeVisible()
+  // Still mounted, and still the same element — put away rather than thrown away.
+  expect(document.querySelector('webview')).toBe(guest)
+})
+
+/* A page is where the tab has got to, so a reload brings back the address rather than the
+   blank page every browser tab is born on. */
+it('brings a browser tab back where it was left', async () => {
+  desktop()
+  const first = show(createMockClient())
+  await screen.findByText('the project')
+  await openBrowser()
+  await userEvent.type(screen.getByLabelText('Address'), 'example.com{Enter}')
+
+  first.unmount()
+  show(createMockClient())
+
+  expect(await screen.findByRole('tab', { name: /example\.com/ })).toBeInTheDocument()
+})

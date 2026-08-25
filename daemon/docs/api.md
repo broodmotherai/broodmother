@@ -53,7 +53,8 @@ turns one into a status code. The body is `{ error: string }`.
 | `DELETE` | `/api/doc` | Remove it |
 | `POST` | `/api/doc/move` | Rename, which is also how it changes folder |
 | `POST` | `/api/folder` | Make one |
-| `GET` | `/api/file` | Bytes, for an image the browser fetches directly |
+| `GET` | `/api/file` | Bytes, for what the browser fetches directly — an image, a page |
+| `GET` | `/api/file/:root/:path` | The same bytes under a path, so a page resolves its own relative links |
 | `GET` | `/api/links` | What links to what, out of the project's index |
 | `GET` | `/api/git` | The repository's state |
 | `PUT` | `/api/git` | The git settings: author, remote, how much syncing |

@@ -58,6 +58,7 @@ obvious next step and a considerably larger one: it means shipping Node, both tr
 
 ```
 src/
-  main.ts       the window, and waiting for the port to open
+  main.ts       the window, the guest a browser tab runs in, and waiting for the port
   holding.ts    the page it sits on until then
+  loopback.ts   which addresses a guest is refused, kept where the renderer cannot edit it
 ```
