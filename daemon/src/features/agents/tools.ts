@@ -178,9 +178,11 @@ async function runClaude(
 You are the hands of ${deps.name}, an agent in this project who was asked to do this in
 a chat and handed it to you. Do it fully. Anything you make — a report, a draft, an
 export, a script — goes in ${deps.attachments} unless the task says otherwise; make the
-folder if it is not there. Edits to documents that already exist stay where they are. When
-you are done, say in a few lines what you did and where it is: that is what ${deps.name}
-reads back to the person who asked.`,
+folder if it is not there. Edits to documents that already exist stay where they are. If you
+find work in this checkout that the errand did not ask for and somebody else plainly did,
+leave it alone and say so in what you report back: everything this errand touches is filed as
+${deps.name}'s. When you are done, say in a few lines what you did and where it is: that is
+what ${deps.name} reads back to the person who asked.`,
     deps.persona ? `## Who ${deps.name} is\n\n${deps.persona}` : '',
   ]
     .filter(Boolean)
