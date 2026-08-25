@@ -137,3 +137,12 @@ it('filters by kind, and offers a kind nothing has been recorded under', async (
   await userEvent.click(within(rail).getByRole('button', { name: /Everything/ }))
   expect(cards()).toHaveLength(3)
 })
+
+/* The way to the picture, at the head of the rail: the list is where the day is spent, and
+   the graph is where the shape of it is read. */
+it('offers the way to the graph', async () => {
+  await show()
+  push.mockClear()
+  await userEvent.click(screen.getByRole('button', { name: 'Entity graph' }))
+  expect(push).toHaveBeenCalledWith('/entities/graph')
+})

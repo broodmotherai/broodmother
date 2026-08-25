@@ -12,9 +12,9 @@ import { Avatar } from '@/components/chat/Avatar'
 import { Icon } from '@/components/core/Icons'
 import { loadKernel, type Kernel } from '@/components/task/Kernel'
 import { useApp } from '@/State'
+import { createForce } from '@/src/surface/Force'
 import { track } from '@/src/surface/Track'
-import { useViewport } from '@/src/surface/Viewport'
-import { createForce } from './Force'
+import { trimmed, useViewport } from '@/src/surface/Viewport'
 
 /** The radius of a node, which is the large avatar's — the CSS pins that face to the same
  *  40px so a world unit and a pixel mean the same thing here — and how far outside it the
@@ -67,16 +67,6 @@ function nearest(
     spot: best.spot,
     pull: 1 - best.distance / MAGNET_REACH,
     held: best.distance <= MAGNET_HOLD,
-  }
-}
-
-/** A line stops at the ring rather than the middle, so it meets the face instead of running
- *  under it. */
-function trimmed(from: { x: number; y: number }, to: { x: number; y: number }, by: number) {
-  const distance = Math.hypot(to.x - from.x, to.y - from.y) || 1
-  return {
-    x: to.x - ((to.x - from.x) / distance) * by,
-    y: to.y - ((to.y - from.y) / distance) * by,
   }
 }
 
