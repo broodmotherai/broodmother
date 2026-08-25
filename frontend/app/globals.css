@@ -5121,16 +5121,16 @@ p.palette-label {
   color: inherit;
 }
 
-/* ---- Coworkers -------------------------------------------------------------------------- */
+/* ---- Agents -------------------------------------------------------------------------- */
 
-/* The people stand beside the conversation rather than under a bar across the top of it. A
-   coworker's name heads their thread, not the page — so the list of them begins level with
+/* The people stand beside the conversation rather than under a bar across the top of it. An
+   agent's name heads their thread, not the page — so the list of them begins level with
    that name instead of a header's height below it. */
-.coworker-page {
+.agent-page {
   flex-direction: row;
 }
 
-.coworker-column {
+.agent-column {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -5141,7 +5141,7 @@ p.palette-label {
 /* In the row rather than hanging off it. The chats' rail is placed out of the flow so the
    thread keeps the middle of the pane with the list in its margin; here there is a column
    beside it to stand against, at every width, so there is nothing left for that to do. */
-.chat-history.coworker-rail {
+.chat-history.agent-rail {
   position: static;
 }
 
@@ -5149,23 +5149,23 @@ p.palette-label {
    width, the same rows, the same place on the pane — so moving between the two tabs moves
    what is in the list rather than where the list is. A row is taller than a chat's because
    it carries two lines, the name over who they are being. */
-.coworker-rail ul {
+.agent-rail ul {
   margin: 0;
 }
 
-.coworker-rail li > button:first-child {
+.agent-rail li > button:first-child {
   padding: 0.3rem 0.45rem;
 }
 
 /* The name over the persona, both cut to the row: who they are, and who they are being. */
-.coworker-who {
+.agent-who {
   display: flex;
   flex-direction: column;
   min-width: 0;
   line-height: 1.25;
 }
 
-.coworker-persona {
+.agent-persona {
   overflow: hidden;
   color: var(--faint);
   font-size: 0.7rem;
@@ -5173,11 +5173,11 @@ p.palette-label {
   white-space: nowrap;
 }
 
-/* A face: initials on the coworker's colour, in whichever ink can be read on it. Round, the
+/* A face: initials on the agent's colour, in whichever ink can be read on it. Round, the
    one round thing on the page, because a face is the one thing here that is a person. The
-   dot at the corner is presence: grey at rest, the coworker's own colour breathing when they
+   dot at the corner is presence: grey at rest, the agent's own colour breathing when they
    are at something. */
-.coworker-avatar {
+.agent-avatar {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -5194,13 +5194,13 @@ p.palette-label {
   letter-spacing: 0.02em;
 }
 
-.coworker-avatar[data-size='large'] {
+.agent-avatar[data-size='large'] {
   width: 2.5rem;
   height: 2.5rem;
   font-size: 0.9rem;
 }
 
-.coworker-presence {
+.agent-presence {
   position: absolute;
   right: -0.1rem;
   bottom: -0.1rem;
@@ -5211,12 +5211,12 @@ p.palette-label {
   background: var(--faint);
 }
 
-.coworker-avatar[data-size='large'] .coworker-presence {
+.agent-avatar[data-size='large'] .agent-presence {
   width: 0.75rem;
   height: 0.75rem;
 }
 
-.coworker-avatar[data-working='true'] .coworker-presence {
+.agent-avatar[data-working='true'] .agent-presence {
   background: #34d399;
   animation: chat-waiting 1.2s ease-in-out infinite;
 }
@@ -5228,19 +5228,19 @@ p.palette-label {
 
    Nothing on top: it runs up against the track, which is what says it belongs to the window
    rather than standing at the head of the conversation under it. */
-.coworker-header {
+.agent-header {
   flex: none;
   padding: 0 1.5rem 0.75rem;
 }
 
-.coworker-header-row {
+.agent-header-row {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 0.75rem;
 }
 
-.coworker-header-who {
+.agent-header-who {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -5248,7 +5248,7 @@ p.palette-label {
   gap: 0.1rem;
 }
 
-.coworker-name {
+.agent-name {
   margin: 0;
   color: var(--ink);
   font-family: var(--sans);
@@ -5257,7 +5257,7 @@ p.palette-label {
   line-height: 1.2;
 }
 
-.coworker-status {
+.agent-status {
   display: flex;
   gap: 0.25rem;
   margin: 0;
@@ -5266,7 +5266,7 @@ p.palette-label {
   font-size: 0.75rem;
 }
 
-.coworker-status [data-working='true'] {
+.agent-status [data-working='true'] {
   color: #34d399;
 }
 
@@ -5285,7 +5285,7 @@ p.palette-label {
   margin-top: 0.5rem;
 }
 
-.coworker-said-by {
+.agent-said-by {
   position: relative;
   display: flex;
   align-items: center;
@@ -5293,14 +5293,14 @@ p.palette-label {
   margin: 0 0 0.25rem -2rem;
 }
 
-.coworker-said-name {
+.agent-said-name {
   color: var(--muted);
   font-family: var(--sans);
   font-size: 0.75rem;
   font-weight: 500;
 }
 
-/* A coworker's words get the ground yours do, on the other side of the column: a person is
+/* An agent's words get the ground yours do, on the other side of the column: a person is
    answering, so their turn is a bubble rather than the page the model writes onto. */
 .chat-message[data-who='true'] .chat-bubble[data-role='assistant'] {
   width: fit-content;

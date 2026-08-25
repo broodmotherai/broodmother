@@ -44,11 +44,11 @@ export interface ChatsDeps {
   /** What answers a conversation. Injected so the store, the socket and the protocol can be
    *  tested without a model at the end of them. */
   stream: ChatStream
-  /** The voice and the reach for a turn in this conversation — the page's own, or a
-   *  coworker's where the chat is theirs. `note` is for a tool with something to say while it
+  /** The voice and the reach for a turn in this conversation — the page's own, or an
+   *  agent's where the chat is theirs. `note` is for a tool with something to say while it
    *  is still running: filed by the call's id, worn by that step's row until it lands. */
   turn: (chat: Chat, note: (toolCallId: string, text: string) => void) => Promise<Turn>
-  /** A reply starting or landing, for whoever draws presence — a coworker's dot in the rail. */
+  /** A reply starting or landing, for whoever draws presence — an agent's dot in the rail. */
   onLive?: (chat: string, working: boolean) => void
 }
 

@@ -117,7 +117,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   const doc = currentDoc(pathname)
 
-  /* Settings, Tasks, Coworkers and Chat are pages about the app rather than places in it:
+  /* Settings, Tasks, Agents and Chat are pages about the app rather than places in it:
      nothing here is opened in a tab or run in a shell, so the plus and the terminal have
      nothing to offer while one is up. The terminal is hidden rather than closed — a pty that
      unmounts dies, and reading a page is not asking for the shell to end. */
@@ -320,7 +320,7 @@ export function Shell({ children }: { children: ReactNode }) {
     syncNow: () => void app.syncNow(),
     settings: () => router.push('/settings'),
     tasks: () => router.push('/tasks'),
-    coworkers: () => router.push('/coworkers'),
+    agents: () => router.push('/agents'),
     chat: () => router.push('/chat'),
     projects: () => setPicker(true),
     repos: () => setWhereMenu(true),
@@ -393,7 +393,7 @@ export function Shell({ children }: { children: ReactNode }) {
           /* Pages about the app rather than places in the project, so they sit above the
              rows rather than among them — set like rows, because this is still the tree.
 
-             The people before the conversations: you go to a coworker, and a chat is
+             The people before the conversations: you go to an agent, and a chat is
              something you go back to, so the one that is a door comes first. */
           <>
             <button
@@ -409,12 +409,12 @@ export function Shell({ children }: { children: ReactNode }) {
             <button
               type="button"
               className="row explorer-tab"
-              aria-label="Coworkers"
-              aria-pressed={pathname === '/coworkers'}
-              onClick={ctx.coworkers}
+              aria-label="Agents"
+              aria-pressed={pathname === '/agents'}
+              onClick={ctx.agents}
             >
               <Icon name="users" />
-              <span className="name">Coworkers</span>
+              <span className="name">Agents</span>
             </button>
             {/* Beside them, for the same reason: talking to a model is about the app rather
                 than about any one document in it. */}
@@ -469,7 +469,7 @@ export function Shell({ children }: { children: ReactNode }) {
               branches={app.branches}
               active={app.branch}
               live={liveBranches}
-              agents={app.agents}
+              activity={app.activity}
               onSelect={(name) => void app.openBranch(app.scope, name)}
               onCreate={(name) => app.addBranch(app.scope, name)}
               onDelete={(name) => void app.deleteBranch(app.scope, name)}

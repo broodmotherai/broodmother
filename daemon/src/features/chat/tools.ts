@@ -236,7 +236,7 @@ export function titleOf(name: string, input: unknown): string {
       return `delete ${where}`
     case 'api':
       return `${said.method ?? ''} ${said.route ?? ''}`.trim()
-    // A coworker's hands, which the chat has not got but the thread draws the same way.
+    // An agent's hands, which the chat has not got but the thread draws the same way.
     case 'claude_code':
       return `claude: ${firstLine(said.task ?? '')}`
     case 'shell':

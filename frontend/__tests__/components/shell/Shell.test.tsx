@@ -543,7 +543,7 @@ it('colours a branch by what is at work in its checkout, and follows the socket'
       { name: 'main', path: '/v/local', checkedOut: true, primary: true },
       { name: 'fix', path: '/v/fix', checkedOut: true, primary: false },
     ],
-    agents: { '/v/fix': 'busy' },
+    activity: { '/v/fix': 'busy' },
   })
   show(client)
   await screen.findByText('the project')
@@ -554,7 +554,7 @@ it('colours a branch by what is at work in its checkout, and follows the socket'
   expect(within(rows[0]!).getByRole('img', { name: 'working' })).toBeInTheDocument()
   await userEvent.keyboard('{Escape}')
 
-  client.emit({ type: 'agents', agents: { '/v/fix': 'idle' } })
+  client.emit({ type: 'activity', activity: { '/v/fix': 'idle' } })
   await userEvent.click(screen.getByRole('button', { name: 'Branch' }))
   rows = await screen.findAllByRole('menuitemradio')
   expect(within(rows[0]!).getByRole('img', { name: 'terminals open' })).toBeInTheDocument()

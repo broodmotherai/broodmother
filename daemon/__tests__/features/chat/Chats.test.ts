@@ -291,7 +291,7 @@ it('keeps a reply that only did things', async () => {
   expect(messages[1].steps).toHaveLength(1)
 })
 
-/** A coworker's turn: "on it", a break, the errand's step, the report. */
+/** An agent's turn: "on it", a break, the errand's step, the report. */
 function delegating(): ChatStream {
   return async function* () {
     yield { type: 'text', text: 'on it' }

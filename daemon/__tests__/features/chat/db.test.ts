@@ -69,19 +69,19 @@ it('takes everything said with it when a conversation goes', async () => {
   expect(chats.list(PROJECT)).toEqual([])
 })
 
-/* A coworker and the one conversation held with them are made together, and the thread is
+/* An agent and the one conversation held with them are made together, and the thread is
    theirs to reach — it is not among the chats, which would be the same conversation twice in
    the rail. Where their work goes is a slug of their name, since a later feature reads every
    one of those folders. */
-it('makes a coworker with a thread of their own, kept out of the chats', async () => {
+it('makes an agent with a thread of their own, kept out of the chats', async () => {
   const { store: chats, file } = await store()
-  const made = chats.createCoworker(
+  const made = chats.createAgent(
     PROJECT,
     { name: 'Priya Ó Néill', persona: 'research/open-aggregator', model: 'claude-opus-5', color: '#c084fc' },
     1000,
   )
   expect(made).toMatchObject({
-    id: 'coworker-1',
+    id: 'agent-1',
     name: 'Priya Ó Néill',
     persona: 'research/open-aggregator',
     attachments: 'attachments/priya-ó-néill',
@@ -90,12 +90,12 @@ it('makes a coworker with a thread of their own, kept out of the chats', async (
   chats.create(PROJECT, 'claude-opus-5', 1001)
 
   const again = new ChatStore(file)
-  expect(again.coworkers(PROJECT).map((one) => one.id)).toEqual(['coworker-1'])
-  expect(again.coworkers('/elsewhere')).toEqual([])
+  expect(again.agents(PROJECT).map((one) => one.id)).toEqual(['agent-1'])
+  expect(again.agents('/elsewhere')).toEqual([])
   expect(again.list(PROJECT).map((one) => one.id)).not.toContain(made.chat)
   expect(again.chat(made.chat)?.title).toBe('Priya Ó Néill')
-  expect(again.coworkerOfChat(made.chat)?.id).toBe('coworker-1')
-  expect(again.coworkerOfChat('chat-2')).toBeNull()
+  expect(again.agentOfChat(made.chat)?.id).toBe('agent-1')
+  expect(again.agentOfChat('chat-2')).toBeNull()
 
   // Said to, then named after nothing: a person's thread is called what they are called.
   again.addMessage(made.chat, 'user', 'morning', 1002)
@@ -103,9 +103,9 @@ it('makes a coworker with a thread of their own, kept out of the chats', async (
   expect(again.lastSaidAt(made.chat)).toBe(1002)
 })
 
-it('clears a thread and keeps it, and takes a coworker and their thread together', async () => {
+it('clears a thread and keeps it, and takes an agent and their thread together', async () => {
   const { store: chats } = await store()
-  const made = chats.createCoworker(PROJECT, {
+  const made = chats.createAgent(PROJECT, {
     name: 'Sam',
     persona: 'dev/test-writer',
     model: 'claude-opus-5',
@@ -116,13 +116,13 @@ it('clears a thread and keeps it, and takes a coworker and their thread together
   expect(chats.chat(made.chat)?.messages).toEqual([])
   expect(chats.lastSaidAt(made.chat)).toBeNull()
 
-  chats.removeCoworker(made.id)
-  expect(chats.coworker(made.id)).toBeNull()
+  chats.removeAgent(made.id)
+  expect(chats.agent(made.id)).toBeNull()
   expect(chats.chat(made.chat)).toBeNull()
-  expect(chats.coworkers(PROJECT)).toEqual([])
+  expect(chats.agents(PROJECT)).toEqual([])
 })
 
-/* A file written before there were coworkers has no `coworker` column on its chats, and the
+/* A file written before there were agents has no `agent` column on its chats, and the
    list runs whole on every open — so opening it adds the column and every chat in it stays. */
 it('brings an older file up to date on opening', async () => {
   const { store: first, file } = await store()
@@ -134,11 +134,41 @@ it('brings an older file up to date on opening', async () => {
     CREATE TABLE fresh AS SELECT id, project, title, model, created_at, updated_at FROM chats;
     DROP TABLE chats;
     ALTER TABLE fresh RENAME TO chats;
-    DROP TABLE coworkers;
+    DROP TABLE agents;
   `)
   raw.close()
 
   const again = new ChatStore(file)
   expect(again.list(PROJECT).map((one) => one.id)).toEqual([chat.id])
-  expect(again.coworkers(PROJECT)).toEqual([])
+  expect(again.agents(PROJECT)).toEqual([])
+})
+
+/* Agents were called coworkers, and the tables under them said so. Getting the order of the
+   rename wrong loses everybody somebody had, which is the one thing a rename must not do. */
+it('carries the coworkers of an older file over as agents, with their threads', async () => {
+  const { store: first, file } = await store()
+  const made = first.createAgent(
+    PROJECT,
+    { name: 'Priya', persona: 'research/open-aggregator', model: 'claude-opus-5', color: '#c084fc' },
+    1000,
+  )
+  first.addMessage(made.chat, 'user', 'morning', 1001)
+  const chat = first.create(PROJECT, 'claude-opus-5', 1002)
+  first.close()
+
+  const { DatabaseSync } = await import('node:sqlite')
+  const raw = new DatabaseSync(file)
+  raw.exec(`
+    DROP INDEX agents_by_project;
+    ALTER TABLE agents RENAME TO coworkers;
+    CREATE INDEX coworkers_by_project ON coworkers (project, id);
+    ALTER TABLE chats RENAME COLUMN agent TO coworker;
+  `)
+  raw.close()
+
+  const again = new ChatStore(file)
+  expect(again.agents(PROJECT)).toEqual([made])
+  expect(again.agentOfChat(made.chat)?.id).toBe(made.id)
+  expect(again.chat(made.chat)?.messages.map((one) => one.text)).toEqual(['morning'])
+  expect(again.list(PROJECT).map((one) => one.id)).toEqual([chat.id])
 })

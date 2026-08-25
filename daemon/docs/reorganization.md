@@ -79,7 +79,7 @@ src/
     errors.ts                AppError → status, the whole of onError
 
   services/
-    ProjectService.ts  TreeService.ts  GitService.ts  GitHubService.ts  AgentService.ts
+    ProjectService.ts  TreeService.ts  GitService.ts  GitHubService.ts  ActivityService.ts
     BranchService.ts   DiffService.ts  ProfileService.ts  WorkspaceService.ts
     SyncLoop.ts        LinkIndex.ts    ConfigStore.ts     Terminals.ts   Relay.ts
 

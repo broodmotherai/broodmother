@@ -40,7 +40,7 @@ src/
   context.ts    AppContext — the open profile, project and repos
   services/     the five watchers
   chat/         one conversation, streamed
-  coworkers/    the chat page with hands
+  agents/       the chat page with hands
   brief/        what an agent is handed first
   tasks/        the graph, its blocks, its two clocks
   sockets/      the relay and the ptys
@@ -58,7 +58,7 @@ __tests__/      mirrors src/, plus lib/ for the domain modules
 
 - [Architecture](docs/architecture.md) — the pipeline, the context, the services
 - [API Reference](docs/api.md) — every route and socket
-- [Subsystems](docs/subsystems.md) — chat, coworkers, tasks, sync, terminals, git
+- [Subsystems](docs/subsystems.md) — chat, agents, tasks, sync, terminals, git
 - [Tools](docs/tools.md) — what an agent can do here
 - [Embedding](docs/embedding.md) — starting the daemon from a host
 - [Exploration Guide](docs/exploration-guide.md) — how to read this source

@@ -136,7 +136,7 @@ export type ChatServerMessage =
   | { type: 'delta'; text: string }
   /** A step starting, or the same step again once it is finished — matched by its id. */
   | { type: 'step'; step: ChatStep }
-  /** A message finished mid-turn, with more to come: a coworker says "on it", does the thing,
+  /** A message finished mid-turn, with more to come: an agent says "on it", does the thing,
    *  and reports — three bubbles from one question. What is arriving starts over after this. */
   | { type: 'said'; message: ChatMessage }
   | { type: 'done'; message: ChatMessage }

@@ -34,7 +34,7 @@ components/core/    The design system — buttons, menus, modals, fields, the ic
                     Every feature imports it from here
 components/         Feature UI, by domain — layout, editor, terminal, palette, chat, task,
                     notebook, diff, canvas, doc, shell, project, profile, repo, github,
-                    settings, coworkers
+                    settings, agents
 src/services/       DataSource (the interface naming every call), ApiDataSource (the one
                     implementation, the only place a route path is written, and where the
                     `api` singleton is made), Mock

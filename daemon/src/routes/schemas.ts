@@ -76,16 +76,16 @@ export const modelKeyBody = z.object({
  *  picker in the composer is the answer and it has one before anything is said. */
 export const newChatBody = z.object({ model: modelId() })
 
-/** A coworker: a name, a persona the project carries, a model, a colour. The persona is
+/** An agent: a name, a persona the project carries, a model, a colour. The persona is
  *  checked against the project rather than here, since here does not know what it carries. */
-export const newCoworkerBody = z.object({
+export const newAgentBody = z.object({
   name: z.string().trim().min(1).max(60),
   persona: z.string().min(1),
   model: modelId(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
 })
-export const coworkerBody = z.object({ coworker: z.string().min(1) })
-export const coworkerModelBody = z.object({
-  coworker: z.string().min(1),
+export const agentBody = z.object({ agent: z.string().min(1) })
+export const agentModelBody = z.object({
+  agent: z.string().min(1),
   model: modelId(),
 })

@@ -10,12 +10,12 @@ export type BriefSync = 'off' | 'on' | 'conflicted'
 
 /**
  * Which room the agent is in. A terminal has a shell, a working directory and the whole disk;
- * the chat page has a set of tools and nothing else; a coworker is the chat page with hands —
+ * the chat page has a set of tools and nothing else; an agent is the chat page with hands —
  * a shell and Claude Code in the checkout, reached through its tools. Everything the three are
  * told about the project is the same — where it is standing differs, and so does what it can
  * reach for.
  */
-export type BriefSurface = 'terminal' | 'chat' | 'coworker'
+export type BriefSurface = 'terminal' | 'chat' | 'agent'
 
 /** The room an agent wakes up in, as whatever opened it sees the room. */
 export interface BriefState {
@@ -63,11 +63,11 @@ what you can do here: there is no shell and no filesystem beyond them. Someone m
 document you are editing open beside you — the editor follows the file on disk, so prefer
 small edits over rewriting a document out from under them.
 `.trim(),
-  // A coworker has what the chat has and a shell besides, so the honest paragraph is the
+  // An agent has what the chat has and a shell besides, so the honest paragraph is the
   // chat's with the disclaimer taken back: the tools reach the disk, and one of them is
   // Claude Code.
-  coworker: `
-You are a coworker inside broodmother, a Mac app for reading and writing a folder of
+  agent: `
+You are an agent inside broodmother, a Mac app for reading and writing a folder of
 markdown. The .md files on disk are the source of truth and git is the history. You are
 messaging someone who has the app open in front of them. Your tools are how you act: the
 document tools for small edits, and \`shell\` and \`claude_code\` for everything else — both run
@@ -116,7 +116,7 @@ function where(state: BriefState, surface: BriefSurface): string {
     ['project', project ? `${project.name} — ${tilde(project.path)}` : 'none is open yet'],
     ['scope', state.scope],
     // A chat has no working directory to be standing in, and a row naming one would be the
-    // brief telling it about a place it cannot go. A coworker's shell runs there.
+    // brief telling it about a place it cannot go. An agent's shell runs there.
     ...(surface !== 'chat'
       ? ([['cwd', tilde(state.cwd)]] as [string, string][])
       : []),
@@ -150,7 +150,7 @@ function skills(state: BriefState, surface: BriefSurface): string {
       ? `The line here is only the trigger: read a skill's SKILL.md in full before
 running it, and take what it needs — credentials, endpoints — from the environment,
 never from a file.`
-      : surface === 'coworker'
+      : surface === 'agent'
         ? `The line here is only the trigger: read a skill's SKILL.md in full before running
 it, through \`shell\` or by handing it to \`claude_code\`, and take what it needs —
 credentials, endpoints — from the environment, never from a file.`
@@ -213,7 +213,7 @@ ${
     surface === 'terminal'
       ? `A repo's repository is yours, and git is how you commit in one. Reading is git's as
 well: log, diff, status, blame, and anything else no route covers.`
-      : surface === 'coworker'
+      : surface === 'agent'
         ? `Git beyond those routes is \`shell\`'s: log, diff, status, blame, and anything else
 no route covers, run in the checkout.`
         : `Git beyond those routes is out of reach from here — no log, no diff, no commit in a

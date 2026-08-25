@@ -7,7 +7,7 @@ import type {
   ChatStep,
   ChatSummary,
 } from '@daemon/types/api/chat'
-import type { Coworker, NewCoworker } from '@daemon/types/api/coworkers'
+import type { Agent, NewAgent } from '@daemon/types/api/agents'
 
 /** How long a title taken from what you said is allowed to be. */
 const TITLE_MAX = 60
@@ -20,14 +20,51 @@ const TITLE_MAX = 60
 const MIGRATIONS: ((db: DatabaseSync) => void)[] = [
   // Answers grew steps: what a reply did on its way to being written.
   (db) => addColumn(db, 'messages', 'steps', 'TEXT'),
-  // A chat may be a coworker's one running conversation, which the chats list leaves out.
-  (db) => addColumn(db, 'chats', 'coworker', 'INTEGER'),
+  // A chat may be an agent's one running conversation, which the chats list leaves out.
+  (db) => addColumn(db, 'chats', 'agent', 'INTEGER'),
 ]
 
+/**
+ * Renaming cannot be a migration: `CREATE TABLE IF NOT EXISTS` runs first and would make an
+ * empty table beside the rows, leaving the rename to find its name taken. So these run before
+ * the schema, and check before they act the way the migrations do.
+ */
+const RENAMES: ((db: DatabaseSync) => void)[] = [
+  (db) => renameTable(db, 'coworkers', 'agents'),
+  (db) => renameColumn(db, 'chats', 'coworker', 'agent'),
+]
+
+function hasTable(db: DatabaseSync, table: string): boolean {
+  const found = db
+    .prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?`)
+    .get(table)
+  return found !== undefined
+}
+
+function columnsOf(db: DatabaseSync, table: string): string[] {
+  return db
+    .prepare(`PRAGMA table_info(${table})`)
+    .all()
+    .map((one) => (one as { name: string }).name)
+}
+
 function addColumn(db: DatabaseSync, table: string, column: string, type: string): void {
-  const columns = db.prepare(`PRAGMA table_info(${table})`).all()
-  if (columns.some((one) => (one as { name: string }).name === column)) return
+  if (columnsOf(db, table).includes(column)) return
   db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`)
+}
+
+/** A rename carries the old table's indexes with it under their old names, so the one this
+ *  file declares is dropped and made again beside the schema it belongs to. */
+function renameTable(db: DatabaseSync, from: string, to: string): void {
+  if (!hasTable(db, from) || hasTable(db, to)) return
+  db.exec(`ALTER TABLE ${from} RENAME TO ${to}`)
+  db.exec(`DROP INDEX IF EXISTS ${from}_by_project`)
+}
+
+function renameColumn(db: DatabaseSync, table: string, from: string, to: string): void {
+  const columns = columnsOf(db, table)
+  if (!columns.includes(from) || columns.includes(to)) return
+  db.exec(`ALTER TABLE ${table} RENAME COLUMN ${from} TO ${to}`)
 }
 
 /**
@@ -46,6 +83,7 @@ export class ChatStore {
   constructor(file: string) {
     mkdirSync(path.dirname(file), { recursive: true })
     this.db = new DatabaseSync(file)
+    for (const rename of RENAMES) rename(this.db)
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS chats (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,7 +103,7 @@ export class ChatStore {
         steps TEXT
       );
       CREATE INDEX IF NOT EXISTS messages_by_chat ON messages (chat, id);
-      CREATE TABLE IF NOT EXISTS coworkers (
+      CREATE TABLE IF NOT EXISTS agents (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         project TEXT NOT NULL,
         name TEXT NOT NULL,
@@ -75,7 +113,7 @@ export class ChatStore {
         chat INTEGER NOT NULL,
         created_at INTEGER NOT NULL
       );
-      CREATE INDEX IF NOT EXISTS coworkers_by_project ON coworkers (project, id);
+      CREATE INDEX IF NOT EXISTS agents_by_project ON agents (project, id);
     `)
     for (const migrate of MIGRATIONS) migrate(this.db)
   }
@@ -99,12 +137,12 @@ export class ChatStore {
 
   /** One project's conversations, newest first. Without their messages: the rail beside a chat
    *  draws names, and reading every word of every conversation to write a list of titles is a
-   *  question nobody asked. A coworker's thread is not among them — it is reached through the
-   *  coworker, and listing it here would be the same conversation twice in the rail. */
+   *  question nobody asked. An agent's thread is not among them — it is reached through the
+   *  agent, and listing it here would be the same conversation twice in the rail. */
   list(project: string): ChatSummary[] {
     return this.db
       .prepare(
-        `SELECT * FROM chats WHERE project = ? AND coworker IS NULL
+        `SELECT * FROM chats WHERE project = ? AND agent IS NULL
          ORDER BY updated_at DESC, id DESC`,
       )
       .all(project)
@@ -179,58 +217,58 @@ export class ChatStore {
   }
 
   /**
-   * A coworker, and the one conversation held with them, made together: the thread is a chat
-   * row marked with the coworker, titled with their name once and for all — the first thing
+   * An agent, and the one conversation held with them, made together: the thread is a chat
+   * row marked with the agent, titled with their name once and for all — the first thing
    * you say to a person is not what the conversation is called.
    */
-  createCoworker(project: string, input: NewCoworker, at = Date.now()): Coworker {
+  createAgent(project: string, input: NewAgent, at = Date.now()): Agent {
     const chat = this.db
       .prepare(
-        `INSERT INTO chats (project, title, model, created_at, updated_at, coworker)
+        `INSERT INTO chats (project, title, model, created_at, updated_at, agent)
          VALUES (?, ?, ?, ?, ?, 0)`,
       )
       .run(project, input.name, input.model, at, at)
     const chatRow = chat.lastInsertRowid as number
     const inserted = this.db
       .prepare(
-        `INSERT INTO coworkers (project, name, persona, model, color, chat, created_at)
+        `INSERT INTO agents (project, name, persona, model, color, chat, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(project, input.name, input.persona, input.model, input.color, chatRow, at)
     const id = inserted.lastInsertRowid as number
-    this.db.prepare(`UPDATE chats SET coworker = ? WHERE id = ?`).run(id, chatRow)
-    return this.coworker(coworkerId(id)) as Coworker
+    this.db.prepare(`UPDATE chats SET agent = ? WHERE id = ?`).run(id, chatRow)
+    return this.agent(agentId(id)) as Agent
   }
 
-  coworkers(project: string): Coworker[] {
+  agents(project: string): Agent[] {
     return this.db
-      .prepare(`SELECT * FROM coworkers WHERE project = ? ORDER BY name COLLATE NOCASE, id`)
+      .prepare(`SELECT * FROM agents WHERE project = ? ORDER BY name COLLATE NOCASE, id`)
       .all(project)
-      .map(toCoworker)
+      .map(toAgent)
   }
 
-  coworker(id: string): Coworker | null {
-    const row = this.db.prepare(`SELECT * FROM coworkers WHERE id = ?`).get(rowIdOf(id)) as
+  agent(id: string): Agent | null {
+    const row = this.db.prepare(`SELECT * FROM agents WHERE id = ?`).get(rowIdOf(id)) as
       | Record<string, unknown>
       | undefined
-    return row ? toCoworker(row) : null
+    return row ? toAgent(row) : null
   }
 
   /** Another model behind the same voice. The chat row carries it too, since that is what a
    *  conversation reopened without a client's word falls back to. */
-  setCoworkerModel(id: string, model: string): void {
-    const held = this.coworker(id)
+  setAgentModel(id: string, model: string): void {
+    const held = this.agent(id)
     if (!held) return
-    this.db.prepare(`UPDATE coworkers SET model = ? WHERE id = ?`).run(model, rowIdOf(id))
+    this.db.prepare(`UPDATE agents SET model = ? WHERE id = ?`).run(model, rowIdOf(id))
     this.db.prepare(`UPDATE chats SET model = ? WHERE id = ?`).run(model, rowIdOf(held.chat))
   }
 
   /** Whose thread a chat is, or null for a conversation that is nobody's. */
-  coworkerOfChat(chat: string): Coworker | null {
+  agentOfChat(chat: string): Agent | null {
     const row = this.db
-      .prepare(`SELECT * FROM coworkers WHERE chat = ?`)
+      .prepare(`SELECT * FROM agents WHERE chat = ?`)
       .get(rowIdOf(chat)) as Record<string, unknown> | undefined
-    return row ? toCoworker(row) : null
+    return row ? toAgent(row) : null
   }
 
   /** When the last thing was said to or by them, or null when nothing has been. */
@@ -241,11 +279,11 @@ export class ChatStore {
     return row?.at ?? null
   }
 
-  removeCoworker(id: string): void {
-    const held = this.coworker(id)
+  removeAgent(id: string): void {
+    const held = this.agent(id)
     if (!held) return
     this.remove(held.chat)
-    this.db.prepare(`DELETE FROM coworkers WHERE id = ?`).run(rowIdOf(id))
+    this.db.prepare(`DELETE FROM agents WHERE id = ?`).run(rowIdOf(id))
   }
 
   close(): void {
@@ -271,29 +309,29 @@ export function titleOf(text: string): string {
 
 const chatId = (row: number) => `chat-${String(row)}`
 const messageId = (row: number) => `msg-${String(row)}`
-const coworkerId = (row: number) => `coworker-${String(row)}`
+const agentId = (row: number) => `agent-${String(row)}`
 
 /** Ids are `chat-3` and `msg-7` rather than `3` and `7`: a rowid is a number in a file, and
  *  handing one out invites it to be treated as one. */
 function rowIdOf(id: string): number {
-  return Number(id.replace(/^(chat|msg|coworker)-/, ''))
+  return Number(id.replace(/^(chat|msg|agent)-/, ''))
 }
 
-/** Where a coworker's deliverables go, from their name: lower case, one dash between words,
+/** Where an agent's deliverables go, from their name: lower case, one dash between words,
  *  nothing a path would trip on. */
 export function attachmentsOf(name: string): string {
   const slug =
     name
       .toLowerCase()
       .replace(/[^\p{L}\p{N}]+/gu, '-')
-      .replace(/^-+|-+$/g, '') || 'coworker'
+      .replace(/^-+|-+$/g, '') || 'agent'
   return `attachments/${slug}`
 }
 
-function toCoworker(row: Record<string, unknown>): Coworker {
+function toAgent(row: Record<string, unknown>): Agent {
   const name = row.name as string
   return {
-    id: coworkerId(row.id as number),
+    id: agentId(row.id as number),
     name,
     persona: row.persona as string,
     model: row.model as string,

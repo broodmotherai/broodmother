@@ -5,7 +5,7 @@ import { parseTask } from '@broodmother/types/task/codec'
 import { parseCanvas } from '@broodmother/types/canvas/codec'
 import { runOrder } from '@broodmother/types/task/graph'
 import type { Persona } from '@broodmother/types/api/personas'
-import type { CoworkerSummary } from '@broodmother/types/api/coworkers'
+import type { AgentSummary } from '@broodmother/types/api/agents'
 import type { ApiRequest, ApiResponse, ApiRoute } from '@broodmother/types/api/routes'
 import type { TaskRun } from '@broodmother/types/api/tasks'
 import {
@@ -18,7 +18,7 @@ import {
 } from '@broodmother/types/api/chat'
 import type { TerminalServerMessage } from '@broodmother/types/api/terminal'
 import type { ServerMessage } from '@broodmother/types/api/ws'
-import type { AgentStates } from '@broodmother/types/api/agents'
+import type { ActivityStates } from '@broodmother/types/api/activity'
 import { basename } from '@broodmother/path'
 import {
   repoOf,
@@ -138,7 +138,7 @@ export function createMockClient(
     config?: BroodmotherConfig
     sync?: SyncStatus
     /** What is at work in which checkout, by path — what the branch menu's dots read. */
-    agents?: AgentStates
+    activity?: ActivityStates
     home?: string
     projects?: ProjectSummary[]
     profiles?: Profile[]
@@ -166,8 +166,8 @@ export function createMockClient(
      *  in, which is the order they read in. */
     chats?: { title?: string; messages: Pick<ChatMessage, 'role' | 'text'>[] }[]
 
-    /** Coworkers already in the open project, each with the thread held with them. */
-    coworkers?: {
+    /** Agents already in the open project, each with the thread held with them. */
+    agents?: {
       name: string
       persona: string
       color?: string
@@ -281,8 +281,8 @@ export function createMockClient(
     if (!found) throw new Error('no such chat')
     return found
   }
-  /** The coworkers, each holding a chat that is kept apart from the chats list. */
-  const coworkers: CoworkerSummary[] = (seed.coworkers ?? []).map((one, index) => {
+  /** The agents, each holding a chat that is kept apart from the chats list. */
+  const agents: AgentSummary[] = (seed.agents ?? []).map((one, index) => {
     const chat: Chat = {
       id: `chat-${String(++numbered)}`,
       title: one.name,
@@ -296,7 +296,7 @@ export function createMockClient(
     }
     chats.push(chat)
     return {
-      id: `coworker-${String(index + 1)}`,
+      id: `agent-${String(index + 1)}`,
       name: one.name,
       persona: one.persona,
       model: DEFAULT_CHAT_MODEL,
@@ -308,12 +308,12 @@ export function createMockClient(
       lastAt: one.messages?.length ? 1500 + one.messages.length - 1 : null,
     }
   })
-  const coworkerOf = (id: string) => {
-    const found = coworkers.find((one) => one.id === id)
-    if (!found) throw new Error('no such coworker')
+  const agentOf = (id: string) => {
+    const found = agents.find((one) => one.id === id)
+    if (!found) throw new Error('no such agent')
     return found
   }
-  const isCoworkerChat = (id: string) => coworkers.some((one) => one.chat === id)
+  const isAgentChat = (id: string) => agents.some((one) => one.chat === id)
   /** The open profile, holding these providers and no others. */
   const holding = (models: string[]): Profile => {
     const current = profileOf()
@@ -740,11 +740,11 @@ export function createMockClient(
       'GET /api/chats': async () => ({
         chats: [...chats]
           .reverse()
-          .filter((chat) => !isCoworkerChat(chat.id))
+          .filter((chat) => !isAgentChat(chat.id))
           .map(({ messages: _held, ...summary }) => summary),
       }),
-      'GET /api/coworkers': async () => ({ coworkers: coworkers.map((one) => ({ ...one })) }),
-      'POST /api/coworkers': async ({ name, persona, model, color }) => {
+      'GET /api/agents': async () => ({ agents: agents.map((one) => ({ ...one })) }),
+      'POST /api/agents': async ({ name, persona, model, color }) => {
         if (!(seed.personas ?? []).some((one) => one.name === persona))
           throw new Error(`no persona called ${persona} in this project`)
         const chat: Chat = {
@@ -755,38 +755,38 @@ export function createMockClient(
           messages: [],
         }
         chats.push(chat)
-        const coworker: CoworkerSummary = {
-          id: `coworker-${String(coworkers.length + 1)}`,
+        const agent: AgentSummary = {
+          id: `agent-${String(agents.length + 1)}`,
           name,
           persona,
           model,
           color,
           chat: chat.id,
           attachments: `attachments/${name.toLowerCase().replace(/\s+/g, '-')}`,
-          createdAt: 2000 + coworkers.length,
+          createdAt: 2000 + agents.length,
           working: false,
           lastAt: null,
         }
-        coworkers.push(coworker)
-        const { working: _working, lastAt: _lastAt, ...made } = coworker
-        return { coworker: made }
+        agents.push(agent)
+        const { working: _working, lastAt: _lastAt, ...made } = agent
+        return { agent: made }
       },
-      'DELETE /api/coworker': async ({ coworker }) => {
-        const held = coworkerOf(coworker)
+      'DELETE /api/agent': async ({ agent }) => {
+        const held = agentOf(agent)
         chats.splice(chats.indexOf(chatOf(held.chat)), 1)
-        coworkers.splice(coworkers.indexOf(held), 1)
+        agents.splice(agents.indexOf(held), 1)
         return { ok: true } as const
       },
-      'POST /api/coworker/clear': async ({ coworker }) => {
-        chatOf(coworkerOf(coworker).chat).messages = []
+      'POST /api/agent/clear': async ({ agent }) => {
+        chatOf(agentOf(agent).chat).messages = []
         return { ok: true } as const
       },
-      'POST /api/coworker/model': async ({ coworker, model }) => {
-        const held = coworkerOf(coworker)
+      'POST /api/agent/model': async ({ agent, model }) => {
+        const held = agentOf(agent)
         held.model = model
         chatOf(held.chat).model = model
         const { working: _working, lastAt: _lastAt, ...changed } = held
-        return { coworker: changed }
+        return { agent: changed }
       },
       'POST /api/chats': async ({ model }) => {
         const chat: Chat = {
@@ -900,7 +900,7 @@ export function createMockClient(
       },
 
       'GET /api/sync': async () => sync,
-      'GET /api/agents': async () => ({ agents: { ...(seed.agents ?? {}) } }),
+      'GET /api/activity': async () => ({ activity: { ...(seed.activity ?? {}) } }),
       'POST /api/sync/now': async () => {
         sync = {
           state: 'idle',

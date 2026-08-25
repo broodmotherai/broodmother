@@ -39,7 +39,7 @@ export interface ProfileDeps {
    *  key, the token or the identity reopens the project behind it. */
   reopen(projectPath: string | null): Promise<void>
   /** Whose Claude sessions to watch, once the profile saying where they live has changed. */
-  followAgents(): Promise<void>
+  followActivity(): Promise<void>
   project(): ProjectSummary | null
 }
 
@@ -199,7 +199,7 @@ export class ProfileService {
   private async reload(): Promise<void> {
     this.hostToken = this.profile ? ((await readAccount(this.profile))?.token ?? null) : null
     this.modelKeys = this.profile ? await readModelKeys(this.profile) : {}
-    await this.deps.followAgents()
+    await this.deps.followActivity()
   }
 
   /** Throws rather than returning empty: a picker with nothing in it and no reason why is

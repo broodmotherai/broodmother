@@ -31,7 +31,7 @@ src/
   test.ts          server(), tempDir, cleanup, until
   services/        the five watchers
   chat/            one conversation, streamed
-  coworkers/       the chat page with hands
+  agents/          the chat page with hands
   brief/           what an agent is handed first
   tasks/           the graph, its blocks, its two clocks
   sockets/         the relay and the ptys
@@ -53,7 +53,7 @@ See [the frontend README](../../frontend/README.md) for that seam.
 | A websocket            | `src/server.ts`, then `src/sockets/`                    |
 | Anything about a file  | `src/lib/tree.ts` + `src/services/TreeService.ts`       |
 | Anything about git     | `src/lib/git.ts` + `src/services/GitService.ts`         |
-| What an agent can do   | `src/chat/tools.ts`, `src/coworkers/tools.ts`           |
+| What an agent can do   | `src/chat/tools.ts`, `src/agents/tools.ts`              |
 | Why a task ran         | `src/tasks/triggers.ts`                                 |
 | Error → status code    | `src/app.ts`, the error translation block               |
 
@@ -87,7 +87,7 @@ paragraph explaining what went wrong at the other value.
 grep -oE "\.(get|post|put|patch|delete)\('[^']*'" src/app.ts
 
 # Every tool an agent is given
-grep -oE "^    [a-z_]+: tool\(" src/chat/tools.ts src/coworkers/tools.ts
+grep -oE "^    [a-z_]+: tool\(" src/chat/tools.ts src/agents/tools.ts
 
 # Every kind a task graph can hold
 grep -n "kind: '" src/lib/types/task/schema.ts

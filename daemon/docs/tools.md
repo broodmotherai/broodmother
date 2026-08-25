@@ -11,7 +11,7 @@ There are two separate tool surfaces in this daemon, and they are not the same l
 | Surface      | Defined in                | Given to                                     |
 | ------------ | ------------------------- | -------------------------------------------- |
 | **Chat**     | `src/chat/tools.ts`       | The model answering on the chat page          |
-| **Coworker** | `src/coworkers/tools.ts`  | A delegate working in a checkout              |
+| **Agent**    | `src/agents/tools.ts`     | A delegate working in a checkout              |
 
 Both are Vercel AI SDK `tool()` definitions with Zod input schemas. Neither asks permission:
 a project is a folder you pointed at, the writes are to markdown, and git is the undo. This
@@ -45,10 +45,10 @@ a context window rather than a folder.
 `api` is the interesting one — it lets the model reach the same 61 routes the browser has, so
 anything the app can do it can ask for, without a tool per verb.
 
-## Coworker Tools
+## Agent Tools
 
-A coworker is the chat page with hands. Where a chat tool reads and writes documents, a
-coworker gets a shell and Claude Code in an actual checkout:
+An agent is the chat page with hands. Where a chat tool reads and writes documents, an
+agent gets a shell and Claude Code in an actual checkout:
 
 | Tool               | Does                                                                    |
 | ------------------ | ----------------------------------------------------------------------- |
@@ -57,10 +57,10 @@ coworker gets a shell and Claude Code in an actual checkout:
 | `list_attachments` | What is in its attachments folder, by name                              |
 
 The split between the first two is the interesting one, and the descriptions say it: `shell`
-is for quick things, and *anything longer than a command is a task for `claude_code`*. A
-coworker delegates the real work rather than driving it a command at a time.
+is for quick things, and *anything longer than a command is a task for `claude_code`*. An
+agent delegates the real work rather than driving it a command at a time.
 
-`COWORKER_ROUNDS` is 24. A delegation is several tools deep — a look around, the errand, a
+`AGENT_ROUNDS` is 24. A delegation is several tools deep — a look around, the errand, a
 check of what came back — and each of those is a round.
 
 ## Task Blocks
@@ -104,7 +104,7 @@ Not a tool, but what every surface above is handed first. `src/brief/core.ts` wr
 its own comment says the distinction best:
 
 > A terminal has a shell, a working directory and the whole disk; the chat page has a set of
-> tools and nothing else; a coworker is the chat page with hands.
+> tools and nothing else; an agent is the chat page with hands.
 
 The brief says which room the agent is in, what the project is, and how much it syncs
 (`off`, `on`, `conflicted`). `brief/soul.ts` holds the default soul — what an agent is here
@@ -125,5 +125,5 @@ The exception is `agent.shell` and `agent.claude`, which run real commands in a 
 
 ## See Also
 
-- [Subsystems](subsystems.md) — how chat, coworkers and tasks are put together
+- [Subsystems](subsystems.md) — how chat, agents and tasks are put together
 - [API Reference](api.md) — what the `api` tool reaches

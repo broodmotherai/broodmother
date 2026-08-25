@@ -72,12 +72,13 @@ turns one into a status code. The body is `{ error: string }`.
 | `POST` | `/api/chats` | Start one |
 | `GET` | `/api/chat` | One, with its turns |
 | `DELETE` | `/api/chat` | Remove it |
-| `GET` | `/api/coworkers` | Who can be delegated to |
-| `POST` | `/api/coworkers` | Make one |
-| `DELETE` | `/api/coworker` | Remove one |
-| `POST` | `/api/coworker/clear` | Clear its state |
+| `GET` | `/api/agents` | Who can be delegated to |
+| `POST` | `/api/agents` | Make one |
+| `DELETE` | `/api/agent` | Remove one |
+| `POST` | `/api/agent/clear` | Clear its state |
+| `POST` | `/api/agent/model` | Change which model answers as it |
 | `GET` | `/api/personas` | The project's `.personas/` |
-| `GET` | `/api/agents` | What each checkout is doing |
+| `GET` | `/api/activity` | What each checkout is doing |
 | `GET` | `/api/tasks` | Every task |
 | `POST` | `/api/task/run` | Run one |
 | `POST` | `/api/task/stop` | Stop it |
