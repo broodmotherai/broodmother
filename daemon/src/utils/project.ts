@@ -1,4 +1,4 @@
-import { PRIMARY } from '@daemon/constants/files'
+import { PRIMARY, TASKS_DIR } from '@daemon/constants/files'
 import { mkdir, readdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import type { Profile } from '@daemon/types/profile'
@@ -35,6 +35,22 @@ export interface NewProject {
 }
 
 const DEFAULT_BRANCH = 'main'
+
+const TASKS_README = `# .tasks
+
+A \`.task\` is a flow the app runs: triggers, and the agents they set off. One anywhere in
+the checkout runs — this is where to keep them, so they are together.
+
+Make one from the sidebar. What fires it is in the file.
+`
+
+/** The folder a project's flows are kept in, made at birth so there is an obvious place to
+ *  put the first one. */
+async function seedTasks(checkout: string): Promise<void> {
+  const dir = path.join(checkout, TASKS_DIR)
+  await mkdir(dir, { recursive: true })
+  await writeFile(path.join(dir, 'README.md'), TASKS_README)
+}
 
 const readme = (name: string, git: ProjectGit) =>
   `# ${name}\n\nA broodmother project. Markdown on disk${
@@ -101,6 +117,7 @@ export async function createProject(
     await writeFile(path.join(local, 'README.md'), readme(name, kind))
     await seedSkills(local)
     await seedPersonas(local)
+    await seedTasks(local)
     return created
   }
 
@@ -142,6 +159,7 @@ export async function createProject(
   // Before stageAll, so the first commit carries the placeholders.
   await seedSkills(local)
   await seedPersonas(local)
+  await seedTasks(local)
   await git.stageAll()
   const commit = await git.commit(`broodmother: create project ${name}`, profile.gitAuthor)
   if (!commit.ok) throw new ProjectError(commit.message)

@@ -16,6 +16,12 @@ import { cx } from '@/Cx'
  * `input` rule, so a field here reads as a field anywhere else in the app.
  */
 
+/** What a panel is handed: which of its section's own rows is showing, where the section
+ *  has rows. Null is the section itself — for Project, whichever one is open. */
+export interface PanelProps {
+  nested?: string | null
+}
+
 /** The column a panel stacks in. A button standing on its own is as wide as what it says;
  *  the column would otherwise stretch it to the measure. */
 const column = 'flex flex-col [&>button]:self-start'
@@ -23,12 +29,13 @@ const column = 'flex flex-col [&>button]:self-start'
 /**
  * A settings panel opens on what it is for rather than on its own name: the rail beside it
  * already says which section you are in, and a heading that repeats it costs a line and a
- * rule to say nothing. What is left is the sentence, then the fields.
+ * rule to say nothing. What is left is the sentence, then the fields — and the sentence goes
+ * too where the fields are plain enough to say it themselves.
  */
-export function Panel({ hint, children }: { hint: string; children: ReactNode }) {
+export function Panel({ hint, children }: { hint?: string; children: ReactNode }) {
   return (
     <div className={cx(column, 'gap-[0.9rem]')}>
-      <Hint>{hint}</Hint>
+      {hint && <Hint>{hint}</Hint>}
       {children}
     </div>
   )
@@ -39,8 +46,9 @@ export function Panel({ hint, children }: { hint: string; children: ReactNode })
  * profile's, the sync is the project's. A rule and a heading rather than a page of its own.
  *
  * `danger` is for what cannot be taken back. It turns the heading red and does nothing else
- * — a section that is already coloured does not also need a box. `inset` is for one folded
- * into a group, which is a field of it rather than a stop of its own on the page.
+ * — what stands the section in a box is `Group`, which has a danger of its own. `inset` is
+ * for one folded into a group, which is a field of it rather than a stop of its own on the
+ * page.
  */
 export function Section({
   title,
@@ -54,7 +62,20 @@ export function Section({
   children: ReactNode
 }) {
   return (
-    <section className={cx(column, inset ? 'mt-[0.15rem] gap-[0.6rem]' : 'mt-5 gap-[0.9rem]')}>
+    /* A heading and the sentence under it are one block about one thing, so the column's
+       gap — which is what stands between one control and the next — is pulled back to the
+       tight step a caption's name and hint stand at. Only a hint that follows the heading
+       directly: further down the column it is a note under a control, not the section's
+       own sentence. The `!` is `.hint`'s own `margin: 0`, which is unlayered and outranks a
+       utility whatever its specificity — the same reason the heading below carries one. */
+    <section
+      className={cx(
+        column,
+        inset
+          ? 'mt-[0.15rem] gap-[0.6rem] [&>h3+.hint]:-mt-[0.45rem]!'
+          : 'mt-5 gap-[0.9rem] [&>h3+.hint]:-mt-[0.75rem]!',
+      )}
+    >
       {/* Named, not ruled off: the space above a section is what separates it, and a line
           under every heading in the app adds up to a page of them. Set as a field is named,
           because that is what it names — the page reads as one column of labels rather than
@@ -75,18 +96,52 @@ export function Section({
   )
 }
 
+/* The box a group is: the app's own line and no fill, because the panel it stands in is the
+   surface. `danger` is the same box drawn in the one colour that means what is inside cannot
+   be taken back — a ground faint enough to read through, and its name in the colour rather
+   than in the faint grey every other group wears. */
+const box =
+  'm-0 flex flex-col items-stretch gap-[0.6rem] rounded-[var(--field-radius)] px-[0.8rem] pt-[0.7rem] pb-[0.8rem]'
+
+const plain = 'border border-[var(--line)]'
+
+const grave =
+  'border border-[color-mix(in_srgb,var(--danger)_35%,transparent)] bg-[color-mix(in_srgb,var(--danger)_6%,transparent)]'
+
 /** Fields that belong to one thing, in a box that says which. The only container in a form
  *  here: everything else in the column stands on its own label. */
-export function Group({ legend, children }: { legend: string; children: ReactNode }) {
+export function Group({
+  legend,
+  danger = false,
+  children,
+}: {
+  legend: string
+  /** What is inside cannot be taken back, so the box says so before anything in it does. */
+  danger?: boolean
+  children: ReactNode
+}) {
   return (
-    <fieldset className="m-0 flex flex-col items-stretch gap-[0.6rem] rounded-[var(--field-radius)] border border-[var(--line)] px-[0.8rem] pt-[0.7rem] pb-[0.8rem]">
-      <legend className="px-1 text-[0.72rem] font-semibold tracking-wide text-[var(--faint)] uppercase">
+    <fieldset className={cx(box, danger ? grave : plain)}>
+      <legend
+        className={cx(
+          'px-1 text-[0.75rem] font-semibold',
+          danger ? 'text-[var(--danger)]' : 'text-[var(--faint)]',
+        )}
+      >
         {legend}
       </legend>
       {children}
     </fieldset>
   )
 }
+
+/* The dots a panel row is acted on by — the ones the chat rail and the agents rail already
+   wear: no fill of its own, since the row it sits in is the surface, and the mark inks when
+   it is asked for. The `!` are the stylesheet's own `button` rule, which is unlayered and
+   outranks a utility whatever the specificity says: without them these dots are a button
+   with a box round it. */
+export const dots =
+  'flex shrink-0 items-center rounded-[var(--row-radius)] border-0! bg-transparent! p-1! text-[var(--faint)]! hover:text-[var(--ink)]! data-[state=open]:text-[var(--ink)]! [&_.icon]:size-[0.9rem]'
 
 /** A word under a field about what it is for, in the faint type of an aside. */
 export function Hint({ children }: { children: ReactNode }) {
@@ -124,11 +179,26 @@ export function Field({
 }
 
 /** A field whose control is not one a label can point at — an editor, a row of swatches —
- *  is named the same way and stands in the same column. */
-export function Caption({ name, children }: { name: string; children: ReactNode }) {
+ *  is named the same way and stands in the same column. A `hint` goes under the name rather
+ *  than at the head of the panel, where a control tall enough to scroll would leave it
+ *  paragraphs above the thing it is about. */
+export function Caption({
+  name,
+  hint,
+  children,
+}: {
+  name: string
+  hint?: string
+  children: ReactNode
+}) {
   return (
-    <div className={caption}>
+    /* Tighter with a hint in it: the name, the sentence and the control are one block about
+       one thing, and the field's own gap set three times over reads as three. */
+    <div className={cx(caption, hint && 'gap-[0.15rem]')}>
       {name}
+      {/* The column carries the name's weight, and a hint is an aside in every other place
+          it is set. */}
+      {hint && <span className="hint font-normal">{hint}</span>}
       {children}
     </div>
   )

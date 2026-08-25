@@ -31,7 +31,7 @@ async function server() {
       color: '#8fb8d8',
       gitAuthor: { name: 'Test', email: 'test@localhost' },
       sshKeyPath: null,
-      claudeCfgDir: null,
+      agentCommands: {},
       soul: null,
     },
     home,

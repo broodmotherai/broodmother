@@ -1,4 +1,10 @@
-import { PRIMARY, PROFILE_FILE, REPOS_DIR } from '@daemon/constants/files'
+import {
+  ATTACHMENTS_DIR,
+  PRIMARY,
+  PROFILE_FILE,
+  REPOS_DIR,
+  SKILLS_DIR,
+} from '@daemon/constants/files'
 import {
   cp,
   mkdir,
@@ -24,6 +30,10 @@ const LEGACY_PROFILES = 'profiles'
 const LEGACY_REGISTRY = 'projects.json'
 /** Repos were called projects, and the folder a project keeps them in said so. */
 const LEGACY_REPOS_DIR = '.projects'
+/** Attachments were the one folder in a project that was not dotted, and skills sat beside
+ *  the tools they run rather than inside them. */
+const LEGACY_ATTACHMENTS = 'attachments'
+const LEGACY_SKILLS = '.skills'
 /** The profile that takes in projects from a home that never had one. */
 const FALLBACK = 'default'
 
@@ -73,6 +83,7 @@ export async function migrate(
       await adoptRepos(project.path)
       await repair(projectCheckouts(project.path))
       await adoptTasks(project.path)
+      await adoptFolders(project.path)
     }
   await rmIfEmpty(path.join(home, LEGACY_REPOS_DIR))
 
@@ -220,6 +231,28 @@ async function adoptTasks(project: string): Promise<void> {
     const to = `${from.slice(0, -LEGACY_TASK.length)}${TASK_EXTENSION}`
     if (await exists(to)) continue
     await rename(from, to)
+  }
+}
+
+/** Two folders of a checkout renamed: `attachments/` is dotted like every other folder the
+ *  app owns, and `.skills/` moves under `.tools/` beside what a skill runs. Every checkout of
+ *  the project, since a branch has a copy of both. A checkout already holding the new name is
+ *  left alone rather than merged — neither copy is worth losing to the other. */
+async function adoptFolders(project: string): Promise<void> {
+  const entries = await readdir(project, { withFileTypes: true }).catch(() => [])
+  for (const entry of entries) {
+    if (!entry.isDirectory() || entry.name === REPOS_DIR) continue
+    const checkout = path.join(project, entry.name)
+    for (const [was, now] of [
+      [LEGACY_ATTACHMENTS, ATTACHMENTS_DIR],
+      [LEGACY_SKILLS, SKILLS_DIR],
+    ]) {
+      const from = path.join(checkout, was)
+      const to = path.join(checkout, now)
+      if (!(await exists(from)) || (await exists(to))) continue
+      await mkdir(path.dirname(to), { recursive: true })
+      await move(from, to)
+    }
   }
 }
 

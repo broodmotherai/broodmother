@@ -18,6 +18,7 @@ import {
 import { resolveTarget } from '@broodmother/markdown/links'
 import { runOrder } from '@broodmother/types/task/graph'
 import type { Persona } from '@broodmother/types/api/personas'
+import type { Skill } from '@broodmother/types/api/skills'
 import type { AgentInOrg } from '@broodmother/types/api/agents'
 import type { LedgerEntry } from '@broodmother/types/ledger'
 import type { EntitySummary } from '@broodmother/types/api/entities'
@@ -113,7 +114,7 @@ const seedProfile: Profile = {
   color: '#c084fc',
   gitAuthor: { name: 'You', email: 'you@example.com' },
   sshKeyPath: null,
-  claudeCfgDir: null,
+  agentCommands: {},
   soul: null,
   github: null,
   // Connected by default: a chat page that cannot chat is the exception, and a test about
@@ -177,6 +178,8 @@ export function createMockClient(
 
     /** What the project's `.personas/` folder carries, for a task's picker to offer. */
     personas?: Persona[]
+    /** What the project's `.tools/.skills/` folder carries, for the settings panel to list. */
+    skills?: Skill[]
 
     /** Conversations already held in the open project, newest last — the order they were had
      *  in, which is the order they read in. */
@@ -338,7 +341,7 @@ export function createMockClient(
       model: DEFAULT_CHAT_MODEL,
       color: one.color ?? '#c084fc',
       chat: chat.id,
-      attachments: `attachments/${one.name.toLowerCase().replace(/\s+/g, '-')}`,
+      attachments: `.attachments/${one.name.toLowerCase().replace(/\s+/g, '-')}`,
       createdAt: 1500 + index,
       working: one.working ?? false,
       lastAt: one.messages?.length ? 1500 + one.messages.length - 1 : null,
@@ -911,6 +914,8 @@ export function createMockClient(
       },
       'GET /api/task/log': async () => ({ runs: [...taskRuns].reverse() }),
       'GET /api/personas': async () => ({ personas: [...(seed.personas ?? [])] }),
+
+      'GET /api/skills': async () => ({ skills: [...(seed.skills ?? [])] }),
       'GET /api/chats': async () => ({
         chats: [...chats]
           .reverse()
@@ -959,7 +964,7 @@ export function createMockClient(
           model,
           color,
           chat: chat.id,
-          attachments: `attachments/${name.toLowerCase().replace(/\s+/g, '-')}`,
+          attachments: `.attachments/${name.toLowerCase().replace(/\s+/g, '-')}`,
           createdAt: 2000 + agents.length,
           working: false,
           lastAt: null,

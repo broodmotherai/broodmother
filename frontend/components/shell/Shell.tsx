@@ -321,12 +321,16 @@ export function Shell({ children }: { children: ReactNode }) {
     move: (root, from, to) => void app.move(root, from, to),
     remove: (ref) => void app.remove(ref),
     syncNow: () => void app.syncNow(),
-    settings: () => router.push('/settings'),
-    tasks: () => router.push('/tasks'),
-    agents: () => router.push('/agents'),
-    agentOrg: () => router.push('/agents/org'),
-    chat: () => router.push('/chat'),
-    entities: () => router.push('/entities'),
+    /* Through `show` rather than the router: an app page takes the whole pane, and a pane
+       that is up is what the pane is showing. Pushed past it, the route changes under a
+       terminal that stays on screen — the page arrives only on a reload, which is what
+       clears the pane by hand. */
+    settings: () => show('/settings'),
+    tasks: () => show('/tasks'),
+    agents: () => show('/agents'),
+    agentOrg: () => show('/agents/org'),
+    chat: () => show('/chat'),
+    entities: () => show('/entities'),
     projects: () => setPicker(true),
     repos: () => setWhereMenu(true),
     createRepo: () => setCreating(true),
@@ -451,10 +455,13 @@ export function Shell({ children }: { children: ReactNode }) {
           </>
         }
         onOpen={ctx.open}
-        // A folder is not a document, so the pane has nothing to show for one. The home
-        // screen is what standing in a folder looks like — unless an app page is up, which
-        // survives the move and turns to face the scope it landed in.
-        onOpenFolder={() => !appPage && show('/')}
+        // A folder is not a document, so the pane has nothing to show for one: the home
+        // screen is what standing in a folder looks like, and reaching into the tree from
+        // an app page is leaving it — the page was about the app, and the folder you
+        // clicked is a place in a tree, with the tabs and the branch that belong to one.
+        // A tree's own row is that too: it is the folder the whole project or repository
+        // is, and clicking one lands where clicking any other folder does.
+        onOpenFolder={() => show('/')}
         onScope={(root) => void app.setScope(root)}
         onCommand={fromTree}
         onCreateRepo={() => setCreating(true)}
@@ -466,24 +473,32 @@ export function Shell({ children }: { children: ReactNode }) {
       <main className="main">
         {/* The strip and the branch it belongs to share one track: switching branch is what
             changes the tabs, so the control that does it sits with them. Which repo you
-            are in is asked at the head of the tree, with the project and the profile. */}
-        <Track drag label="Tabs and branch">
-          <TabStrip
-            tabs={tabs}
-            activeId={activeId}
-            onPick={pick}
-            onClose={closeTab}
-            onNew={appPage ? undefined : newTab}
-            // A rename asked of a tab opens on the tab: the name is typed where the
-            // gesture was made, the same way the tree's rows answer theirs.
-            onRename={(tab) => tab.kind === 'doc' && startRename(tab.ref, 'tab')}
-            renaming={renaming?.where === 'tab' ? renaming.ref : null}
-            onRenamed={renamed}
-            onCloseMany={closeTabs}
-          />
+            are in is asked at the head of the tree, with the project and the profile.
+
+            An app page is about the app rather than about a place in a tree, so none of
+            that is true of it: nothing is open, no branch is being read, and there is
+            nothing to hold against another branch. The row keeps the account centre and
+            the space to pick the window up by, and says nothing it cannot mean. */}
+        <Track drag label={appPage ? 'Account' : 'Tabs and branch'}>
+          {appPage && <span className="spacer" />}
+          {!appPage && (
+            <TabStrip
+              tabs={tabs}
+              activeId={activeId}
+              onPick={pick}
+              onClose={closeTab}
+              onNew={newTab}
+              // A rename asked of a tab opens on the tab: the name is typed where the
+              // gesture was made, the same way the tree's rows answer theirs.
+              onRename={(tab) => tab.kind === 'doc' && startRename(tab.ref, 'tab')}
+              renaming={renaming?.where === 'tab' ? renaming.ref : null}
+              onRenamed={renamed}
+              onCloseMany={closeTabs}
+            />
+          )}
           {/* Which checkout the tabs beside it belong to, at the end of the row they belong
               to. A place with no git behind it has no branch to say. */}
-          {app.branches.length > 0 && (
+          {!appPage && app.branches.length > 0 && (
             <BranchMenu
               label={scopeLabel}
               branches={app.branches}
@@ -497,7 +512,7 @@ export function Shell({ children }: { children: ReactNode }) {
           )}
           {/* Beside the branch it is about. There is nothing to hold a branch against
               until the repository has a second one. */}
-          {comparable && (
+          {!appPage && comparable && (
             <TrackButton
               shape="icon"
               aria-label="Compare branches"
@@ -523,7 +538,7 @@ export function Shell({ children }: { children: ReactNode }) {
             onSettings={ctx.settings}
           />
         </Track>
-        {against && app.branch && (
+        {!appPage && against && app.branch && (
           <DiffBar
             current={app.branch}
             against={against}

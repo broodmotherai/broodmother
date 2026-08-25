@@ -48,7 +48,6 @@ export function ProfileForm({
   const [authorName, setAuthorName] = useState(suggested?.name ?? '')
   const [email, setEmail] = useState(suggested?.email ?? '')
   const [sshKeyPath, setSshKeyPath] = useState(suggestedSshKey ?? '')
-  const [claudeCfgDir, setclaudeCfgDir] = useState('')
   // What the machine says arrives after the form has opened, and lands in every field you
   // have not written in yourself. Once you have, the field is yours and stays as typed.
   const [touched, setTouched] = useState({ authorName: false, email: false, sshKeyPath: false })
@@ -93,9 +92,10 @@ export function ProfileForm({
       color,
       gitAuthor: { name: author.name || trimmed, email: author.email },
       sshKeyPath: sshKeyPath.trim() || null,
-      claudeCfgDir: claudeCfgDir.trim() || null,
-      // Who claude is while it works as this profile. Written on the profile's own page
-      // rather than here: a new profile is a name and an author, not an essay.
+      // What each terminal agent runs, and who claude is while it works as this profile.
+      // Both are written on the profile's own page rather than here: a new profile is a
+      // name and an author, not an essay. Empty is every agent on its default line.
+      agentCommands: {},
       soul: null,
     })
   }
@@ -122,8 +122,8 @@ export function ProfileForm({
         <ColorField label="Color" value={color} onChange={setColor} />
       </div>
 
-      {/* Who you are to git, and to Claude. Two programs, two boxes: what goes in each is
-          read off what it is for rather than off a list of five fields in a row. */}
+      {/* Who you are to git. Its own box: what goes in it is read off what it is for
+          rather than off a list of fields in a row. */}
       <fieldset className="field-group">
         <legend>Git</legend>
         <label>
@@ -160,18 +160,6 @@ export function ProfileForm({
               setTouched((was) => ({ ...was, sshKeyPath: true }))
             }}
             placeholder="~/.ssh/id_ed25519"
-          />
-        </label>
-      </fieldset>
-
-      <fieldset className="field-group">
-        <legend>Claude</legend>
-        <label>
-          Config Directory
-          <input
-            value={claudeCfgDir}
-            onChange={(event) => setclaudeCfgDir(event.target.value)}
-            placeholder="~/.claude"
           />
         </label>
       </fieldset>

@@ -26,7 +26,7 @@ async function connected(seed: Parameters<typeof createMockClient>[0] = {}) {
         color: '#c084fc',
         gitAuthor: { name: 'You', email: 'you@example.com' },
         sshKeyPath: null,
-        claudeCfgDir: null,
+        agentCommands: {},
         soul: null,
         github: 'you',
         models: [],

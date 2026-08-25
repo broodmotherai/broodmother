@@ -173,7 +173,7 @@ it('makes an agent from the dialog and opens their thread', async () => {
   await screen.findByRole('region', { name: 'Conversation with Sam' })
   const made = (await client.request('GET /api/agents', null)).agents
   expect(made.map((one) => one.name)).toEqual(['Priya Rao', 'Sam'])
-  expect(made[1]).toMatchObject({ persona: 'research/aggregator', attachments: 'attachments/sam' })
+  expect(made[1]).toMatchObject({ persona: 'research/aggregator', attachments: '.attachments/sam' })
 })
 
 /* What can be done to an agent is behind the row's mark: the thread emptied, or the

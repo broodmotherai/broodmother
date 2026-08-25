@@ -1,4 +1,3 @@
-import os from 'node:os'
 import path from 'node:path'
 import WebSocket from 'ws'
 import { afterAll, describe, expect, it } from 'vitest'
@@ -22,7 +21,7 @@ const IDENTITY = {
   color: '#8fb8d8',
   gitAuthor: { name: 'Test', email: 'test@localhost' },
   sshKeyPath: null,
-  claudeCfgDir: null,
+  agentCommands: {},
   soul: null,
 }
 
@@ -112,18 +111,6 @@ describe('terminals', () => {
     const shell = await open(handle)
     shell.send({ type: 'input', data: 'pwd\r' })
     await until(() => shell.output().includes(repo.repo))
-  })
-
-  /* A profile carries the Claude login its shells run as, or Claude picks its own. */
-  it('runs the shell with the profile’s Claude config directory', async () => {
-    const handle = await server()
-    await handle.context.profiles.setIdentity({ ...IDENTITY, claudeCfgDir: '~/claude-work' })
-
-    const shell = await open(handle)
-    shell.send({ type: 'input', data: 'echo "dir=$CLAUDE_CONFIG_DIR"\r' })
-    await until(() =>
-      shell.output().includes(`dir=${path.join(os.homedir(), 'claude-work')}`),
-    )
   })
 
   it('names the project’s skills in the brief a shell is handed', async () => {

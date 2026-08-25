@@ -40,8 +40,9 @@ const SCROLLBACK = 256 * 1024
  * Claude Code stamps its session onto the environment, and a server started from inside one
  * hands that stamp down to every shell it spawns — where the next claude reads it as its own
  * parent, calls itself a nested child, and stops saving transcripts. A terminal here is a
- * session of its own, whatever happened to launch the server. CLAUDE_CONFIG_DIR stays: that
- * one is the user saying where their config lives, not a session marking its children.
+ * session of its own, whatever happened to launch the server. Only the session marks go:
+ * everything else the environment holds — CLAUDE_CONFIG_DIR among it — is the user's own
+ * shell environment, and a login shell here is still their shell.
  */
 const INHERITED_SESSION = [
   'CLAUDECODE',

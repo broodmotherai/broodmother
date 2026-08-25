@@ -1,6 +1,22 @@
 'use client'
 
 import type { CSSProperties, ReactNode } from 'react'
+import { cx } from '@/Cx'
+
+/**
+ * The plates that cross a button when the pointer arrives — three, one behind the next, from
+ * the old Proprium. They are drawn here and shaped in the stylesheet, behind the label
+ * rather than over it, and they are what a button says back instead of a fill appearing.
+ */
+function Sweep() {
+  return (
+    <span className="sweep-plates" aria-hidden>
+      <i />
+      <i />
+      <i />
+    </span>
+  )
+}
 
 /**
  * The one button. Every screen that asks for something has a row of these, and they agree on
@@ -32,13 +48,14 @@ export function Button({
   return (
     <button
       type={submit || form ? 'submit' : 'button'}
-      className={danger ? 'danger' : undefined}
+      className={cx('sweep', danger && 'danger')}
       disabled={disabled}
       form={form}
       data-tip={tip}
       style={accent ? ({ '--accent': accent } as CSSProperties) : undefined}
       onClick={onClick}
     >
+      <Sweep />
       {children}
     </button>
   )
@@ -48,7 +65,8 @@ export function Button({
  *  else is a link, whatever it is dressed as. */
 export function LinkButton({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <a className="link-button" href={href} target="_blank" rel="noreferrer">
+    <a className="link-button sweep" href={href} target="_blank" rel="noreferrer">
+      <Sweep />
       {children}
     </a>
   )

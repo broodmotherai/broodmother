@@ -53,7 +53,7 @@ const profile = (name: string): Profile => ({
   color: '#c084fc',
   gitAuthor: { name, email: `${name}@example.com` },
   sshKeyPath: null,
-  claudeCfgDir: null,
+  agentCommands: {},
   soul: null,
   github: null,
   models: [],
@@ -260,6 +260,23 @@ it('gives a terminal tab the whole pane, and hands it back on the way out', asyn
   expect(screen.getByText('the project')).not.toBeVisible()
 
   await userEvent.click(screen.getByRole('button', { name: 'Close terminal' }))
+  expect(screen.getByText('the project')).toBeVisible()
+})
+
+/* A pane is what the pane is showing, so leaving for one of the app's own pages has to put it
+   away. Pushed past it the route moved under a terminal that stayed on screen, and the page
+   arrived only on a reload — which cleared the pane by hand. */
+it('puts an open pane away when it leaves for one of the app’s pages', async () => {
+  show(createMockClient())
+  await screen.findByText('the project')
+
+  await userEvent.click(screen.getByRole('button', { name: 'New tab' }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /Terminal/ }))
+  expect(screen.getByText('a running shell')).toBeVisible()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Agents' }))
+  expect(push).toHaveBeenCalledWith('/agents')
+  expect(screen.getByText('a running shell')).not.toBeVisible()
   expect(screen.getByText('the project')).toBeVisible()
 })
 
@@ -598,7 +615,8 @@ it('lists the open project’s repos, and drops them with the project', async ()
   await screen.findByRole('treeitem', { name: 'api' })
 
   await userEvent.click(screen.getByRole('button', { name: 'you' }))
-  await userEvent.click(await screen.findByRole('menuitem', { name: /ada/ }))
+  await userEvent.click(await screen.findByRole('button', { name: /Switch Profile/ }))
+  await userEvent.click(await screen.findByRole('menuitemradio', { name: /ada/ }))
 
   await waitFor(() =>
     expect(screen.getByRole('button', { name: /notes/ })).toBeInTheDocument(),
@@ -620,7 +638,7 @@ it('empties the tree of repos when the new profile has no project', async () => 
   await screen.findByRole('treeitem', { name: 'api' })
 
   await userEvent.click(screen.getByRole('button', { name: 'you' }))
-  await userEvent.click(await screen.findByRole('menuitem', { name: /New profile/ }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /New Profile/ }))
   await userEvent.type(screen.getByLabelText('Profile Name'), 'ada')
   await userEvent.type(screen.getByLabelText('Author Email'), 'ada@example.com')
   await userEvent.click(screen.getByRole('button', { name: 'Add Profile' }))
@@ -631,9 +649,9 @@ it('empties the tree of repos when the new profile has no project', async () => 
   expect(screen.queryByRole('treeitem', { name: 'api' })).not.toBeInTheDocument()
 })
 
-/* Settings is the app's own chrome, not a place in a tree: a scope switch made while it
-   is open changes what its panels are about and nothing else. */
-it('stays on settings across a repo switch', async () => {
+/* Settings is the app's own chrome rather than a place in a tree, so a repo's row is a way
+   out of it: you land in the repository you clicked, on its home screen. */
+it('leaves settings for the repo whose row was clicked', async () => {
   const client = createMockClient({
     repos: [{ name: 'api', repo: '/h/.repos/api/local' }],
   })
@@ -645,12 +663,12 @@ it('stays on settings across a repo switch', async () => {
   await userEvent.click(await screen.findByRole('treeitem', { name: 'api' }))
 
   await waitFor(() => expect(scope()).toHaveTextContent('api'))
-  expect(pathname).toBe('/settings')
+  expect(push).toHaveBeenCalledWith('/')
 })
 
-/* And chat with it: a conversation is about the project you are in, so moving turns the page
-   to face the new one rather than closing it behind a document. */
-it('stays on chat across a repo switch', async () => {
+/* And chat with it, which is the same gesture and the same answer: the row you clicked is
+   somewhere to work, and standing there is what you asked for. */
+it('leaves chat for the repo whose row was clicked', async () => {
   const client = createMockClient({
     repos: [{ name: 'api', repo: '/h/.repos/api/local' }],
   })
@@ -662,7 +680,7 @@ it('stays on chat across a repo switch', async () => {
   await userEvent.click(await screen.findByRole('treeitem', { name: 'api' }))
 
   await waitFor(() => expect(scope()).toHaveTextContent('api'))
-  expect(pathname).toBe('/chat')
+  expect(push).toHaveBeenCalledWith('/')
 })
 
 /* Switching repo is the same kind of move as switching branch: the tabs are the ones
@@ -1060,6 +1078,87 @@ it('decorates the tree with the checkout’s changes as it loads', async () => {
 
   const row = await screen.findByRole('treeitem', { name: 'README.md' })
   await waitFor(() => expect(row).toHaveAttribute('data-change', 'modified'))
+})
+
+/* An app page is about the app rather than about a place in a tree: nothing of the branch
+   it was opened from is on screen, so the chrome that belongs to one says nothing while it
+   is up — the tabs, the branch it belongs to, and the way into a comparison all go. */
+it('drops the tabs and the branch chrome while an app page is up', async () => {
+  const client = createMockClient({
+    branches: [
+      { name: 'main', path: '/v/local', checkedOut: true, primary: true },
+      { name: 'feat', path: '/v/feat', checkedOut: true, primary: false },
+    ],
+  })
+  const { rerender } = show(client)
+  await screen.findByText('the project')
+
+  pathname = '/doc/project/Handbook/Overview.md'
+  rerender(tree(client))
+  await screen.findByRole('tab', { name: /Overview/ })
+  expect(screen.getByRole('button', { name: 'Branch' })).toBeInTheDocument()
+
+  pathname = '/chat'
+  rerender(tree(client))
+
+  await waitFor(() =>
+    expect(screen.queryByRole('tablist', { name: 'Open tabs' })).not.toBeInTheDocument(),
+  )
+  expect(screen.queryByRole('button', { name: 'Branch' })).not.toBeInTheDocument()
+  expect(
+    screen.queryByRole('button', { name: 'Compare branches' }),
+  ).not.toBeInTheDocument()
+
+  // Back on a document, and the strip is as it was left: hiding the chrome is not closing
+  // what was open behind it.
+  pathname = '/doc/project/Handbook/Overview.md'
+  rerender(tree(client))
+  await screen.findByRole('tab', { name: /Overview/ })
+  expect(screen.getByRole('button', { name: 'Branch' })).toBeInTheDocument()
+})
+
+/* An app page is not a place to be stuck on: reaching into the tree is leaving it. A folder
+   has no document to show, so what you land on is the home screen — blank, but with the
+   tabs and the branch of the tree you just clicked into back where they belong. */
+it('leaves an app page for the home screen when a folder is clicked', async () => {
+  const client = createMockClient()
+  const { rerender } = show(client)
+  await screen.findByText('the project')
+
+  pathname = '/chat'
+  rerender(tree(client))
+  await waitFor(() =>
+    expect(screen.queryByRole('tablist', { name: 'Open tabs' })).not.toBeInTheDocument(),
+  )
+
+  await userEvent.click(await screen.findByRole('treeitem', { name: 'Handbook' }))
+
+  expect(push).toHaveBeenCalledWith('/')
+  pathname = '/'
+  rerender(tree(client))
+  expect(screen.getByRole('tablist', { name: 'Open tabs' })).toBeInTheDocument()
+})
+
+/* And the row a whole tree is headed by is a folder like any other: the project's own row
+   is where its tree starts, so clicking it from an app page leaves the page the same way
+   clicking a folder inside the tree does. */
+it('leaves an app page when the project’s own row is clicked', async () => {
+  const client = createMockClient()
+  const { rerender } = show(client)
+  await screen.findByText('the project')
+
+  pathname = '/chat'
+  rerender(tree(client))
+  await waitFor(() =>
+    expect(screen.queryByRole('tablist', { name: 'Open tabs' })).not.toBeInTheDocument(),
+  )
+
+  await userEvent.click(await screen.findByRole('treeitem', { name: 'handbook' }))
+
+  expect(push).toHaveBeenCalledWith('/')
+  pathname = '/'
+  rerender(tree(client))
+  expect(screen.getByRole('tablist', { name: 'Open tabs' })).toBeInTheDocument()
 })
 
 /* Two branches held against each other. The tree stops being the project and becomes what

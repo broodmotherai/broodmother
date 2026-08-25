@@ -339,7 +339,9 @@ function Session({
   onEnd: () => void
 }) {
   const app = useApp()
-  const run = useRef(agentCommand(kind))
+  // Taken once, like the root below: the line is what this shell was opened to run, and
+  // rewriting the setting afterwards is not a reason to type into a pty already running one.
+  const run = useRef(agentCommand(kind, app.profile?.agentCommands))
   // Taken once for the same reason the soul is: this shell stands where it was opened, and
   // the scope moving afterwards is not a reason to move a folder out from under it.
   const where = useRef(root)

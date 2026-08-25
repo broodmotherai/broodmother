@@ -231,7 +231,7 @@
   --page-width: 60rem;
   --gutter: 0.5rem;
   --head: 2.6rem;
-  --measure: 50rem;
+  --measure: 54rem;
   --pad: 0.625rem;
 
   color-scheme: dark;
@@ -324,6 +324,102 @@ button:hover {
 
 button:focus-visible {
   outline: none;
+}
+
+/* ---------- the sweep ---------- */
+
+/* What a button does when the pointer arrives: three skewed plates cross it, one behind the
+   next, and stay. Brought over whole from the old Proprium — a fill that simply appears says
+   the pointer is here, and this says the button is about to be pressed.
+ *
+ * Three rather than one because a single plate reads as a panel sliding in; three, 90ms
+ * apart, read as a stroke. They sit behind the label rather than over it: a negative
+ * z-index in the button's own stacking context paints above its background and below its
+ * words, so nothing has to be re-coloured to stay legible.
+ *
+ * The plates are the whole answer to the pointer, so the fill a button would otherwise take
+ * stays where it was — two answers to one gesture is one of them arriving late. */
+.sweep {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  --sweep: var(--active);
+  /* A step under the page's own type and cut close to the words: what a button says is two
+     of them, and at the form's size it reads as a field with a label in it. */
+  font-size: 0.8rem;
+  padding: 0.22rem 0.55rem;
+  /* As wide as what it says, wherever it stands. A column that stretches its children — a
+     group of fields, the danger zone — would otherwise hand a button the whole measure,
+     which reads as a bar rather than as something to press. */
+  width: fit-content;
+  align-self: flex-start;
+}
+
+.sweep:hover {
+  background: var(--raised-bg);
+}
+
+.sweep.danger:hover {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+}
+
+.sweep.danger {
+  --sweep: color-mix(in srgb, var(--ground) 30%, transparent);
+}
+
+.sweep-plates {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Wider than the button and started a step off its left edge: skewed, a plate the button's
+   own width leaves a wedge of ground uncovered at one corner or the other. */
+.sweep-plates > i {
+  position: absolute;
+  inset-block: 0;
+  left: -25%;
+  width: 150%;
+  background: var(--sweep);
+  transform: translateX(-101%) skewX(-18deg);
+}
+
+.sweep:hover .sweep-plates > i,
+.sweep:focus-visible .sweep-plates > i {
+  animation: sweep 420ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+.sweep-plates > i:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.sweep-plates > i:nth-child(3) {
+  animation-delay: 180ms;
+}
+
+/* Nothing to press against on a button that cannot be. */
+.sweep:disabled .sweep-plates {
+  display: none;
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(-101%) skewX(-18deg);
+  }
+  to {
+    transform: translateX(0) skewX(-18deg);
+  }
+}
+
+/* Asked for no motion, the plates still land — they are the state, not the flourish. */
+@media (prefers-reduced-motion: reduce) {
+  .sweep:hover .sweep-plates > i,
+  .sweep:focus-visible .sweep-plates > i {
+    animation: none;
+    transform: skewX(-18deg);
+  }
 }
 
 /* What cannot be undone says so before it is clicked, not after. */
@@ -505,15 +601,21 @@ body[data-resizing='column'] {
 }
 
 /* Standing off the row rather than filling it: the hover is a control you can see the edges
-   of, so it is inset by its own margin and rounded like everything else that lights up. */
+   of, so it is inset by its own margin and rounded like everything else that lights up.
+ *
+ * As tall as a tab and as the account centre across the window from it, rather than as tall
+ * as the row it stands in less its margin: the three are the same kind of thing — a control
+ * standing in a chrome row — and they are read across the top of the window in one glance.
+ * `--track-control` is what says how tall that is, in one place. */
 .project-anchor {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex: 1;
   min-width: 0;
-  align-self: stretch;
-  margin: 0.3rem;
+  align-self: center;
+  height: var(--track-control);
+  margin: 0 0.3rem;
   padding: 0 0.6rem;
   border-radius: var(--row-radius);
   background: transparent;
@@ -614,8 +716,9 @@ body[data-resizing='column'] {
   gap: 0.5rem;
   flex: 1;
   min-width: 0;
-  align-self: stretch;
-  margin: 0.3rem;
+  align-self: center;
+  height: var(--track-control);
+  margin: 0 0.3rem;
   padding: 0 0.55rem;
   border-radius: var(--row-radius);
   background: transparent;
@@ -1023,8 +1126,16 @@ body[data-resizing='column'] {
    natural place to pick the window up by — the same bargain the tree head makes. Everything
    standing in it stays clickable; only the space between drags. */
 .track[data-drag],
-.track[data-drag] .tabs {
+.track[data-drag] .tabs,
+.track[data-drag] .spacer {
   -webkit-app-region: drag;
+}
+
+/* What stands where the strip would, on a page that has no tabs to show: the account centre
+   keeps its corner, and the width the strip was filling stays somewhere to pick the window
+   up by rather than closing up. */
+.track .spacer {
+  flex: 1;
 }
 
 /* Everything standing in a track is one shape written once: the branch selector, the
@@ -1223,8 +1334,8 @@ body[data-resizing='column'] {
 }
 
 /* The tab you are in catches the light. Three of the opals bloom across the same ground every
-   other chosen control stands on, sat where they fell rather than at the corners — a sheen
-   too slight to read as colour, felt only as the tab being warmer than its neighbours. Each
+   other chosen control stands on, sat where they fell rather than at the corners — enough to
+   be seen as colour when you look at it, not so much that the tab reads as tinted. Each
    wanders its own small circuit on its own clock, over waypoints spaced unevenly and periods
    sharing no factor, so the three never line up twice inside an hour of looking: the sheen
    drifts rather than pulses, which is the difference between weather and a metronome. */
@@ -1232,17 +1343,17 @@ body[data-resizing='column'] {
   background:
     radial-gradient(
       86% 132% at var(--tab-violet-x) var(--tab-violet-y),
-      color-mix(in srgb, var(--opal-violet) 11%, transparent),
+      color-mix(in srgb, var(--opal-violet) 18%, transparent),
       transparent 68%
     ),
     radial-gradient(
       104% 118% at var(--tab-cyan-x) var(--tab-cyan-y),
-      color-mix(in srgb, var(--opal-cyan) 9%, transparent),
+      color-mix(in srgb, var(--opal-cyan) 15%, transparent),
       transparent 66%
     ),
     radial-gradient(
       72% 154% at var(--tab-rose-x) var(--tab-rose-y),
-      color-mix(in srgb, var(--opal-rose) 8%, transparent),
+      color-mix(in srgb, var(--opal-rose) 13%, transparent),
       transparent 70%
     ),
     var(--active);
@@ -1516,6 +1627,17 @@ body[data-resizing='column'] {
 .terminal-tab-pane {
   flex: 1;
   min-height: 0;
+}
+
+/* A terminal in a tab is a `.terminal`, so it keeps the same inset the panel does — and with
+   the panel open underneath, the tab's bottom margin and the panel's top one land on the
+   same seam and put twice the gap there as there is at every other edge. It is the doubling
+   the panel already avoids against the tree by keeping no left margin, arriving from the
+   other side: whichever of the two is second gives its half up. Only while the panel is
+   showing. With it away that is the window's edge under the tab, and the inset is the tab's
+   own to keep. */
+.shell:has(> .terminal:not([hidden])) .terminal-tab-pane {
+  margin-bottom: 0;
 }
 
 /* Nothing on top: the track above already keeps the gap, as its own inset under the row of
@@ -1814,6 +1936,23 @@ button.doc-line-who:hover {
 .inline-editor .monaco-editor .monaco-editor-background,
 .inline-editor .monaco-editor .margin {
   background: transparent;
+}
+
+/* Monaco types into a hidden element parked over the line the caret is on — a contenteditable
+   div under the EditContext API, `.native-edit-context`, sitting at `z-index: -10` behind the
+   text you can see. It is focusable, so Monaco's own stylesheet rings it the way it rings any
+   focusable thing inside the editor, and because the element is the width of the current line
+   what that draws is a box around one paragraph that moves as you type. Nothing about it is
+   the app's: the ring belongs to a widget you can point at, not to the input surface of a page
+   of text, and the caret already says where the focus is.
+
+   Specificity rather than `!important`: Monaco's rule is `.monaco-editor [tabindex="0"]:focus`,
+   and its stylesheet is injected at runtime, so a tie on weight would go to whichever landed
+   last. `.monaco-host` is the mount every editor in the app sits in — the document, the field,
+   the diff — because the ring is the same artefact in all of them. */
+.monaco-host .monaco-editor .native-edit-context:focus,
+.monaco-host .monaco-editor .ime-text-area:focus {
+  outline: none;
 }
 
 /* Monaco draws the caret as tall as the line, and prose is set at a line height half again
@@ -3560,7 +3699,7 @@ p.palette-label {
   box-shadow: 0 0 0 2px var(--opal-indigo);
 }
 
-/* The plus is a swatch with nothing on it yet: dashed, dim, and lit on hover. Once a colour
+/* The plus is a swatch with nothing on it yet: flat, dim, and lit on hover. Once a colour
    is picked it wears it like the rest, keeping the plus as the sign it can be changed. */
 .color-custom {
   display: grid;
@@ -3571,11 +3710,6 @@ p.palette-label {
 
 .color-custom:not([aria-checked='true']) {
   box-shadow: 0 0 0 1px var(--line-hover);
-  background: repeating-linear-gradient(
-    -45deg,
-    var(--raised) 0 3px,
-    transparent 3px 6px
-  );
 }
 
 .color-custom:hover,
@@ -3739,6 +3873,91 @@ p.palette-label {
   line-height: 1.5;
 }
 
+/* Every other inline editor in the app is a field in a form and is dressed as one — ground,
+   border, corner, and the side padding that keeps the words off it. The soul is not a field:
+   it is a page of markdown about a person, and it reads as one by having none of that. What
+   is left is the text on the panel's own ground, at the left edge the caption above it starts
+   from, so the name and the writing under it stand in one column.
+
+   The ground the box carried is the container's rather than Monaco's — the editor inside is
+   already transparent to it — so taking it off here is all it takes. The border goes rather
+   than turning transparent: a border-box with nothing drawn on it still holds the hover and
+   focus rule above open, and nothing should answer the pointer here. The caret is what says
+   this can be typed into, which is what says it on a page. */
+.soul-edit .inline-editor {
+  padding-inline: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+}
+
+/* The words go out at both ends rather than stopping at a line nothing draws. The box has a
+   height and the text inside it scrolls, so without this the first and last lines are cut
+   mid-stroke by an edge that is not there — a page of prose ending in a straight razor cut.
+   Faded, what is at the edge reads as more of it rather than as the end of it.
+ *
+ * A mask rather than two gradients laid over the top: the page's ground is not one colour
+ * behind this box, and a plate painted in the wrong one is a smear across the words. */
+.soul-edit .inline-editor {
+  --fade: 1.75rem;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--fade),
+    #000 calc(100% - var(--fade)),
+    transparent 100%
+  );
+}
+
+/* The panel's column starts its buttons at the left edge, which is right for a button that
+   is a word and wrong for one that is a picture: this one is the width of the measure's
+   middle and reads as a plate rather than as the next control down the form. The wrapper
+   would have swallowed that self-start anyway — it takes the placement instead. */
+.soul-save {
+  align-self: center;
+}
+
+/* The one button in the app wearing a face. The image is the whole of it: no ground under it,
+   no border around it, no blur behind it. The art has its own edges — the flames are the
+   shape of the button — and a rounded rectangle drawn around them is a second, squarer button
+   standing behind the one you can see.
+
+   253px is not a taste: the art is a 253-wide picture drawn at three times the size, so at
+   this width one of its pixels is one of the screen's and the edges are the edges that were
+   drawn. Any other width resamples them, and the picture is nothing but edges. `pixelated`
+   holds that if the page is ever zoomed.
+
+   Said again for hover, because the button's own hover sets `background` in shorthand and
+   would put the ground back under the face. The shorthand is the point in both: it takes the
+   colour out along with everything else, so what is left is the image and nothing. */
+.soul-save button,
+.soul-save button:hover {
+  background: url('/save-your-soul.png') center / contain no-repeat;
+  border: none;
+  backdrop-filter: none;
+  image-rendering: pixelated;
+}
+
+.soul-save button {
+  width: 253px;
+  aspect-ratio: 759 / 375;
+  padding: 0;
+  transform-origin: center;
+  transition:
+    filter 120ms ease,
+    transform 120ms ease;
+}
+
+/* Something has to answer the pointer once the ground and the border are gone. Light and a
+   step forward rather than a wash: the picture is already lit from inside, so it brightens
+   instead of sitting on something that changed colour, and it comes up a little to say it
+   can be pressed. The growth is a transform rather than a width, so the plate keeps its place
+   in the column and the words under it do not move when the pointer crosses the flames. */
+.soul-save button:hover {
+  filter: brightness(1.12);
+  transform: scale(1.015);
+}
+
 .field-error {
   margin: 0;
   color: var(--opal-rose);
@@ -3781,7 +4000,6 @@ p.palette-label {
 }
 
 .link-button:hover {
-  background: var(--active);
   border-color: var(--line-hover);
 }
 

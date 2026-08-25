@@ -1,3 +1,4 @@
+import { PERSONAS_DIR, SKILLS_DIR } from '@daemon/constants/files'
 import type { Persona } from '@daemon/types/api/personas'
 import type { Git } from '@daemon/utils/git'
 import { LinkIndex } from '@daemon/services/LinkIndex'
@@ -7,12 +8,9 @@ import { Tree, type TreeEvent } from '@daemon/services/Tree'
 import { GitService } from './GitService'
 import { TreeService } from './TreeService'
 
-const SKILLS = '.skills'
-const PERSONAS = '.personas'
-
 /**
  * The disk-touching half of a project, valid only while one is open: its documents, its
- * repository, the index of what links to what, and what its `.skills/` and `.personas/`
+ * repository, the index of what links to what, and what its `.tools/.skills/` and `.personas/`
  * folders carry — with the two watchers that keep all of that true underneath. One of these
  * is opened per project and closed to swap, so nothing above it has to remember which parts of
  * an open project a file event invalidates.
@@ -73,8 +71,8 @@ export class ProjectService {
       else void this.links.update(event.path)
     }
     // Rescanning whole costs less than being clever about which half of a move mattered.
-    if (touches(event, SKILLS)) void this.refreshSkills()
-    if (touches(event, PERSONAS)) void this.refreshPersonas()
+    if (touches(event, SKILLS_DIR)) void this.refreshSkills()
+    if (touches(event, PERSONAS_DIR)) void this.refreshPersonas()
     this.onEvent(event)
   }
 

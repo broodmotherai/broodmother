@@ -1,4 +1,4 @@
-import { PRIMARY } from '@daemon/constants/files'
+import { PRIMARY, SKILLS_DIR, TASKS_DIR } from '@daemon/constants/files'
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
@@ -20,7 +20,7 @@ const profile: Profile = {
   color: '#8fb8d8',
   gitAuthor: { name: 'Test', email: 'test@localhost' },
   sshKeyPath: null,
-  claudeCfgDir: null,
+  agentCommands: {},
   soul: null,
   github: null,
   models: [],
@@ -154,7 +154,8 @@ describe('createProject', () => {
     expect(await new Git(localOf(project)).isRepo()).toBe(false)
     expect((await readdir(localOf(project))).sort()).toEqual([
       '.personas',
-      '.skills',
+      '.tasks',
+      '.tools',
       'README.md',
     ])
     expect(await readFile(path.join(localOf(project), 'README.md'), 'utf8')).not.toContain(
@@ -162,11 +163,11 @@ describe('createProject', () => {
     )
   })
 
-  it('is born with the placeholder skill and persona beside its README', async () => {
+  it('is born with the placeholder skill, persona and tasks folder beside its README', async () => {
     const home = await tempDir()
     const project = await createProject({ name: 'seeded', git: 'none' }, owner(home))
 
-    const hello = path.join(localOf(project), '.skills', 'hello')
+    const hello = path.join(localOf(project), SKILLS_DIR, 'hello')
     expect(await readFile(path.join(hello, 'SKILL.md'), 'utf8')).toContain(
       'description: prove the skills folder works',
     )
@@ -177,6 +178,9 @@ describe('createProject', () => {
         'utf8',
       ),
     ).toContain('description: prove the personas folder works')
+    expect(
+      await readFile(path.join(localOf(project), TASKS_DIR, 'README.md'), 'utf8'),
+    ).toContain('`.task`')
   })
 
   it('carries the placeholders in a repository’s first commit', async () => {
@@ -184,9 +188,10 @@ describe('createProject', () => {
     const project = await createProject({ name: 'kept', git: 'local' }, owner(home))
 
     const listed = await git(localOf(project), 'ls-tree', '-r', '--name-only', 'HEAD')
-    expect(listed.stdout).toContain('.skills/hello/SKILL.md')
-    expect(listed.stdout).toContain('.skills/hello/hello.py')
+    expect(listed.stdout).toContain('.tools/.skills/hello/SKILL.md')
+    expect(listed.stdout).toContain('.tools/.skills/hello/hello.py')
     expect(listed.stdout).toContain('.personas/hello/PERSONA.md')
+    expect(listed.stdout).toContain('.tasks/README.md')
   })
 
   it('needs no remote to reach, so it cannot fail on one', async () => {
