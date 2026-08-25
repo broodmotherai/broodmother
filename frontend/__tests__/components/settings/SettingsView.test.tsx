@@ -136,47 +136,50 @@ it('stands the rail in named bands', async () => {
     'Agents',
     'Git & Worktrees',
   ])
-  // What belongs to the project rather than to whoever has it open — the section, and a row
-  // under it for every project this profile has.
-  expect(within(organization).getAllByRole('tab').map(named)).toEqual([
-    'Project',
-    'handbook',
-  ])
+  // What belongs to the project rather than to whoever has it open: the project you are in,
+  // and its repos — a row each, under the section they belong to.
+  // Nothing under Repos in a project with none: the section is there, and it says so.
+  expect(within(organization).getAllByRole('tab').map(named)).toEqual(['Project', 'Repos'])
 })
 
 /* The one row in the rail with rows of its own, so it folds — and folds without a tween:
-   a list that grew by two is not a drawer. */
-it('folds the projects away under the section they hang off', async () => {
-  await show()
+   a list that grew by one is not a drawer. */
+it('folds the repos away under the section they hang off', async () => {
+  await show(createMockClient({ repos: [{ name: 'api', repo: '/home/you/handbook/api' }] }))
   const organization = screen.getByRole('tablist', { name: 'Organization settings' })
-  const project = () => screen.getByRole('tab', { name: /Project/ })
+  const repos = () => screen.getByRole('tab', { name: /Repos/ })
 
-  expect(project()).toHaveAttribute('aria-expanded', 'true')
+  expect(repos()).toHaveAttribute('aria-expanded', 'true')
   // A click on the section you are already on is what shuts it.
-  await open('Project')
-  await open('Project')
+  await open('Repos')
+  await open('Repos')
 
-  expect(project()).toHaveAttribute('aria-expanded', 'false')
-  expect(within(organization).getAllByRole('tab').map(named)).toEqual(['Project'])
+  expect(repos()).toHaveAttribute('aria-expanded', 'false')
+  expect(within(organization).getAllByRole('tab').map(named)).toEqual(['Project', 'Repos'])
 
-  await open('Project')
+  await open('Repos')
   expect(within(organization).getAllByRole('tab').map(named)).toEqual([
     'Project',
-    'handbook',
+    'Repos',
+    'api',
   ])
 })
 
-/* A project's settings are the project's, so each has a page rather than one page meaning
-   whichever is open. */
-it('opens a project’s own page off the row under the section', async () => {
-  await show()
-  await open('handbook')
+/* The section is every repo at once; a row under it is one of them. The project's page does
+   not fold and is always the project you are standing in. */
+it('opens a repo’s own page off the row under the section', async () => {
+  await show(createMockClient({ repos: [{ name: 'api', repo: '/home/you/handbook/api' }] }))
 
-  expect(screen.getByRole('tab', { name: 'handbook' })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
-  // The one that is open is the one the sync settings belong to.
+  await open('Repos')
+  expect(screen.getByText('/home/you/handbook/api')).toBeVisible()
+
+  await open('api')
+  expect(screen.getByRole('tab', { name: 'api' })).toHaveAttribute('aria-selected', 'true')
+  expect(screen.getByText('Folder')).toBeVisible()
+  // A repo has no sync of its own: what syncs is the project's, said once.
+  expect(screen.queryByRole('heading', { name: 'Git sync' })).not.toBeInTheDocument()
+
+  await open('Project')
   expect(screen.getByRole('heading', { name: 'Git sync' })).toBeVisible()
 })
 

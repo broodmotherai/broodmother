@@ -10,6 +10,7 @@ import { SoulPanel } from './SoulPanel'
 import { AgentsPanel } from './AgentsPanel'
 import { GitPanel } from './GitPanel'
 import { ProjectPanel } from './ProjectPanel'
+import { ReposPanel } from './ReposPanel'
 import type { PanelProps } from './Layout'
 
 interface Section {
@@ -74,14 +75,22 @@ const SECTIONS: Section[] = [
     label: 'Project',
     icon: 'project',
     group: 'Organization',
-    // About the project, so it is there while one is open — the same rule the git section
-    // above it follows.
+    // About the project you are in, so it is there while one is open — the same rule the
+    // git section above it follows.
     open: (app) => Boolean(app.project),
-    // Every project this profile has, by name. The one that is open is also what the row
-    // above them shows, so arriving at this section lands you on the project you are in.
-    nest: (app) =>
-      app.projects.map((project) => ({ id: project.path, label: project.name })),
     panel: ProjectPanel,
+  },
+  {
+    id: 'repos',
+    label: 'Repos',
+    icon: 'library',
+    group: 'Organization',
+    // The repos are the open project's, so they come and go with it.
+    open: (app) => Boolean(app.project),
+    // One row per repository, by the name the sidebar calls it. The section's own page is
+    // all of them at once, which is what you want when you are looking for one.
+    nest: (app) => app.repos.map((repo) => ({ id: repo.name, label: repo.name })),
+    panel: ReposPanel,
   },
 ]
 

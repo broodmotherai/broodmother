@@ -601,15 +601,21 @@ body[data-resizing='column'] {
 }
 
 /* Standing off the row rather than filling it: the hover is a control you can see the edges
-   of, so it is inset by its own margin and rounded like everything else that lights up. */
+   of, so it is inset by its own margin and rounded like everything else that lights up.
+ *
+ * As tall as a tab and as the account centre across the window from it, rather than as tall
+ * as the row it stands in less its margin: the three are the same kind of thing — a control
+ * standing in a chrome row — and they are read across the top of the window in one glance.
+ * `--track-control` is what says how tall that is, in one place. */
 .project-anchor {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex: 1;
   min-width: 0;
-  align-self: stretch;
-  margin: 0.3rem;
+  align-self: center;
+  height: var(--track-control);
+  margin: 0 0.3rem;
   padding: 0 0.6rem;
   border-radius: var(--row-radius);
   background: transparent;
@@ -710,8 +716,9 @@ body[data-resizing='column'] {
   gap: 0.5rem;
   flex: 1;
   min-width: 0;
-  align-self: stretch;
-  margin: 0.3rem;
+  align-self: center;
+  height: var(--track-control);
+  margin: 0 0.3rem;
   padding: 0 0.55rem;
   border-radius: var(--row-radius);
   background: transparent;
