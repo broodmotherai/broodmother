@@ -41,7 +41,7 @@ describe('opening', () => {
     const v = await opened({
       'Overview.md': 'see [[Risks]]\n',
       'Risks.md': '# Risks\n',
-      '.skills/one/SKILL.md': skill('does a thing'),
+      '.tools/.skills/one/SKILL.md': skill('does a thing'),
       '.personas/one/PERSONA.md': persona('reads every diff twice'),
     })
     try {
@@ -104,8 +104,8 @@ describe('watching', { retry: 2 }, () => {
   it('rescans the skills when one appears', async () => {
     const v = await opened()
     try {
-      await mkdir(path.join(v.root, '.skills/one'), { recursive: true })
-      await v.write('.skills/one/SKILL.md', skill('written just now'))
+      await mkdir(path.join(v.root, '.tools/.skills/one'), { recursive: true })
+      await v.write('.tools/.skills/one/SKILL.md', skill('written just now'))
       await until(() => v.project.skills.length === 1)
       expect(v.project.skills[0]).toEqual({ name: 'one', description: 'written just now' })
     } finally {

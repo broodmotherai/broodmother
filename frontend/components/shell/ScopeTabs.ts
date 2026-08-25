@@ -28,7 +28,7 @@ const EMPTY: Tab[] = []
 /** The app's own chrome: pages about the app rather than places in any tree. Nothing here is
  *  opened in a tab or run in a shell, and a scope change while one is up changes what the page
  *  is about rather than where you are. */
-const APP_PAGES = ['/settings', '/tasks', '/agents', '/chat', '/entities']
+const APP_PAGES = ['/settings', '/tasks', '/agents', '/chat', '/entities', '/mother']
 
 /** Whether the route is that page or one opened under it. The org chart lives at
  *  `/agents/org` and the entity graph at `/entities/graph`, and both are the page they are

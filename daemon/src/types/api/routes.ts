@@ -27,7 +27,14 @@ import type {
   PostEntityLink,
 } from './entities'
 import type { GetLedger } from './ledger'
+import type {
+  GetMother,
+  PostMotherSweep,
+  PostMotherVerdict,
+  PutMotherSettings,
+} from './mother'
 import type { GetPersonas } from './personas'
+import type { GetSkills } from './skills'
 import type { DeleteTerminal } from './terminal'
 import type {
   DeleteDoc,
@@ -127,9 +134,14 @@ interface ApiRoutes {
   'POST /api/entities': PostEntities
   'GET /api/entities/catalogue': GetEntitiesCatalogue
   'POST /api/entity/link': PostEntityLink
+  'GET /api/mother': GetMother
+  'POST /api/mother/verdict': PostMotherVerdict
+  'PUT /api/mother/settings': PutMotherSettings
+  'POST /api/mother/sweep': PostMotherSweep
   'GET /api/diagrams': GetDiagrams
   'GET /api/activity': GetActivity
   'GET /api/personas': GetPersonas
+  'GET /api/skills': GetSkills
   'GET /api/file': GetFile
   'GET /api/file/:root/:path{.+}': GetFileAt
   'GET /api/doc': GetDoc

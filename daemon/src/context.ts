@@ -41,6 +41,9 @@ import { chatStream } from '@daemon/features/chat/model'
 import { chatTools } from '@daemon/features/chat/tools'
 import { Agents } from '@daemon/features/agents/Agents'
 import { Entities } from '@daemon/features/entities/Entities'
+import { MOTHER, Mother } from '@daemon/features/mother/Mother'
+import { MotherStore } from '@daemon/features/mother/db'
+import { deliberator } from '@daemon/features/mother/deliberate'
 import { crontabScheduler } from '@daemon/features/tasks/scheduler'
 import { TriggerStore } from '@daemon/features/tasks/state'
 import {
@@ -137,6 +140,8 @@ export class AppContext {
   readonly branches: BranchService
   readonly profiles: ProfileService
   readonly workspace: WorkspaceService
+  readonly mother: Mother
+  private readonly motherStore: MotherStore
   private readonly runStore: RunStore
   private readonly chatStore: ChatStore
   private readonly ledgerStore: LedgerStore
@@ -300,6 +305,58 @@ export class AppContext {
       project: () => this.projectOpen?.tree ?? null,
       links: () => this.projectOpen?.links ?? null,
       writeDoc: (path, markdown, by) => this.writeDoc('project', path, markdown, by),
+    })
+    this.motherStore = new MotherStore(path.join(home, 'mother.db'))
+    // The overseer: another subscriber to what the context already knows, and the one
+    // writer of her own records — she reads everything and touches nothing.
+    this.mother = new Mother({
+      store: this.motherStore,
+      sight: async () => ({
+        tasks: await this.tasks.summaries().catch(() => []),
+        runs: this.tasks.log(),
+        sync: this.sync.state,
+        activity: this.activity,
+        entities: await this.entities
+          .list()
+          .then((found) => found.entities)
+          .catch(() => []),
+      }),
+      deliberate: deliberator({
+        cwd: () => this.projectOpen?.path ?? this.home,
+        persona: () =>
+          this.projectOpen
+            ? readPersona(this.projectOpen.path, 'mother')
+            : Promise.resolve(null),
+        brief: () => brief(this.briefState(this.here(), this.scope)),
+        env: () => this.agentEnv(),
+        anchor: async (ref) => {
+          try {
+            return await this.rootOf(ref.root).tree.read(ref.path)
+          } catch {
+            return null
+          }
+        },
+      }),
+      record: async (finding, ref) => {
+        const source =
+          ref && ref.root === 'project'
+            ? [{ relation: 'derives-from' as const, target: ref.path.replace(/\.md$/, '') }]
+            : []
+        const { entity, created } = await this.entities.record(
+          {
+            kind: 'finding',
+            name: finding.name,
+            fields: { claim: finding.claim, evidence: finding.evidence },
+            from: source,
+            origin: source.length === 0,
+            body: '',
+            by: 'agent/mother',
+          },
+          MOTHER,
+        )
+        return { path: entity.path, created }
+      },
+      broadcast: (message) => this.broadcast(message),
     })
   }
 
@@ -635,11 +692,14 @@ export class AppContext {
     this.url = url
     this.sync.start()
     this.tasks.start()
+    this.mother.start()
   }
 
   async close(): Promise<void> {
     this.sync.stop()
     this.tasks.stop()
+    this.mother.stop()
+    this.motherStore.close()
     this.runStore.close()
     this.chats.close()
     this.chatStore.close()

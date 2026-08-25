@@ -3,7 +3,7 @@
  * from the project's `.personas/`, answers in a work chat the way a colleague types — short,
  * in the persona's voice — and does what it is handed with real hands: a shell, and Claude Code
  * running in the checkout. Each has one running conversation, the way a DM does, and a folder
- * under `attachments/` where what it makes goes.
+ * under `.attachments/` where what it makes goes.
  */
 
 export interface Agent {
@@ -18,7 +18,7 @@ export interface Agent {
   color: string
   /** The one conversation held with them, a chat id — opened on the chat socket like any. */
   chat: string
-  /** Where their deliverables go, project-relative: `attachments/<slug>`. A later feature reads
+  /** Where their deliverables go, project-relative: `.attachments/<slug>`. A later feature reads
    *  every one of these folders, so the shape is a contract. */
   attachments: string
   createdAt: number

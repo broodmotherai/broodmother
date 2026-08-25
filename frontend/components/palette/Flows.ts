@@ -28,6 +28,8 @@ export interface FlowCtx {
   entities(): void
   /** The entity graph: the same records, drawn as the shape they make. */
   entityGraph(): void
+  /** The Mother page: what the overseer has noticed, said, and kept to herself. */
+  mother(): void
   toggleTerminal(): void
   projects(): void
   repos(): void

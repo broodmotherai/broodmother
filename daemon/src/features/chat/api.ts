@@ -31,6 +31,7 @@ const ALLOWED = new Set([
   'GET /api/entities',
   'GET /api/entities/catalogue',
   'GET /api/personas',
+  'GET /api/skills',
   'GET /api/agents/org',
   'GET /api/activity',
   'GET /api/diff',

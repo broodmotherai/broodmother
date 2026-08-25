@@ -11,6 +11,7 @@ import { AgentsPanel } from './AgentsPanel'
 import { GitPanel } from './GitPanel'
 import { ProjectPanel } from './ProjectPanel'
 import { ReposPanel } from './ReposPanel'
+import { SkillsPanel } from './SkillsPanel'
 import type { PanelProps } from './Layout'
 
 interface Section {
@@ -79,6 +80,16 @@ const SECTIONS: Section[] = [
     // git section above it follows.
     open: (app) => Boolean(app.project),
     panel: ProjectPanel,
+  },
+  {
+    id: 'skills',
+    label: 'Skills',
+    icon: 'zap',
+    group: 'Organization',
+    // What the project carries rather than what you signed in with, so it stands with the
+    // project it belongs to and goes when that project closes.
+    open: (app) => Boolean(app.project),
+    panel: SkillsPanel,
   },
   {
     id: 'repos',

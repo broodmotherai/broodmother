@@ -1,6 +1,7 @@
 import { tilde } from '@daemon/utils/path'
 import { repoOf, type DocRoot } from '@daemon/services/Tree'
-import type { Skill } from '@daemon/utils/skills'
+import { SKILLS_DIR } from '@daemon/constants/files'
+import type { Skill } from '@daemon/types/api/skills'
 import type { Persona } from '@daemon/types/api/personas'
 import { DEFAULT_SOUL } from './soul'
 import { making } from './making'
@@ -172,7 +173,7 @@ room has no shell — so say what it would do and leave the running to a termina
   return `## Skills
 
 Reusable workflows this project carries, filed under
-${tilde(state.project.checkout)}/.skills — one folder per skill, its scripts beside a
+${tilde(state.project.checkout)}/${SKILLS_DIR} — one folder per skill, its scripts beside a
 SKILL.md. ${use}
 
 ${table(state.skills.map((skill): [string, string] => [skill.name, skill.description]))}`

@@ -1,4 +1,4 @@
-import { PRIMARY } from '@daemon/constants/files'
+import { ATTACHMENTS_DIR, PRIMARY, SKILLS_DIR } from '@daemon/constants/files'
 import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
@@ -226,6 +226,43 @@ describe('migrate', () => {
     expect(result.config.checkouts).toEqual({ [now]: 'feat-sync' })
     expect(result.config.repo).toEqual({ [now]: 'api' })
     expect(result.config.repoBranch).toEqual({ [`${now}#api`]: 'fix-login' })
+  })
+
+  it('dots the attachments folder and moves the skills under .tools, in every checkout', async () => {
+    const home = await tempDir()
+    await profile(home, 'ada')
+    const was = await project(home, 'handbook')
+    await mkdir(path.join(was, 'attachments', 'priya'), { recursive: true })
+    await writeFile(path.join(was, 'attachments', 'priya', 'report.md'), '# report\n')
+    await mkdir(path.join(was, '.skills', 'hello'), { recursive: true })
+    await writeFile(path.join(was, '.skills', 'hello', 'SKILL.md'), '# hello\n')
+
+    await migrate(home, loaded(defaultConfig(was), { [was]: 'ada' }))
+
+    const local = path.join(home, 'ada', 'handbook', PRIMARY)
+    expect(
+      await readFile(path.join(local, ATTACHMENTS_DIR, 'priya', 'report.md'), 'utf8'),
+    ).toBe('# report\n')
+    expect(await readFile(path.join(local, SKILLS_DIR, 'hello', 'SKILL.md'), 'utf8')).toBe(
+      '# hello\n',
+    )
+    expect(await names(local)).toEqual(['.attachments', '.git', '.tools', 'Notes'])
+  })
+
+  it('leaves a checkout that already has the new folders alone', async () => {
+    const home = await tempDir()
+    await profile(home, 'ada')
+    const was = await project(home, 'handbook')
+    await mkdir(path.join(was, 'attachments'), { recursive: true })
+    await writeFile(path.join(was, 'attachments', 'old.md'), 'old\n')
+    await mkdir(path.join(was, ATTACHMENTS_DIR), { recursive: true })
+    await writeFile(path.join(was, ATTACHMENTS_DIR, 'new.md'), 'new\n')
+
+    await migrate(home, loaded(defaultConfig(was), { [was]: 'ada' }))
+
+    const local = path.join(home, 'ada', 'handbook', PRIMARY)
+    expect(await readFile(path.join(local, 'attachments', 'old.md'), 'utf8')).toBe('old\n')
+    expect(await readFile(path.join(local, ATTACHMENTS_DIR, 'new.md'), 'utf8')).toBe('new\n')
   })
 
   it('is a no-op the second time', async () => {
