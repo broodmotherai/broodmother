@@ -1183,28 +1183,200 @@ body[data-resizing='column'] {
   color: var(--ink);
 }
 
+/* Where each opal is sitting this moment. Registered rather than plain custom properties,
+   since only a typed property interpolates — an untyped one would jump from waypoint to
+   waypoint instead of drifting between them. */
+@property --tab-violet-x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 19%;
+}
+
+@property --tab-violet-y {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 114%;
+}
+
+@property --tab-cyan-x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 73%;
+}
+
+@property --tab-cyan-y {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: -22%;
+}
+
+@property --tab-rose-x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 96%;
+}
+
+@property --tab-rose-y {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 61%;
+}
+
 /* The tab you are in catches the light. Three of the opals bloom across the same ground every
    other chosen control stands on, sat where they fell rather than at the corners — a sheen
-   too slight to read as colour, felt only as the tab being warmer than its neighbours. */
+   too slight to read as colour, felt only as the tab being warmer than its neighbours. Each
+   wanders its own small circuit on its own clock, over waypoints spaced unevenly and periods
+   sharing no factor, so the three never line up twice inside an hour of looking: the sheen
+   drifts rather than pulses, which is the difference between weather and a metronome. */
 .tab[data-active] {
   background:
     radial-gradient(
-      86% 132% at 19% 114%,
+      86% 132% at var(--tab-violet-x) var(--tab-violet-y),
       color-mix(in srgb, var(--opal-violet) 11%, transparent),
       transparent 68%
     ),
     radial-gradient(
-      104% 118% at 73% -22%,
+      104% 118% at var(--tab-cyan-x) var(--tab-cyan-y),
       color-mix(in srgb, var(--opal-cyan) 9%, transparent),
       transparent 66%
     ),
     radial-gradient(
-      72% 154% at 96% 61%,
+      72% 154% at var(--tab-rose-x) var(--tab-rose-y),
       color-mix(in srgb, var(--opal-rose) 8%, transparent),
       transparent 70%
     ),
     var(--active);
   color: var(--ink);
+  animation:
+    tab-opal-violet 17s ease-in-out -7s infinite,
+    tab-opal-cyan 23s ease-in-out -13s infinite,
+    tab-opal-rose 31s ease-in-out -5s infinite;
+}
+
+@keyframes tab-opal-violet {
+  0% {
+    --tab-violet-x: 19%;
+    --tab-violet-y: 114%;
+  }
+
+  14% {
+    --tab-violet-x: 31%;
+    --tab-violet-y: 107%;
+  }
+
+  29% {
+    --tab-violet-x: 11%;
+    --tab-violet-y: 121%;
+  }
+
+  46% {
+    --tab-violet-x: 26%;
+    --tab-violet-y: 118%;
+  }
+
+  61% {
+    --tab-violet-x: 8%;
+    --tab-violet-y: 109%;
+  }
+
+  78% {
+    --tab-violet-x: 22%;
+    --tab-violet-y: 124%;
+  }
+
+  89% {
+    --tab-violet-x: 33%;
+    --tab-violet-y: 112%;
+  }
+
+  100% {
+    --tab-violet-x: 19%;
+    --tab-violet-y: 114%;
+  }
+}
+
+@keyframes tab-opal-cyan {
+  0% {
+    --tab-cyan-x: 73%;
+    --tab-cyan-y: -22%;
+  }
+
+  12% {
+    --tab-cyan-x: 61%;
+    --tab-cyan-y: -14%;
+  }
+
+  27% {
+    --tab-cyan-x: 85%;
+    --tab-cyan-y: -29%;
+  }
+
+  41% {
+    --tab-cyan-x: 68%;
+    --tab-cyan-y: -33%;
+  }
+
+  58% {
+    --tab-cyan-x: 88%;
+    --tab-cyan-y: -18%;
+  }
+
+  73% {
+    --tab-cyan-x: 59%;
+    --tab-cyan-y: -26%;
+  }
+
+  86% {
+    --tab-cyan-x: 79%;
+    --tab-cyan-y: -12%;
+  }
+
+  100% {
+    --tab-cyan-x: 73%;
+    --tab-cyan-y: -22%;
+  }
+}
+
+@keyframes tab-opal-rose {
+  0% {
+    --tab-rose-x: 96%;
+    --tab-rose-y: 61%;
+  }
+
+  16% {
+    --tab-rose-x: 85%;
+    --tab-rose-y: 72%;
+  }
+
+  33% {
+    --tab-rose-x: 104%;
+    --tab-rose-y: 49%;
+  }
+
+  47% {
+    --tab-rose-x: 91%;
+    --tab-rose-y: 77%;
+  }
+
+  64% {
+    --tab-rose-x: 107%;
+    --tab-rose-y: 66%;
+  }
+
+  81% {
+    --tab-rose-x: 88%;
+    --tab-rose-y: 52%;
+  }
+
+  93% {
+    --tab-rose-x: 100%;
+    --tab-rose-y: 74%;
+  }
+
+  100% {
+    --tab-rose-x: 96%;
+    --tab-rose-y: 61%;
+  }
 }
 
 .tab:focus-visible {
