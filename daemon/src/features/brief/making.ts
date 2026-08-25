@@ -1,18 +1,29 @@
 /**
- * The two documents in a tree that are not prose: a task, which the app runs, and a
- * diagram, which it draws. Both are edited on a board here and written by hand as often as
- * not, so the brief carries their shape — an agent asked to add a step to a flow should be
- * able to write the file rather than guess at it, and a file it writes should stand where
- * the editor would have stood it.
+ * The three documents in a tree that are not only prose: a task, which the app runs, a
+ * diagram, which it draws, and a record, which it holds you to. The first two are edited on
+ * a board here and written by hand as often as not, and the third is a markdown document
+ * with a header the app owns — so the brief carries all three shapes. An agent asked to add
+ * a step to a flow should be able to write the file rather than guess at it, and a file it
+ * writes should stand where the editor would have stood it.
  *
- * The sizes come from the shared schema rather than from prose, so the table an agent is
- * given and the shapes the editor makes cannot drift apart.
+ * The sizes and the catalogues come from the shared schema rather than from prose, so the
+ * tables an agent is given and the shapes the app makes cannot drift apart.
  */
 
 import { SHAPES, SHAPE_SEED } from '@daemon/types/canvas/schema'
 import { NODE_H, NODE_W, emptyTask } from '@daemon/types/task/schema'
 import { serializeTask } from '@daemon/types/task/codec'
 import { GRID } from '@daemon/types/grid'
+// Aliased: `KINDS` here is already the task's node kinds, and a record's kinds are a
+// different catalogue that happens to want the same word.
+import {
+  KINDS as ENTITY_KINDS,
+  KIND_NOTE,
+  MAX_BODY,
+  RELATIONS as ENTITY_RELATIONS,
+  RELATION_NOTE,
+  REQUIRED,
+} from '@daemon/types/entity/schema'
 import type { Persona } from '@daemon/types/api/personas'
 
 const KINDS = `  trigger.manual                     somebody presses play; every task is born with one
@@ -89,23 +100,81 @@ const LAYOUT = `Both boards stand on a ${GRID}px grid, so every x and y is a mul
 are ${NODE_W}×${NODE_H} whatever they hold: lay a flow out left to right, triggers first, a card's width
 or two between one and the next.`
 
-/** The task and diagram formats, and what they are laid out on. */
+const ENTITY = `An entity is a record: something the project knows, written down where it can be read
+back. It is an ordinary \`.md\` document — the editor opens it, git carries it, wikilinks
+point at it — and what makes it a record is the \`entity:\` key in its frontmatter, not
+where the file sits. A record moved out of \`entities/\` is still a record.
+
+  ---
+  entity: finding
+  name: Sync stalls when the remote refuses a push
+  made: 2026-08-24T14:02:11Z
+  by: agent/priya
+  sha: 9f2c…
+  claim: the loop stops
+  evidence: the log ends mid-push
+  from:
+    - derives-from [[notes/sync]]
+    - cites [[docs/plans/2026-08-24-browser]]
+  ---
+
+  The prose a person reads, under the fence.
+
+\`made\`, \`by\` and \`sha\` are the app's and are written for you. The header is a small
+fixed subset of YAML: \`key: value\` with a plain scalar, and a \`from:\` list of two-space
+\`- <relation> [[target]]\` lines. A quoted or block scalar, an inline list, a nested
+mapping, a comment or a tabbed indent is refused by name — not by refusing the write, since
+a record is a document somebody may be halfway through editing, but by reading as broken in
+the list until it is fixed.
+
+Every record says where it came from. A \`from:\` of nothing at all is refused; a record
+that is where a line of work started says so, with the one word:
+
+  from:
+    - origin
+
+Sources have to resolve to documents that exist, and cannot close a loop. The prose under
+the fence holds ${MAX_BODY} characters; past that, write the document and record an
+\`artifact\` pointing at it. The kinds, each with the keys it needs:
+
+${kinds()}
+
+And how one record says it came from another:
+
+${relations()}`
+
+/** The task, diagram and record formats, and what the two boards are laid out on. */
 export function making(personas: Persona[]): string {
   return [
-    '## Tasks and diagrams',
-    `Two documents in the tree are not prose, and both are boards the app draws rather than
-pages it types. Read and write them like any other document — \`PUT /api/doc\` parses one
-before it lands and refuses a write that would leave it broken, with the reason — and keep
-the form the editors write: two-space JSON in the field order below, a trailing newline.
-A board written any other way still opens; it just diffs as though every line moved.`,
+    '## Tasks, diagrams and records',
+    `Three documents in the tree are more than prose. Two are boards the app draws rather
+than pages it types: read and write them like any other document — \`PUT /api/doc\` parses
+one before it lands and refuses a write that would leave it broken, with the reason — and
+keep the form the editors write: two-space JSON in the field order below, a trailing
+newline. A board written any other way still opens; it just diffs as though every line
+moved. The third is a record, which is markdown with a header the app owns.`,
     TASK,
     voices(personas),
     CANVAS,
     sizes(),
     LAYOUT,
+    ENTITY,
   ]
     .filter(Boolean)
     .join('\n\n')
+}
+
+function kinds(): string {
+  return table(
+    ENTITY_KINDS.map((kind): [string, string] => [
+      `${kind}  ${REQUIRED[kind].join(', ')}`,
+      KIND_NOTE[kind],
+    ]),
+  )
+}
+
+function relations(): string {
+  return table(ENTITY_RELATIONS.map((one): [string, string] => [one, RELATION_NOTE[one]]))
 }
 
 function voices(personas: Persona[]): string {

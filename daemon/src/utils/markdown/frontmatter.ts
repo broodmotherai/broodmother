@@ -11,6 +11,17 @@ export function frontmatterField(text: string, key: string): string | null {
   return line?.slice(key.length + 1).trim() || null
 }
 
+/** Both halves at once, or null where there is no fence. `frontmatterField` reads one line
+ *  out of the first and `stripFrontmatter` throws it away; a codec that owns the whole
+ *  header needs to see it, and should not carry a second copy of the fence to get it. */
+export function splitFrontmatter(
+  text: string,
+): { header: string; body: string } | null {
+  const fence = text.match(FENCE)
+  if (!fence) return null
+  return { header: fence[1], body: text.slice(fence[0].length).replace(/^\n+/, '') }
+}
+
 /** The body on its own: the frontmatter taken off, and the blank lines it left behind. */
 export function stripFrontmatter(text: string): string {
   const fence = text.match(FENCE)

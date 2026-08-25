@@ -18,10 +18,12 @@ export interface FlowCtx {
   settings(): void
   /** The tasks page: what is scheduled, and how running has been going. */
   tasks(): void
-  /** The coworkers page: the people this project has hired, and the thread held with each. */
-  coworkers(): void
+  /** The agents page: the people this project has hired, and the thread held with each. */
+  agents(): void
   /** The chat page: this project's conversations with a model. */
   chat(): void
+  /** The entities page: what this project has written down, and what each came from. */
+  entities(): void
   toggleTerminal(): void
   projects(): void
   repos(): void

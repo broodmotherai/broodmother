@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import { CHAT_MODELS, DEFAULT_CHAT_MODEL } from '@broodmother/types/api/chat'
-import type { NewCoworker } from '@broodmother/types/api/coworkers'
+import type { NewAgent } from '@broodmother/types/api/agents'
 import type { Persona } from '@broodmother/types/api/personas'
 import { opal } from '@/Colors'
 import { useApp } from '@/State'
@@ -11,21 +11,21 @@ import { Button } from '@/components/core/Button'
 import { ColorField } from '@/components/core/ColorField'
 import { Modal } from '@/components/core/Modal'
 import { Select } from '@/components/core/Select'
-/** What a coworker is called when nothing is typed, in the placeholder that says so. */
+/** What an agent is called when nothing is typed, in the placeholder that says so. */
 const EXAMPLE = 'Priya'
 
 /**
  * A new colleague: a name to call them by, a persona from the project's `.personas/` that is
  * who they are, the model behind the voice, and the colour their face wears. The persona is
- * the one thing that has to exist already — a coworker with nobody to be is a name that
+ * the one thing that has to exist already — an agent with nobody to be is a name that
  * answers as nobody.
  */
-export function NewCoworkerDialog({
+export function NewAgentDialog({
   onCreate,
   onClose,
 }: {
   /** Resolves to the reason it failed, or null. */
-  onCreate: (input: NewCoworker) => Promise<string | null>
+  onCreate: (input: NewAgent) => Promise<string | null>
   onClose: () => void
 }) {
   const app = useApp()
@@ -63,19 +63,19 @@ export function NewCoworkerDialog({
 
   return (
     <Modal
-      title="New coworker"
-      description="A coworker is an agent you message like a person. It wears a persona from this project's .personas folder, does what you hand it with a shell and Claude Code in the checkout, and puts what it makes in its own attachments folder."
+      title="New agent"
+      description="An agent is somebody you message like a person. It wears a persona from this project's .personas folder, does what you hand it with a shell and Claude Code in the checkout, and puts what it makes in its own attachments folder."
       onClose={onClose}
       footer={
         <>
           <Button onClick={onClose}>Cancel</Button>
-          <Button form="new-coworker" disabled={busy || !called || !persona}>
-            {busy ? 'Adding…' : 'Add coworker'}
+          <Button form="new-agent" disabled={busy || !called || !persona}>
+            {busy ? 'Adding…' : 'Add agent'}
           </Button>
         </>
       }
     >
-      <form id="new-coworker" className="fields" onSubmit={submit}>
+      <form id="new-agent" className="fields" onSubmit={submit}>
         <label>
           Name
           <input

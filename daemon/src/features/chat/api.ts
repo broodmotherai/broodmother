@@ -26,8 +26,10 @@ const ALLOWED = new Set([
   'GET /api/task/runs',
   'GET /api/task/log',
   'GET /api/diagrams',
+  'GET /api/entities',
+  'GET /api/entities/catalogue',
   'GET /api/personas',
-  'GET /api/agents',
+  'GET /api/activity',
   'GET /api/diff',
   'GET /api/diff/file',
   // Writing: documents, the folders holding them, branches, sync, and the task runner.
@@ -41,6 +43,8 @@ const ALLOWED = new Set([
   'POST /api/sync/now',
   'POST /api/sync/clear-conflict',
   'POST /api/git/check',
+  'POST /api/entities',
+  'POST /api/entity/link',
   'POST /api/task/run',
   'POST /api/task/stop',
 ])
@@ -57,7 +61,7 @@ const ALLOWED = new Set([
  *   DELETE /api/terminal        ends somebody's shell
  *   /api/chat, /api/chats       a conversation reading or deleting conversations, its own
  *                               included, while its reply is still being written into one
- *   /api/coworker, /api/coworkers   a coworker making, clearing or removing coworkers — itself
+ *   /api/agent, /api/agents     an agent making, clearing or removing agents — itself
  *                               included, mid-sentence
  *   GET /api/file               bytes rather than JSON; nothing a model can read
  */

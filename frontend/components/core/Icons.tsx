@@ -17,6 +17,7 @@ export type IconName =
   | 'project'
   | 'package'
   | 'chevron-left'
+  | 'library'
   | 'chevron-right'
   | 'play'
   | 'play-solid'
@@ -144,6 +145,16 @@ const GLYPHS: Record<IconName, ReactNode> = {
     </>
   ),
   'chevron-left': <path d="m15 18-6-6 6-6" />,
+  /* Books stood on a shelf. Records needed a glyph nothing else here wears: `package` is a
+     repo in the tree and on the task page, and a row that borrowed it would read as one. */
+  library: (
+    <>
+      <path d="m16 6 4 14" />
+      <path d="M12 6v14" />
+      <path d="M8 8v12" />
+      <path d="M4 4v16" />
+    </>
+  ),
   'chevron-right': <path d="m9 18 6-6-6-6" />,
   /* Lucide's play, filled solid: the stroke it keeps is what rounds the corners. */
   play: <path fill="currentColor" d="M8 5.5 19 12 8 18.5Z" />,

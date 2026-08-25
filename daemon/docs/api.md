@@ -6,7 +6,7 @@
 
 ## Overview
 
-The daemon serves 61 HTTP routes under `/api` and four websockets. There are no slash
+The daemon serves 66 HTTP routes under `/api` and four websockets. There are no slash
 commands and no CLI: the app is a browser, and this is the whole of what it can ask for.
 
 Routes are typed end to end. `lib/types/api/routes.ts` maps a route token — the literal
@@ -72,18 +72,23 @@ turns one into a status code. The body is `{ error: string }`.
 | `POST` | `/api/chats` | Start one |
 | `GET` | `/api/chat` | One, with its turns |
 | `DELETE` | `/api/chat` | Remove it |
-| `GET` | `/api/coworkers` | Who can be delegated to |
-| `POST` | `/api/coworkers` | Make one |
-| `DELETE` | `/api/coworker` | Remove one |
-| `POST` | `/api/coworker/clear` | Clear its state |
+| `GET` | `/api/agents` | Who can be delegated to |
+| `POST` | `/api/agents` | Make one |
+| `DELETE` | `/api/agent` | Remove one |
+| `POST` | `/api/agent/clear` | Clear its state |
+| `POST` | `/api/agent/model` | Change which model answers as it |
 | `GET` | `/api/personas` | The project's `.personas/` |
-| `GET` | `/api/agents` | What each checkout is doing |
+| `GET` | `/api/activity` | What each checkout is doing |
 | `GET` | `/api/tasks` | Every task |
 | `POST` | `/api/task/run` | Run one |
 | `POST` | `/api/task/stop` | Stop it |
 | `GET` | `/api/task/runs` | What it has done |
 | `GET` | `/api/task/log` | One run's log |
 | `GET` | `/api/diagrams` | The `.canvas` files the open checkouts hold |
+| `GET` | `/api/entities` | Every record the project holds, newest first |
+| `POST` | `/api/entities` | Write one — refused without provenance, and the same one twice is one |
+| `GET` | `/api/entities/catalogue` | The kinds there are, and the relations |
+| `POST` | `/api/entity/link` | Say a record already written came from one more thing |
 | `GET` | `/api/data` | Task scratch |
 | `DELETE` | `/api/data` | Clear it |
 | `PUT` | `/api/model-keys` | Store a provider key on the profile |

@@ -53,14 +53,14 @@ const priya = () => ({
   color: '#c084fc',
 })
 
-it('makes a coworker with a thread and a folder, lists them, and takes them away', async () => {
+it('makes an agent with a thread and a folder, lists them, and takes them away', async () => {
   const { root, call } = await server()
-  expect((await call('GET', '/api/coworkers')).body).toEqual({ coworkers: [] })
+  expect((await call('GET', '/api/agents')).body).toEqual({ agents: [] })
 
-  const made = await call('POST', '/api/coworkers', priya())
+  const made = await call('POST', '/api/agents', priya())
   expect(made.status).toBe(200)
-  const { coworker } = made.body as ApiResponse<'POST /api/coworkers'>
-  expect(coworker).toMatchObject({
+  const { agent } = made.body as ApiResponse<'POST /api/agents'>
+  expect(agent).toMatchObject({
     name: 'Priya',
     persona: 'research/aggregator',
     attachments: 'attachments/priya',
@@ -68,32 +68,32 @@ it('makes a coworker with a thread and a folder, lists them, and takes them away
   // The folder is there from the first message, and in the tree.
   expect(await readdir(path.join(root, 'attachments'))).toEqual(['priya'])
 
-  const listed = (await call('GET', '/api/coworkers')).body as ApiResponse<'GET /api/coworkers'>
-  expect(listed.coworkers).toEqual([
-    expect.objectContaining({ id: coworker.id, working: false, lastAt: null }),
+  const listed = (await call('GET', '/api/agents')).body as ApiResponse<'GET /api/agents'>
+  expect(listed.agents).toEqual([
+    expect.objectContaining({ id: agent.id, working: false, lastAt: null }),
   ])
   // Their thread is a chat, reachable as one, and not among the chats.
-  const thread = (await call('GET', `/api/chat?chat=${coworker.chat}`))
+  const thread = (await call('GET', `/api/chat?chat=${agent.chat}`))
     .body as ApiResponse<'GET /api/chat'>
   expect(thread.chat.title).toBe('Priya')
   expect((await call('GET', '/api/chats')).body).toEqual({ chats: [] })
 
-  expect((await call('POST', '/api/coworker/clear', { coworker: coworker.id })).status).toBe(200)
-  expect((await call('DELETE', `/api/coworker?coworker=${coworker.id}`)).status).toBe(200)
-  expect((await call('GET', '/api/coworkers')).body).toEqual({ coworkers: [] })
-  expect((await call('GET', `/api/chat?chat=${coworker.chat}`)).status).toBe(400)
+  expect((await call('POST', '/api/agent/clear', { agent: agent.id })).status).toBe(200)
+  expect((await call('DELETE', `/api/agent?agent=${agent.id}`)).status).toBe(200)
+  expect((await call('GET', '/api/agents')).body).toEqual({ agents: [] })
+  expect((await call('GET', `/api/chat?chat=${agent.chat}`)).status).toBe(400)
   // What they made stays: it is yours.
   expect(await readdir(path.join(root, 'attachments'))).toEqual(['priya'])
 })
 
-it('refuses a persona the project has not got, a model nobody serves, and a coworker that is not there', async () => {
+it('refuses a persona the project has not got, a model nobody serves, and an agent that is not there', async () => {
   const { call } = await server()
-  expect(await call('POST', '/api/coworkers', { ...priya(), persona: 'nobody' })).toMatchObject({
+  expect(await call('POST', '/api/agents', { ...priya(), persona: 'nobody' })).toMatchObject({
     status: 400,
     body: { error: 'no persona called nobody in this project' },
   })
-  expect((await call('POST', '/api/coworkers', { ...priya(), model: 'gpt-9' })).status).toBe(400)
-  expect((await call('POST', '/api/coworkers', { ...priya(), name: '  ' })).status).toBe(400)
-  expect((await call('DELETE', '/api/coworker?coworker=coworker-9')).status).toBe(400)
-  expect((await call('POST', '/api/coworker/clear', { coworker: 'coworker-9' })).status).toBe(400)
+  expect((await call('POST', '/api/agents', { ...priya(), model: 'gpt-9' })).status).toBe(400)
+  expect((await call('POST', '/api/agents', { ...priya(), name: '  ' })).status).toBe(400)
+  expect((await call('DELETE', '/api/agent?agent=agent-9')).status).toBe(400)
+  expect((await call('POST', '/api/agent/clear', { agent: 'agent-9' })).status).toBe(400)
 })

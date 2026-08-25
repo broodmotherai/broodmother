@@ -12,14 +12,15 @@ its layering, its service positions, its folder shape. The **features** came fro
 
 ```sh
 npm install
-npm run dev        # 4243; needs the daemon on 4242
+npm run dev        # 4243, or $PORT; needs the daemon on 4242
 npm run build
 npm run typecheck
 npm test           # vitest — 431 tests
 ```
 
 Start the daemon first (`cd ../daemon && npm run dev`). `NEXT_PUBLIC_API_URL` overrides where
-this looks for it; it defaults to `http://127.0.0.1:4242`.
+this looks for it; it defaults to `http://127.0.0.1:4242`, and `PORT` moves this app off 4243.
+Both are what `make dev` at the root sets when it hands the two of them ports of their own.
 
 ## Layout
 
@@ -34,7 +35,7 @@ components/core/    The design system — buttons, menus, modals, fields, the ic
                     Every feature imports it from here
 components/         Feature UI, by domain — layout, editor, terminal, palette, chat, task,
                     notebook, diff, canvas, doc, shell, project, profile, repo, github,
-                    settings, coworkers
+                    settings, agents
 src/services/       DataSource (the interface naming every call), ApiDataSource (the one
                     implementation, the only place a route path is written, and where the
                     `api` singleton is made), Mock

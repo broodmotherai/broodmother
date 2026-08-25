@@ -10,12 +10,12 @@ export type BriefSync = 'off' | 'on' | 'conflicted'
 
 /**
  * Which room the agent is in. A terminal has a shell, a working directory and the whole disk;
- * the chat page has a set of tools and nothing else; a coworker is the chat page with hands —
+ * the chat page has a set of tools and nothing else; an agent is the chat page with hands —
  * a shell and Claude Code in the checkout, reached through its tools. Everything the three are
  * told about the project is the same — where it is standing differs, and so does what it can
  * reach for.
  */
-export type BriefSurface = 'terminal' | 'chat' | 'coworker'
+export type BriefSurface = 'terminal' | 'chat' | 'agent'
 
 /** The room an agent wakes up in, as whatever opened it sees the room. */
 export interface BriefState {
@@ -63,11 +63,11 @@ what you can do here: there is no shell and no filesystem beyond them. Someone m
 document you are editing open beside you — the editor follows the file on disk, so prefer
 small edits over rewriting a document out from under them.
 `.trim(),
-  // A coworker has what the chat has and a shell besides, so the honest paragraph is the
+  // An agent has what the chat has and a shell besides, so the honest paragraph is the
   // chat's with the disclaimer taken back: the tools reach the disk, and one of them is
   // Claude Code.
-  coworker: `
-You are a coworker inside broodmother, a Mac app for reading and writing a folder of
+  agent: `
+You are an agent inside broodmother, a Mac app for reading and writing a folder of
 markdown. The .md files on disk are the source of truth and git is the history. You are
 messaging someone who has the app open in front of them. Your tools are how you act: the
 document tools for small edits, and \`shell\` and \`claude_code\` for everything else — both run
@@ -82,6 +82,18 @@ const SYNC: Record<BriefSync, string> = {
   on: 'on — the project commits and pushes itself once it goes quiet',
   conflicted: 'conflicted — a pull left conflicts for someone to resolve',
 }
+
+/** The two rules the port is for, and the only two worth spending the brief's room on.
+ *
+ *  They are for the rooms with tools and not for a terminal: a terminal agent has the disk,
+ *  writes the file itself, and can read back what it wrote. A chat cannot — its messages go
+ *  nowhere anything can open — which is exactly what makes the first rule true rather than
+ *  merely good advice. */
+const RECORDING = `\`entity_list\` and \`entity_record\` are the records. Two rules about them, and they are
+not style: a claim that only exists in a message is not a record, because nothing can read a
+message back — if it is worth the project knowing, \`entity_record\` it and the answer is the
+path it wrote. And say which record you got something from, by that path: an assertion with
+no record behind it is you, and an assertion with one is the project.`
 
 const HERE = `## Here
 
@@ -116,7 +128,7 @@ function where(state: BriefState, surface: BriefSurface): string {
     ['project', project ? `${project.name} — ${tilde(project.path)}` : 'none is open yet'],
     ['scope', state.scope],
     // A chat has no working directory to be standing in, and a row naming one would be the
-    // brief telling it about a place it cannot go. A coworker's shell runs there.
+    // brief telling it about a place it cannot go. An agent's shell runs there.
     ...(surface !== 'chat'
       ? ([['cwd', tilde(state.cwd)]] as [string, string][])
       : []),
@@ -150,7 +162,7 @@ function skills(state: BriefState, surface: BriefSurface): string {
       ? `The line here is only the trigger: read a skill's SKILL.md in full before
 running it, and take what it needs — credentials, endpoints — from the environment,
 never from a file.`
-      : surface === 'coworker'
+      : surface === 'agent'
         ? `The line here is only the trigger: read a skill's SKILL.md in full before running
 it, through \`shell\` or by handing it to \`claude_code\`, and take what it needs —
 credentials, endpoints — from the environment, never from a file.`
@@ -213,7 +225,7 @@ ${
     surface === 'terminal'
       ? `A repo's repository is yours, and git is how you commit in one. Reading is git's as
 well: log, diff, status, blame, and anything else no route covers.`
-      : surface === 'coworker'
+      : surface === 'agent'
         ? `Git beyond those routes is \`shell\`'s: log, diff, status, blame, and anything else
 no route covers, run in the checkout.`
         : `Git beyond those routes is out of reach from here — no log, no diff, no commit in a
@@ -233,6 +245,17 @@ A task is the one document with a machine behind it, and these are the machine.
   GET    /api/diagrams                        every diagram, and how much is drawn on it
   GET    /api/personas                        the voices a task's agent step can wear
 
+A record is the one document the app will not let you write carelessly, and these are why.
+
+  GET    /api/entities                        every record, newest first, with its sources
+  GET    /api/entities/catalogue              the kinds there are and the keys each needs
+  POST   /api/entities      {kind, name, fields, from, origin?, body, by?}
+                                              writes one, or answers with the record that
+                                              already says it — the same twice is one record
+  POST   /api/entity/link   {path, relation, target}
+                                              a source added to one already written; refused
+                                              where it would close a loop
+
 And for state, once what you were told above has gone stale under you.
 
   GET /api/config     what is open: project, profile, scope, checkouts, per-project git
@@ -247,7 +270,7 @@ ${
     surface === 'terminal'
       ? `  curl -s '${api}/api/links?path=notes/sync.md'`
       : `  api  GET  /api/links  {"path": "notes/sync.md"}`
-  }`
+  }${surface === 'terminal' ? '' : `\n\n${RECORDING}`}`
 }
 
 function section(title: string, rows: [string, string][]): string {

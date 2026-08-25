@@ -9,14 +9,20 @@ import type { GetDiff, GetDiffFile } from './diff'
 import type { GetTaskLog, GetTaskRuns, GetTasks, PostTaskRun } from './tasks'
 import type { DeleteChat, GetChat, GetChats, PostChats } from './chat'
 import type {
-  DeleteCoworker,
-  GetCoworkers,
-  PostCoworkerClear,
-  PostCoworkerModel,
-  PostCoworkers,
-} from './coworkers'
+  DeleteAgent,
+  GetAgents,
+  PostAgentClear,
+  PostAgentModel,
+  PostAgents,
+} from './agents'
 import type { GetDiagrams } from './canvas'
-import type { GetAgents } from './agents'
+import type { GetActivity } from './activity'
+import type {
+  GetEntities,
+  GetEntitiesCatalogue,
+  PostEntities,
+  PostEntityLink,
+} from './entities'
 import type { GetPersonas } from './personas'
 import type { DeleteTerminal } from './terminal'
 import type {
@@ -105,13 +111,17 @@ interface ApiRoutes {
   'POST /api/chats': PostChats
   'GET /api/chat': GetChat
   'DELETE /api/chat': DeleteChat
-  'GET /api/coworkers': GetCoworkers
-  'POST /api/coworkers': PostCoworkers
-  'DELETE /api/coworker': DeleteCoworker
-  'POST /api/coworker/clear': PostCoworkerClear
-  'POST /api/coworker/model': PostCoworkerModel
-  'GET /api/diagrams': GetDiagrams
   'GET /api/agents': GetAgents
+  'POST /api/agents': PostAgents
+  'DELETE /api/agent': DeleteAgent
+  'POST /api/agent/clear': PostAgentClear
+  'POST /api/agent/model': PostAgentModel
+  'GET /api/entities': GetEntities
+  'POST /api/entities': PostEntities
+  'GET /api/entities/catalogue': GetEntitiesCatalogue
+  'POST /api/entity/link': PostEntityLink
+  'GET /api/diagrams': GetDiagrams
+  'GET /api/activity': GetActivity
   'GET /api/personas': GetPersonas
   'GET /api/file': GetFile
   'GET /api/file/:root/:path{.+}': GetFileAt

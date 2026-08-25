@@ -11,11 +11,11 @@
 - [Git and Sync](#git-and-sync)
 - [GitHub](#github)
 - [Chat](#chat)
-- [Coworkers](#coworkers)
+- [Agents](#agents)
 - [Brief](#brief)
 - [Tasks](#tasks)
 - [Terminals](#terminals)
-- [Agents](#agents)
+- [Activity](#activity)
 - [Service Layer](#service-layer)
 
 ---
@@ -107,12 +107,12 @@ which stops nothing.
 
 The eight tools it is given are in [Tools](tools.md).
 
-## Coworkers
+## Agents
 
-`src/coworkers/{core,tools,brief}.ts`
+`src/agents/{core,tools,brief}.ts`
 
-A coworker is the chat page with hands: a shell and Claude Code in an actual checkout,
-reached through its tools. `COWORKER_ROUNDS` is 24 — a delegation is several tools deep, a
+An agent is the chat page with hands: a shell and Claude Code in an actual checkout,
+reached through its tools. `AGENT_ROUNDS` is 24 — a delegation is several tools deep, a
 look around, the errand, a check of what came back, and each is a round.
 
 ## Brief
@@ -123,7 +123,7 @@ What every agent is handed first. It names which room the agent is in — and th
 are genuinely different:
 
 > A terminal has a shell, a working directory and the whole disk; the chat page has a set of
-> tools and nothing else; a coworker is the chat page with hands.
+> tools and nothing else; an agent is the chat page with hands.
 
 It also carries the project and how much it syncs, in one word.
 
@@ -163,9 +163,9 @@ of them is somebody's work.
 `DELETE /api/terminal` ends one. That is said by whoever is finished with it, which is not
 the same as whoever stopped watching.
 
-## Agents
+## Activity
 
-`src/services/AgentService.ts`
+`src/services/ActivityService.ts`
 
 What is going on in each checkout — at work, wants somebody, or sitting at a prompt — folded
 into one answer per checkout from two sources:

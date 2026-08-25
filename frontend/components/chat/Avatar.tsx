@@ -22,7 +22,7 @@ export function Avatar({
 }) {
   return (
     <span
-      className="coworker-avatar"
+      className="agent-avatar"
       data-size={size}
       data-working={working ? 'true' : undefined}
       style={{ '--avatar-fill': color, '--avatar-ink': readableOn(color) } as CSSProperties}
@@ -30,7 +30,7 @@ export function Avatar({
       role="img"
     >
       {initialsOf(name)}
-      <span className="coworker-presence" aria-hidden />
+      <span className="agent-presence" aria-hidden />
     </span>
   )
 }

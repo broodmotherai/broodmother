@@ -1,6 +1,9 @@
 import { tool, type ToolSet } from 'ai'
 import { z } from 'zod'
 import type { DocPath, DocRoot, Tree, TreeEntry } from '@daemon/services/Tree'
+import type { ApiResponse } from '@daemon/types/api/routes'
+import type { EntitySummary } from '@daemon/types/api/entities'
+import { KINDS, REQUIRED, RELATIONS } from '@daemon/types/entity/schema'
 import type { ApiCall } from './api'
 
 /** How much of a document is worth handing over whole. Past this the model is reading
@@ -18,6 +21,10 @@ export interface ToolDeps {
   tree: (root: DocRoot) => Tree
   /** Everything else: the app's own routes, allowlisted. */
   call: ApiCall
+  /** What to write in a record's `by:` — `chat/<id>`, `agent/<name>`. Filled in where the
+   *  app builds these deps and so knows; unsaid where it does not, since the route has no
+   *  caller to ask and a guess would be worse than a blank. */
+  by?: string
 }
 
 const root = z
@@ -28,10 +35,17 @@ const root = z
 /**
  * What the chat can do, as the model sees it.
  *
- * Six of these are the things a conversation about a folder of markdown does constantly, and
- * they are typed so that asking for one is one obvious call. The seventh is every other route
+ * Most of these are the things a conversation about a folder of markdown does constantly, and
+ * they are typed so that asking for one is one obvious call. The last is every other route
  * the app has, because the brief already documents them all and a schema per route would be
  * `lib/types/api/routes.ts` written twice, free to drift.
+ *
+ * The two entity tools are typed for a different reason: a record has to be *written*, and a
+ * tool with a closed schema is what makes that enforceable rather than requested. There is
+ * deliberately no tool taking free-form content and filing it — what comes back from
+ * `entity_record` is what it just wrote and the path it wrote it under, which is what makes
+ * "cite the record" something the app holds you to rather than something the prompt asks
+ * for. Reading one back is `read_doc`, because a record is an ordinary document.
  *
  * A description says *when* to reach for a tool and not only what it does — that is what a
  * model reads to choose between them, and it is the difference between a tool that gets used
@@ -178,6 +192,82 @@ export function chatTools(deps: ToolDeps): ToolSet {
         }),
     }),
 
+    entity_list: tool({
+      description:
+        'The records this project has already written down, newest first. Read this before ' +
+        'proposing anything: what is recorded is what the project knows, and a finding you ' +
+        'restate is one you did not read. Each row is a path you can cite and open.',
+      inputSchema: z.object({
+        kind: z
+          .enum(KINDS)
+          .optional()
+          .describe('only records of this kind; unsaid is all of them'),
+      }),
+      execute: ({ kind }) =>
+        answer(async () => {
+          const { entities } = JSON.parse(
+            await deps.call('GET', '/api/entities'),
+          ) as ApiResponse<'GET /api/entities'>
+          const wanted = kind ? entities.filter((one) => one.kind === kind) : entities
+          const shown = wanted.slice(0, MAX_ENTRIES)
+          return (
+            shown.map(entityLine).join('\n') ||
+            (kind ? `no ${kind} has been recorded` : 'nothing has been recorded yet')
+          )
+        }),
+    }),
+
+    entity_record: tool({
+      description:
+        'Write a record down. This is the only way something you worked out becomes part of ' +
+        'the project: a claim in a message is not a record, and nothing can read a message ' +
+        'back. Say what it came from — `from` is a relation and a document that exists, or ' +
+        '`origin: true` where this is where the line of work started. Answers with the path ' +
+        'it wrote, which is what you cite afterwards. Recording the same thing twice writes ' +
+        'nothing and hands back the record that already says it.',
+      inputSchema: z.object({
+        kind: z.enum(KINDS).describe('what sort of record this is'),
+        name: z.string().describe('what to call it — one line, how it will be referred to'),
+        fields: z
+          .record(z.string(), z.string())
+          .describe(
+            `the keys this kind needs: ${KINDS.map((one) => `${one} — ${REQUIRED[one].join(', ')}`).join('; ')}`,
+          ),
+        from: z
+          .array(
+            z.object({
+              relation: z.enum(RELATIONS),
+              target: z
+                .string()
+                .describe('a document in the project, as a wikilink writes it'),
+            }),
+          )
+          .describe('what this came from; leave empty only with origin'),
+        origin: z
+          .boolean()
+          .optional()
+          .describe('this is where a line of work started and came from nothing'),
+        body: z.string().describe('the prose a person will read'),
+      }),
+      execute: ({ kind, name, fields, from, origin, body }) =>
+        answer(async () => {
+          const { entity, created } = JSON.parse(
+            await deps.call('POST', '/api/entities', {
+              kind,
+              name,
+              fields,
+              from,
+              origin,
+              body,
+              ...(deps.by === undefined ? {} : { by: deps.by }),
+            }),
+          ) as ApiResponse<'POST /api/entities'>
+          return created
+            ? `recorded as ${entity.path} — cite it by that path`
+            : `already recorded as ${entity.path}, unchanged — cite it by that path`
+        }),
+    }),
+
     api: tool({
       description:
         'Everything else the app can do — branches, sync, tasks, diagrams, personas, ' +
@@ -215,6 +305,16 @@ async function filesIn(tree: Tree): Promise<DocPath[]> {
   return found
 }
 
+/** One record as a list draws it: what it is, what it is called, and the two things worth
+ *  knowing before opening it — where it came from, and whether it still says what it said. */
+function entityLine(one: EntitySummary): string {
+  if (one.broken) return `${one.path} — broken: ${one.broken}`
+  const from = one.origin
+    ? 'origin'
+    : one.from.map((source) => `${source.relation} ${source.target}`).join(', ')
+  return `${one.kind ?? '?'}  ${one.name}  [${one.path}]  from: ${from}${one.edited ? '  (edited since)' : ''}`
+}
+
 /** The line a step wears in the thread: what was asked of the tool, not what came back. */
 export function titleOf(name: string, input: unknown): string {
   const said = (input ?? {}) as Record<string, string>
@@ -234,9 +334,13 @@ export function titleOf(name: string, input: unknown): string {
       return `move ${said.from ?? ''} → ${said.to ?? ''}`
     case 'delete_doc':
       return `delete ${where}`
+    case 'entity_list':
+      return said.kind ? `list ${said.kind} records` : 'list records'
+    case 'entity_record':
+      return `record ${said.kind ?? ''} “${firstLine(said.name ?? '')}”`
     case 'api':
       return `${said.method ?? ''} ${said.route ?? ''}`.trim()
-    // A coworker's hands, which the chat has not got but the thread draws the same way.
+    // An agent's hands, which the chat has not got but the thread draws the same way.
     case 'claude_code':
       return `claude: ${firstLine(said.task ?? '')}`
     case 'shell':

@@ -43,8 +43,9 @@ function commands(ctx: FlowCtx): Choice[] {
     command('New repo', 'plus', () => done(() => ctx.createRepo())),
     command('Switch or create project', 'layout-dashboard', () => done(() => ctx.projects())),
     command('Tasks', 'clock', () => done(() => ctx.tasks())),
-    command('Coworkers', 'users', () => done(() => ctx.coworkers())),
+    command('Agents', 'users', () => done(() => ctx.agents())),
     command('Chat', 'message-square', () => done(() => ctx.chat())),
+    command('Entities', 'library', () => done(() => ctx.entities())),
     command('Settings', 'settings', () => done(() => ctx.settings())),
   ]
 }

@@ -19,7 +19,7 @@ export interface StreamInput {
   signal: AbortSignal
   system: string
   tools: ToolSet
-  /** Unsaid is `MAX_ROUNDS`; a coworker delegating gets more, since an errand is several deep. */
+  /** Unsaid is `MAX_ROUNDS`; an agent delegating gets more, since an errand is several deep. */
   maxRounds?: number
 }
 
@@ -119,7 +119,7 @@ export function chatStream(deps: ChatStreamDeps): ChatStream {
  * The conversation as the model is handed it: only what was said, never what was done —
  * replaying a step summary as a tool result would be handing the model a transcript of its own
  * work with the shapes filed off, and reading a document again is cheap and true. Messages said
- * back to back by one side are one turn: a coworker's "on it" and its report are two bubbles
+ * back to back by one side are one turn: an agent's "on it" and its report are two bubbles
  * and one answer, and a provider is owed turns that alternate.
  */
 function turns(messages: ChatMessage[]): { role: ChatMessage['role']; content: string }[] {

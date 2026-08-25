@@ -79,19 +79,19 @@ crontab than the machine's.
 
 The disk-touching half, one class per thing that has to stay true while the app is open.
 
-| Service          | Watches                                                                |
-| ---------------- | ---------------------------------------------------------------------- |
-| `ProjectService` | A project's documents, repository, link index, `.skills/`, `.personas/` |
-| `TreeService`    | The files, over chokidar, debounced — and deliberately never `.git`     |
-| `GitService`     | The repository's own state: commits, stages, branch moves              |
-| `AgentService`   | What each checkout is doing — at work, wants somebody, or idle          |
-| `GitHubService`  | Four things to watch and two to do, asked every few minutes            |
+| Service           | Watches                                                                |
+| ----------------- | ---------------------------------------------------------------------- |
+| `ProjectService`  | A project's documents, repository, link index, `.skills/`, `.personas/` |
+| `TreeService`     | The files, over chokidar, debounced — and deliberately never `.git`     |
+| `GitService`      | The repository's own state: commits, stages, branch moves              |
+| `ActivityService` | What each checkout is doing — at work, wants somebody, or idle         |
+| `GitHubService`   | Four things to watch and two to do, asked every few minutes            |
 
 `TreeService` and `GitService` are split for a reason: a commit made in a shell changes what
 the sidebar should say about every row without touching a document, and the tree watcher
 never looks inside `.git`, so nothing else would notice.
 
-`AgentService` folds two sources into one answer per checkout: Claude Code writes a probe
+`ActivityService` folds two sources into one answer per checkout: Claude Code writes a probe
 file for every interactive session, and the pty side is asked what each shell has in front of
 it.
 
@@ -146,7 +146,7 @@ against a temporary home.
 ## See Also
 
 - [API Reference](api.md) — every route the browser can call
-- [Subsystems](subsystems.md) — chat, coworkers, tasks, sync, terminals
+- [Subsystems](subsystems.md) — chat, agents, tasks, sync, terminals
 - [Tools](tools.md) — what an agent can do here
 - [Embedding](embedding.md) — starting the daemon from a host
 - [Exploration Guide](exploration-guide.md) — how to read this source

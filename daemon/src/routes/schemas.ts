@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { CHAT_MODELS, CHAT_PROVIDERS } from '@daemon/types/api/chat'
+import { KINDS, RELATIONS } from '@daemon/types/entity/schema'
 import type { DocRoot } from '@daemon/services/Tree'
 import { remoteUrlSchema } from '@daemon/utils/config'
 import { identitySchema } from '@daemon/utils/profiles'
@@ -76,16 +77,37 @@ export const modelKeyBody = z.object({
  *  picker in the composer is the answer and it has one before anything is said. */
 export const newChatBody = z.object({ model: modelId() })
 
-/** A coworker: a name, a persona the project carries, a model, a colour. The persona is
+/** An agent: a name, a persona the project carries, a model, a colour. The persona is
  *  checked against the project rather than here, since here does not know what it carries. */
-export const newCoworkerBody = z.object({
+export const newAgentBody = z.object({
   name: z.string().trim().min(1).max(60),
   persona: z.string().min(1),
   model: modelId(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
 })
-export const coworkerBody = z.object({ coworker: z.string().min(1) })
-export const coworkerModelBody = z.object({
-  coworker: z.string().min(1),
+export const agentBody = z.object({ agent: z.string().min(1) })
+export const agentModelBody = z.object({
+  agent: z.string().min(1),
   model: modelId(),
+})
+
+/** A record as a caller hands it over. The kind and the relations are closed enums rather
+ *  than strings, so a caller reaching for one nobody defined is told at the door — which is
+ *  also what makes the tool's schema worth having over the `api` tool. */
+export const newEntityBody = z.object({
+  kind: z.enum(KINDS),
+  name: z.string().min(1),
+  fields: z.record(z.string(), z.string()).default({}),
+  from: z
+    .array(z.object({ relation: z.enum(RELATIONS), target: z.string().min(1) }))
+    .default([]),
+  origin: z.boolean().optional(),
+  body: z.string().default(''),
+  by: z.string().optional(),
+})
+
+export const entityLinkBody = z.object({
+  path: z.string().min(1),
+  relation: z.enum(RELATIONS),
+  target: z.string().min(1),
 })

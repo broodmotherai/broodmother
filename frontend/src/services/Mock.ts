@@ -3,9 +3,23 @@ import { defaultGitSettings } from '@broodmother/types/git'
 import { fires, triggerLabel } from '@broodmother/types/task/schema'
 import { parseTask } from '@broodmother/types/task/codec'
 import { parseCanvas } from '@broodmother/types/canvas/codec'
+import { canonicalOf, parseEntity, serializeEntity } from '@broodmother/types/entity/codec'
+import {
+  KINDS,
+  KIND_NOTE,
+  RELATIONS,
+  RELATION_NOTE,
+  REQUIRED,
+  entityPath,
+  flatName,
+  isEntity,
+  type Entity,
+} from '@broodmother/types/entity/schema'
+import { resolveTarget } from '@broodmother/markdown/links'
 import { runOrder } from '@broodmother/types/task/graph'
 import type { Persona } from '@broodmother/types/api/personas'
-import type { CoworkerSummary } from '@broodmother/types/api/coworkers'
+import type { AgentSummary } from '@broodmother/types/api/agents'
+import type { EntitySummary } from '@broodmother/types/api/entities'
 import type { ApiRequest, ApiResponse, ApiRoute } from '@broodmother/types/api/routes'
 import type { TaskRun } from '@broodmother/types/api/tasks'
 import {
@@ -18,7 +32,7 @@ import {
 } from '@broodmother/types/api/chat'
 import type { TerminalServerMessage } from '@broodmother/types/api/terminal'
 import type { ServerMessage } from '@broodmother/types/api/ws'
-import type { AgentStates } from '@broodmother/types/api/agents'
+import type { ActivityStates } from '@broodmother/types/api/activity'
 import { basename } from '@broodmother/path'
 import {
   repoOf,
@@ -139,7 +153,7 @@ export function createMockClient(
     config?: BroodmotherConfig
     sync?: SyncStatus
     /** What is at work in which checkout, by path — what the branch menu's dots read. */
-    agents?: AgentStates
+    activity?: ActivityStates
     home?: string
     projects?: ProjectSummary[]
     profiles?: Profile[]
@@ -167,8 +181,8 @@ export function createMockClient(
      *  in, which is the order they read in. */
     chats?: { title?: string; messages: Pick<ChatMessage, 'role' | 'text'>[] }[]
 
-    /** Coworkers already in the open project, each with the thread held with them. */
-    coworkers?: {
+    /** Agents already in the open project, each with the thread held with them. */
+    agents?: {
       name: string
       persona: string
       color?: string
@@ -282,8 +296,8 @@ export function createMockClient(
     if (!found) throw new Error('no such chat')
     return found
   }
-  /** The coworkers, each holding a chat that is kept apart from the chats list. */
-  const coworkers: CoworkerSummary[] = (seed.coworkers ?? []).map((one, index) => {
+  /** The agents, each holding a chat that is kept apart from the chats list. */
+  const agents: AgentSummary[] = (seed.agents ?? []).map((one, index) => {
     const chat: Chat = {
       id: `chat-${String(++numbered)}`,
       title: one.name,
@@ -297,7 +311,7 @@ export function createMockClient(
     }
     chats.push(chat)
     return {
-      id: `coworker-${String(index + 1)}`,
+      id: `agent-${String(index + 1)}`,
       name: one.name,
       persona: one.persona,
       model: DEFAULT_CHAT_MODEL,
@@ -309,12 +323,12 @@ export function createMockClient(
       lastAt: one.messages?.length ? 1500 + one.messages.length - 1 : null,
     }
   })
-  const coworkerOf = (id: string) => {
-    const found = coworkers.find((one) => one.id === id)
-    if (!found) throw new Error('no such coworker')
+  const agentOf = (id: string) => {
+    const found = agents.find((one) => one.id === id)
+    if (!found) throw new Error('no such agent')
     return found
   }
-  const isCoworkerChat = (id: string) => coworkers.some((one) => one.chat === id)
+  const isAgentChat = (id: string) => agents.some((one) => one.chat === id)
   /** The open profile, holding these providers and no others. */
   const holding = (models: string[]): Profile => {
     const current = profileOf()
@@ -359,6 +373,73 @@ export function createMockClient(
     const repo = repoOf(root)
     if (repo) repoBranch[repo] = name
     else branch = name
+  }
+
+  /**
+   * The records the project holds, read the way the daemon reads them: every `.md` whose
+   * frontmatter says `entity:`, parsed, and a broken one kept as a row rather than dropped.
+   *
+   * The digest is stood in for. The daemon hashes with `node:crypto`, which is the one thing
+   * the browser's half of this app cannot import, so what is written here is a cheap hash of
+   * the same canonical text — self-consistent, which is all `edited` needs: a record this
+   * mock wrote reads clean, and one seeded with a `sha` that does not match reads edited.
+   */
+  const stand = (entity: Entity) => {
+    let hash = 0x811c9dc5
+    for (const code of canonicalOf(entity)) {
+      hash ^= code.codePointAt(0) ?? 0
+      hash = Math.imul(hash, 0x01000193) >>> 0
+    }
+    return hash.toString(16).padStart(8, '0')
+  }
+  const recorded = (): { path: DocPath; entity: Entity | null; broken?: string }[] =>
+    Object.entries(docs)
+      .filter(([path, markdown]) => path.endsWith('.md') && isEntity(markdown))
+      .map(([path, markdown]) => {
+        try {
+          return { path, entity: parseEntity(markdown) }
+        } catch (cause) {
+          const broken = cause instanceof Error ? cause.message : String(cause)
+          return { path, entity: null, broken }
+        }
+      })
+  const summarize = (found: {
+    path: DocPath
+    entity: Entity | null
+    broken?: string
+  }): EntitySummary => {
+    const paths = Object.keys(docs)
+    if (!found.entity)
+      return {
+        path: found.path,
+        name: basename(found.path).replace(/\.md$/, ''),
+        kind: null,
+        made: '',
+        by: '',
+        origin: false,
+        from: [],
+        edited: false,
+        broken: found.broken,
+      }
+    const entity = found.entity
+    return {
+      path: found.path,
+      name: entity.name,
+      kind: entity.kind,
+      made: entity.made,
+      by: entity.by,
+      origin: entity.origin,
+      from: entity.from.map((one) => ({ ...one, path: resolveTarget(one.target, paths) })),
+      edited: entity.sha !== '' && entity.sha !== stand(entity),
+    }
+  }
+  /** A clock a test can predict: records made in the order they were asked for. */
+  let made = 0
+  const stamp = () => `2026-01-01T00:00:${String(made++).padStart(2, '0')}Z`
+  const writeEntity = (path: DocPath, entity: Entity) => {
+    const created = !(path in docs)
+    docs[path] = serializeEntity(entity)
+    emit({ type: 'tree', root: 'project', event: { type: created ? 'created' : 'changed', path } })
   }
 
   const handlers: {
@@ -736,16 +817,79 @@ export function createMockClient(
         )
         return { diagrams }
       },
+      'GET /api/entities': async () => {
+        const entities = recorded()
+          .map(summarize)
+          .sort((a, b) => b.made.localeCompare(a.made) || a.path.localeCompare(b.path))
+        return { entities }
+      },
+      /* Served from the same constants the daemon serves it from, so a page drawing the rail
+         against this mock is drawing the catalogue the app actually has. */
+      'GET /api/entities/catalogue': async () => ({
+        kinds: KINDS.map((kind) => ({
+          kind,
+          note: KIND_NOTE[kind],
+          required: [...REQUIRED[kind]],
+        })),
+        relations: RELATIONS.map((relation) => ({
+          relation,
+          note: RELATION_NOTE[relation],
+        })),
+      }),
+      /* The refusals worth standing in for are the ones a page can provoke: a source nothing
+         answers to, and the same record twice. The daemon's cycle walk is not one of them —
+         nothing here draws an ancestry. */
+      'POST /api/entities': async (input) => {
+        const draft: Entity = {
+          kind: input.kind,
+          name: flatName(input.name),
+          made: stamp(),
+          by: input.by ?? '',
+          sha: '',
+          origin: input.origin === true,
+          from: input.from,
+          fields: input.fields,
+          body: input.body.replace(/\s+$/, ''),
+        }
+        const already = recorded().find(
+          (one) => one.entity !== null && canonicalOf(one.entity) === canonicalOf(draft),
+        )
+        if (already) return { entity: summarize(already), created: false }
+        for (const source of draft.from)
+          if (!resolveTarget(source.target, Object.keys(docs)))
+            throw new Error(`nothing in the project answers to [[${source.target}]]`)
+        const entity: Entity = { ...draft, sha: stand(draft) }
+        const wanted = entityPath(entity.kind, entity.name)
+        let path = wanted
+        for (let n = 2; path in docs; n++) path = `${wanted.slice(0, -3)}-${String(n)}.md`
+        writeEntity(path, entity)
+        return { entity: summarize({ path, entity }), created: true }
+      },
+      'POST /api/entity/link': async ({ path, relation, target }) => {
+        const markdown = docs[path]
+        if (markdown === undefined) throw new Error(`there is no ${path}`)
+        const held = parseEntity(markdown)
+        if (held.origin)
+          throw new Error(`${path} says it is where a line of work began`)
+        if (held.from.some((one) => one.target === target))
+          throw new Error(`${path} already says it comes from [[${target}]]`)
+        if (!resolveTarget(target, Object.keys(docs)))
+          throw new Error(`nothing in the project answers to [[${target}]]`)
+        const added: Entity = { ...held, from: [...held.from, { relation, target }] }
+        const entity: Entity = { ...added, sha: stand(added) }
+        writeEntity(path, entity)
+        return { entity: summarize({ path, entity }) }
+      },
       'GET /api/task/log': async () => ({ runs: [...taskRuns].reverse() }),
       'GET /api/personas': async () => ({ personas: [...(seed.personas ?? [])] }),
       'GET /api/chats': async () => ({
         chats: [...chats]
           .reverse()
-          .filter((chat) => !isCoworkerChat(chat.id))
+          .filter((chat) => !isAgentChat(chat.id))
           .map(({ messages: _held, ...summary }) => summary),
       }),
-      'GET /api/coworkers': async () => ({ coworkers: coworkers.map((one) => ({ ...one })) }),
-      'POST /api/coworkers': async ({ name, persona, model, color }) => {
+      'GET /api/agents': async () => ({ agents: agents.map((one) => ({ ...one })) }),
+      'POST /api/agents': async ({ name, persona, model, color }) => {
         if (!(seed.personas ?? []).some((one) => one.name === persona))
           throw new Error(`no persona called ${persona} in this project`)
         const chat: Chat = {
@@ -756,38 +900,38 @@ export function createMockClient(
           messages: [],
         }
         chats.push(chat)
-        const coworker: CoworkerSummary = {
-          id: `coworker-${String(coworkers.length + 1)}`,
+        const agent: AgentSummary = {
+          id: `agent-${String(agents.length + 1)}`,
           name,
           persona,
           model,
           color,
           chat: chat.id,
           attachments: `attachments/${name.toLowerCase().replace(/\s+/g, '-')}`,
-          createdAt: 2000 + coworkers.length,
+          createdAt: 2000 + agents.length,
           working: false,
           lastAt: null,
         }
-        coworkers.push(coworker)
-        const { working: _working, lastAt: _lastAt, ...made } = coworker
-        return { coworker: made }
+        agents.push(agent)
+        const { working: _working, lastAt: _lastAt, ...made } = agent
+        return { agent: made }
       },
-      'DELETE /api/coworker': async ({ coworker }) => {
-        const held = coworkerOf(coworker)
+      'DELETE /api/agent': async ({ agent }) => {
+        const held = agentOf(agent)
         chats.splice(chats.indexOf(chatOf(held.chat)), 1)
-        coworkers.splice(coworkers.indexOf(held), 1)
+        agents.splice(agents.indexOf(held), 1)
         return { ok: true } as const
       },
-      'POST /api/coworker/clear': async ({ coworker }) => {
-        chatOf(coworkerOf(coworker).chat).messages = []
+      'POST /api/agent/clear': async ({ agent }) => {
+        chatOf(agentOf(agent).chat).messages = []
         return { ok: true } as const
       },
-      'POST /api/coworker/model': async ({ coworker, model }) => {
-        const held = coworkerOf(coworker)
+      'POST /api/agent/model': async ({ agent, model }) => {
+        const held = agentOf(agent)
         held.model = model
         chatOf(held.chat).model = model
         const { working: _working, lastAt: _lastAt, ...changed } = held
-        return { coworker: changed }
+        return { agent: changed }
       },
       'POST /api/chats': async ({ model }) => {
         const chat: Chat = {
@@ -901,7 +1045,7 @@ export function createMockClient(
       },
 
       'GET /api/sync': async () => sync,
-      'GET /api/agents': async () => ({ agents: { ...(seed.agents ?? {}) } }),
+      'GET /api/activity': async () => ({ activity: { ...(seed.activity ?? {}) } }),
       'POST /api/sync/now': async () => {
         sync = {
           state: 'idle',

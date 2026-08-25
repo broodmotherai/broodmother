@@ -414,21 +414,21 @@ textarea:focus-visible {
 }
 
 /* The seam here is the sidebar's own right border, which is the last pixel of the track
-   rather than the first of the next one — so the strip starts 4px back, not 3, and its
-   middle lands on the border instead of a pixel past it. */
+   rather than the first of the next one. */
 .resizer[data-axis='sidebar'] {
   top: 0;
   bottom: 0;
-  /* On the tree's own right edge — the panel floats, so that edge is its margin in from
-     the track. The strip is 7px, so half of it sits either side of the line. */
-  left: calc(var(--sidebar, 17rem) - var(--chrome-gap) - 3.5px);
+  /* Off the tree's own right edge — the panel floats, so that edge is its margin in from
+     the track — and then a quarter rem further out, which is half the strip: the whole 7px
+     stands in the gap between the two panels rather than over the one it resizes. */
+  left: calc(var(--sidebar, 17rem) - var(--chrome-gap) + 0.25rem - 3.5px);
 }
 
 /* The seam here is the panel's own top border, and `top` is measured from inside it — so the
-   strip starts 4px back, not 3, and its middle pixel lands on the border rather than the row
-   under it. Three pixels of handle sitting one low reads as off-centre; nine hides it. */
+   strip starts 4px back, and then a quarter rem further up, which is half of it: the whole
+   7px stands in the gap above the panel rather than over the shell it resizes. */
 .resizer[data-axis='panel'] {
-  top: -4px;
+  top: calc(-4px - 0.25rem);
   left: 0;
   right: 0;
 }
@@ -500,7 +500,8 @@ body[data-resizing='column'] {
   flex: none;
   width: 1.25rem;
   height: 1.25rem;
-  object-fit: contain;
+  mask: url('/mark.svg') center / contain no-repeat;
+  background: currentColor;
 }
 
 /* Standing off the row rather than filling it: the hover is a control you can see the edges
@@ -1182,8 +1183,27 @@ body[data-resizing='column'] {
   color: var(--ink);
 }
 
+/* The tab you are in catches the light. Three of the opals bloom across the same ground every
+   other chosen control stands on, sat where they fell rather than at the corners — a sheen
+   too slight to read as colour, felt only as the tab being warmer than its neighbours. */
 .tab[data-active] {
-  background: var(--active);
+  background:
+    radial-gradient(
+      86% 132% at 19% 114%,
+      color-mix(in srgb, var(--opal-violet) 11%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      104% 118% at 73% -22%,
+      color-mix(in srgb, var(--opal-cyan) 9%, transparent),
+      transparent 66%
+    ),
+    radial-gradient(
+      72% 154% at 96% 61%,
+      color-mix(in srgb, var(--opal-rose) 8%, transparent),
+      transparent 70%
+    ),
+    var(--active);
   color: var(--ink);
 }
 
@@ -1404,12 +1424,92 @@ body[data-resizing='column'] {
   cursor: default;
 }
 
+/* The same mark the project row wears, in gold rather than ink. Four layers cut to the one
+   shape by the one mask, since the mask a parent wears reaches everything it draws: a leaf of
+   beaten gold, a highlight sweeping across it, and two sets of specks catching out of step
+   with each other, which is what makes it read as twinkling rather than blinking. Gaudy is
+   the brief — this is the sign the app shows when there is nothing else to show, so it may as
+   well be the only thing moving on the page. */
 .home .mark {
+  position: relative;
+  flex: none;
   width: 3.5rem;
   height: 3.5rem;
   margin-bottom: 0.9rem;
-  object-fit: contain;
-  -webkit-user-drag: none;
+  mask: url('/mark.svg') center / contain no-repeat;
+  background-image:
+    linear-gradient(
+      104deg,
+      transparent 40%,
+      rgb(255 255 255 / 0.95) 48%,
+      rgb(255 250 200 / 0.75) 53%,
+      transparent 62%
+    ),
+    linear-gradient(
+      152deg,
+      #7a4708 0%,
+      #c98f14 9%,
+      #fff3ae 18%,
+      #ffd24a 26%,
+      #a5670c 35%,
+      #ffe98a 44%,
+      #fffbe0 52%,
+      #f2b62a 60%,
+      #8f5a0b 69%,
+      #ffd95e 79%,
+      #fff7cd 88%,
+      #c98f14 100%
+    );
+  background-repeat: no-repeat;
+  background-size:
+    260% 100%,
+    100% 100%;
+  background-position:
+    -120% 0,
+    0 0;
+  filter: drop-shadow(0 0 0.55rem rgb(255 197 61 / 0.55));
+  animation: mark-glint 4.5s linear infinite;
+}
+
+.home .mark::before,
+.home .mark::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.home .mark::before {
+  background:
+    radial-gradient(circle at 28% 34%, rgb(255 255 255 / 0.95) 0 3%, transparent 8%),
+    radial-gradient(circle at 50% 44%, rgb(255 252 214 / 0.9) 0 4%, transparent 10%),
+    radial-gradient(circle at 70% 66%, rgb(255 255 255 / 0.9) 0 3%, transparent 8%);
+  animation: mark-sparkle 2.3s ease-in-out infinite alternate;
+}
+
+.home .mark::after {
+  background:
+    radial-gradient(circle at 70% 28%, rgb(255 255 255 / 0.9) 0 3%, transparent 8%),
+    radial-gradient(circle at 30% 62%, rgb(255 249 208 / 0.9) 0 3%, transparent 8%),
+    radial-gradient(circle at 50% 78%, rgb(255 255 255 / 0.95) 0 4%, transparent 10%);
+  animation: mark-sparkle 3.1s ease-in-out 0.7s infinite alternate;
+}
+
+@keyframes mark-glint {
+  to {
+    background-position:
+      220% 0,
+      0 0;
+  }
+}
+
+@keyframes mark-sparkle {
+  from {
+    opacity: 0.05;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .home h1 {
@@ -2305,9 +2405,9 @@ body[data-resizing='column'] {
 
 /* Hidden, not unmounted: ⌘J puts the panel away without killing the shell. */
 .terminal {
-  /* What the shell is held off the panel's edges by. Wider than the app's gap: a terminal
-     is a wall of text, and a hairline of margin reads as text jammed into a corner. */
-  --terminal-inset: 0.75rem;
+  /* What the shell is held off the panel's edges by: the app's one gap, so the text inside
+     the panel stands off it by the same distance the panel stands off the window. */
+  --terminal-inset: var(--chrome-gap);
 
   grid-column: 2;
   grid-row: 2;
@@ -3085,10 +3185,11 @@ p.palette-label {
 }
 
 .modal-mark {
+  flex: none;
   width: 3.5rem;
   height: 3.5rem;
-  object-fit: contain;
-  -webkit-user-drag: none;
+  mask: url('/mark.svg') center / contain no-repeat;
+  background: currentColor;
 }
 
 .modal-close {
@@ -5020,16 +5121,16 @@ p.palette-label {
   color: inherit;
 }
 
-/* ---- Coworkers -------------------------------------------------------------------------- */
+/* ---- Agents -------------------------------------------------------------------------- */
 
-/* The people stand beside the conversation rather than under a bar across the top of it. A
-   coworker's name heads their thread, not the page — so the list of them begins level with
+/* The people stand beside the conversation rather than under a bar across the top of it. An
+   agent's name heads their thread, not the page — so the list of them begins level with
    that name instead of a header's height below it. */
-.coworker-page {
+.agent-page {
   flex-direction: row;
 }
 
-.coworker-column {
+.agent-column {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -5040,7 +5141,7 @@ p.palette-label {
 /* In the row rather than hanging off it. The chats' rail is placed out of the flow so the
    thread keeps the middle of the pane with the list in its margin; here there is a column
    beside it to stand against, at every width, so there is nothing left for that to do. */
-.chat-history.coworker-rail {
+.chat-history.agent-rail {
   position: static;
 }
 
@@ -5048,23 +5149,23 @@ p.palette-label {
    width, the same rows, the same place on the pane — so moving between the two tabs moves
    what is in the list rather than where the list is. A row is taller than a chat's because
    it carries two lines, the name over who they are being. */
-.coworker-rail ul {
+.agent-rail ul {
   margin: 0;
 }
 
-.coworker-rail li > button:first-child {
+.agent-rail li > button:first-child {
   padding: 0.3rem 0.45rem;
 }
 
 /* The name over the persona, both cut to the row: who they are, and who they are being. */
-.coworker-who {
+.agent-who {
   display: flex;
   flex-direction: column;
   min-width: 0;
   line-height: 1.25;
 }
 
-.coworker-persona {
+.agent-persona {
   overflow: hidden;
   color: var(--faint);
   font-size: 0.7rem;
@@ -5072,11 +5173,11 @@ p.palette-label {
   white-space: nowrap;
 }
 
-/* A face: initials on the coworker's colour, in whichever ink can be read on it. Round, the
+/* A face: initials on the agent's colour, in whichever ink can be read on it. Round, the
    one round thing on the page, because a face is the one thing here that is a person. The
-   dot at the corner is presence: grey at rest, the coworker's own colour breathing when they
+   dot at the corner is presence: grey at rest, the agent's own colour breathing when they
    are at something. */
-.coworker-avatar {
+.agent-avatar {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -5093,13 +5194,13 @@ p.palette-label {
   letter-spacing: 0.02em;
 }
 
-.coworker-avatar[data-size='large'] {
+.agent-avatar[data-size='large'] {
   width: 2.5rem;
   height: 2.5rem;
   font-size: 0.9rem;
 }
 
-.coworker-presence {
+.agent-presence {
   position: absolute;
   right: -0.1rem;
   bottom: -0.1rem;
@@ -5110,12 +5211,12 @@ p.palette-label {
   background: var(--faint);
 }
 
-.coworker-avatar[data-size='large'] .coworker-presence {
+.agent-avatar[data-size='large'] .agent-presence {
   width: 0.75rem;
   height: 0.75rem;
 }
 
-.coworker-avatar[data-working='true'] .coworker-presence {
+.agent-avatar[data-working='true'] .agent-presence {
   background: #34d399;
   animation: chat-waiting 1.2s ease-in-out infinite;
 }
@@ -5127,19 +5228,19 @@ p.palette-label {
 
    Nothing on top: it runs up against the track, which is what says it belongs to the window
    rather than standing at the head of the conversation under it. */
-.coworker-header {
+.agent-header {
   flex: none;
   padding: 0 1.5rem 0.75rem;
 }
 
-.coworker-header-row {
+.agent-header-row {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 0.75rem;
 }
 
-.coworker-header-who {
+.agent-header-who {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -5147,7 +5248,7 @@ p.palette-label {
   gap: 0.1rem;
 }
 
-.coworker-name {
+.agent-name {
   margin: 0;
   color: var(--ink);
   font-family: var(--sans);
@@ -5156,7 +5257,7 @@ p.palette-label {
   line-height: 1.2;
 }
 
-.coworker-status {
+.agent-status {
   display: flex;
   gap: 0.25rem;
   margin: 0;
@@ -5165,7 +5266,7 @@ p.palette-label {
   font-size: 0.75rem;
 }
 
-.coworker-status [data-working='true'] {
+.agent-status [data-working='true'] {
   color: #34d399;
 }
 
@@ -5184,7 +5285,7 @@ p.palette-label {
   margin-top: 0.5rem;
 }
 
-.coworker-said-by {
+.agent-said-by {
   position: relative;
   display: flex;
   align-items: center;
@@ -5192,14 +5293,14 @@ p.palette-label {
   margin: 0 0 0.25rem -2rem;
 }
 
-.coworker-said-name {
+.agent-said-name {
   color: var(--muted);
   font-family: var(--sans);
   font-size: 0.75rem;
   font-weight: 500;
 }
 
-/* A coworker's words get the ground yours do, on the other side of the column: a person is
+/* An agent's words get the ground yours do, on the other side of the column: a person is
    answering, so their turn is a bubble rather than the page the model writes onto. */
 .chat-message[data-who='true'] .chat-bubble[data-role='assistant'] {
   width: fit-content;
@@ -5242,6 +5343,158 @@ p.palette-label {
   height: var(--tree-icon);
   flex: none;
   color: inherit;
+}
+
+/* ---- Entities ----------------------------------------------------------------------------- */
+
+/* The kinds beside the records, the way the people stand beside the conversation: the rail is
+   the chats' rail wearing kinds, so moving between the tabs moves what is in the list rather
+   than where the list is. */
+.entities-page {
+  flex-direction: row;
+}
+
+/* In the row rather than hanging off it — there is a column of cards beside it to stand
+   against at every width, so there is nothing left for being out of the flow to do. */
+.entity-rail {
+  position: static;
+}
+
+.entity-rail li > button:first-child > .tasks-dim {
+  flex: none;
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+
+/* The records themselves, down the middle of the pane the way a document runs. */
+.entity-cards {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--page-top) 1.75rem 6rem;
+}
+
+/* A card is an index entry, not a document: the name, what kind of thing it is, when and by
+   what it was written, and what it says it came from. Nothing is edited here — clicking the
+   name opens the record, which is the editor. */
+.entity-card {
+  width: 100%;
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--row-radius);
+  background: var(--ground);
+}
+
+.entity-card > header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.entity-name {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+.entity-name:hover {
+  text-decoration: underline;
+}
+
+/* What kind of thing it is, at the corner: the one word that says how to read the rest. */
+.entity-kind {
+  flex: none;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+}
+
+.entity-made {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+}
+
+/* A record the codec will not take. Said on the card rather than hidden, because one nobody
+   can see is one nobody fixes. */
+.entity-broken {
+  margin: 0.5rem 0 0;
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.entity-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+}
+
+.entity-sources li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+/* How this came from that, ahead of the link: the relation is the part of a source that the
+   wikilink itself has no room for. */
+.entity-relation {
+  flex: none;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+}
+
+.entity-sources button {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.1rem 0.3rem;
+  border: 0;
+  border-radius: var(--row-radius);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entity-sources button:hover:not(:disabled) {
+  background: var(--raised);
+  color: var(--ink);
+}
+
+/* Nothing answers to the link, so there is nowhere to go: it reads as a dead link rather
+   than as a button that does nothing. */
+.entity-sources button:disabled {
+  color: var(--faint);
+  cursor: default;
+}
+
+.entity-sources .icon {
+  flex: none;
+  width: 0.8rem;
+  height: 0.8rem;
+  color: var(--faint);
 }
 
 /* ---------- pages ---------- */

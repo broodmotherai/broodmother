@@ -11,7 +11,7 @@ There are two separate tool surfaces in this daemon, and they are not the same l
 | Surface      | Defined in                | Given to                                     |
 | ------------ | ------------------------- | -------------------------------------------- |
 | **Chat**     | `src/chat/tools.ts`       | The model answering on the chat page          |
-| **Coworker** | `src/coworkers/tools.ts`  | A delegate working in a checkout              |
+| **Agent**    | `src/agents/tools.ts`     | A delegate working in a checkout              |
 
 Both are Vercel AI SDK `tool()` definitions with Zod input schemas. Neither asks permission:
 a project is a folder you pointed at, the writes are to markdown, and git is the undo. This
@@ -24,7 +24,7 @@ is a deliberate difference from an agent that runs anywhere on your disk — see
 
 ## Chat Tools
 
-Eight, and the whole of what the chat page can reach. Every path is scoped to the open
+Ten, and the whole of what the chat page can reach. Every path is scoped to the open
 checkout — `project`, or `repo:<name>` — and normalised through `@broodmother/path`, so
 nothing addresses its way out of the folder.
 
@@ -37,18 +37,27 @@ nothing addresses its way out of the folder.
 | `write_doc`    | A document, whole — new or overwritten.                                    |
 | `move_doc`     | A rename, which is also how a document changes folder.                     |
 | `delete_doc`   | Off disk. "There is no undo but git."                                      |
+| `entity_list`  | What the project has already recorded. Read before proposing anything.     |
+| `entity_record`| A record written down, answering with the path it wrote.                   |
 | `api`          | The daemon's own HTTP API, from the inside.                                |
 
 The caps are the point of the tool being a tool: the model is handed an answer that fits in
 a context window rather than a folder.
 
-`api` is the interesting one — it lets the model reach the same 61 routes the browser has, so
+`api` is the interesting one — it lets the model reach the same 66 routes the browser has, so
 anything the app can do it can ask for, without a tool per verb.
 
-## Coworker Tools
+The two entity tools are the exception to that argument, and typed for a different reason. A
+record has to be *written*: there is no tool here that takes free-form content and files it,
+so what comes back from `entity_record` is what it just wrote and the path it wrote it under.
+That is what makes "cite the record" something the app holds an agent to rather than
+something the prompt asks for. Reading one back is `read_doc` — a record is an ordinary
+markdown document, and a second tool for the same file would teach the model otherwise.
 
-A coworker is the chat page with hands. Where a chat tool reads and writes documents, a
-coworker gets a shell and Claude Code in an actual checkout:
+## Agent Tools
+
+An agent is the chat page with hands. Where a chat tool reads and writes documents, an
+agent gets a shell and Claude Code in an actual checkout:
 
 | Tool               | Does                                                                    |
 | ------------------ | ----------------------------------------------------------------------- |
@@ -57,10 +66,10 @@ coworker gets a shell and Claude Code in an actual checkout:
 | `list_attachments` | What is in its attachments folder, by name                              |
 
 The split between the first two is the interesting one, and the descriptions say it: `shell`
-is for quick things, and *anything longer than a command is a task for `claude_code`*. A
-coworker delegates the real work rather than driving it a command at a time.
+is for quick things, and *anything longer than a command is a task for `claude_code`*. An
+agent delegates the real work rather than driving it a command at a time.
 
-`COWORKER_ROUNDS` is 24. A delegation is several tools deep — a look around, the errand, a
+`AGENT_ROUNDS` is 24. A delegation is several tools deep — a look around, the errand, a
 check of what came back — and each of those is a round.
 
 ## Task Blocks
@@ -104,7 +113,7 @@ Not a tool, but what every surface above is handed first. `src/brief/core.ts` wr
 its own comment says the distinction best:
 
 > A terminal has a shell, a working directory and the whole disk; the chat page has a set of
-> tools and nothing else; a coworker is the chat page with hands.
+> tools and nothing else; an agent is the chat page with hands.
 
 The brief says which room the agent is in, what the project is, and how much it syncs
 (`off`, `on`, `conflicted`). `brief/soul.ts` holds the default soul — what an agent is here
@@ -125,5 +134,5 @@ The exception is `agent.shell` and `agent.claude`, which run real commands in a 
 
 ## See Also
 
-- [Subsystems](subsystems.md) — how chat, coworkers and tasks are put together
+- [Subsystems](subsystems.md) — how chat, agents and tasks are put together
 - [API Reference](api.md) — what the `api` tool reaches

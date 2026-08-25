@@ -37,7 +37,8 @@ import { Chats } from '@daemon/features/chat/Chats'
 import { ChatStore } from '@daemon/features/chat/db'
 import { chatStream } from '@daemon/features/chat/model'
 import { chatTools } from '@daemon/features/chat/tools'
-import { Coworkers } from '@daemon/features/coworkers/Coworkers'
+import { Agents } from '@daemon/features/agents/Agents'
+import { Entities } from '@daemon/features/entities/Entities'
 import { crontabScheduler } from '@daemon/features/tasks/scheduler'
 import { TriggerStore } from '@daemon/features/tasks/state'
 import {
@@ -53,8 +54,8 @@ import { Git } from '@daemon/utils/git'
 import { expandHome } from '@daemon/utils/fs'
 import { SyncLoop } from '@daemon/services/SyncLoop'
 import { GitService } from '@daemon/services/GitService'
-import { AgentService } from '@daemon/services/AgentService'
-import type { AgentStates } from '@daemon/types/api/agents'
+import { ActivityService } from '@daemon/services/ActivityService'
+import type { ActivityStates } from '@daemon/types/api/activity'
 import { migrate } from '@daemon/utils/migrate'
 import { listRepos, repoCheckouts } from '@daemon/utils/repo'
 import {
@@ -128,9 +129,10 @@ export class AppContext {
   readonly relay: Relay
   readonly terminals: Terminals
   readonly tasks: Tasks
-  readonly agents: AgentService
+  readonly activityService: ActivityService
   readonly chats: Chats
-  readonly coworkers: Coworkers
+  readonly agents: Agents
+  readonly entities: Entities
   readonly branches: BranchService
   readonly profiles: ProfileService
   readonly workspace: WorkspaceService
@@ -170,7 +172,7 @@ export class AppContext {
       config: () => this.config,
       save: (config) => this.store.save(config),
       reopen: (projectPath) => this.useProject(projectPath),
-      followAgents: () => this.followAgents(),
+      followActivity: () => this.followActivity(),
       project: () => this.project,
     })
     this.branches = new BranchService({
@@ -190,9 +192,9 @@ export class AppContext {
     // The root the shell was opened from, then the project, then the home — which is only
     // where you stand on first run, when there is nothing to stand in yet.
     this.terminals = new Terminals((root) => this.session(root))
-    this.agents = new AgentService(
+    this.activityService = new ActivityService(
       () => this.terminals.foreground(),
-      (agents) => this.broadcast({ type: 'agents', agents }),
+      (activity) => this.broadcast({ type: 'activity', activity }),
     )
     // Sync is the project's alone: committing markdown you are typing is what it is for, and
     // committing a code repository nobody asked it to would be a different program.
@@ -229,23 +231,25 @@ export class AppContext {
       project: () => this.config.projectPath,
       stream,
       // The room it wakes up in, asked each turn: the project, the scope and what is
-      // syncing all move under a conversation that stays open. A coworker's thread is
-      // answered by the coworker; any other, by the page.
+      // syncing all move under a conversation that stays open. An agent's thread is
+      // answered by the agent; any other, by the page.
       turn: async (chat, note) => {
-        const coworker = this.coworkers.of(chat)
-        if (coworker) return this.coworkers.turn(coworker, note)
+        const agent = this.agents.of(chat)
+        if (agent) return this.agents.turn(agent, note)
         return {
           system: brief(this.briefState(this.here(), this.scope, 'chat')),
-          tools: chatTools(reach()),
+          // What a record written this turn says wrote it. The route has no caller to ask,
+          // so this is the one place that knows — and everywhere else it goes unsaid.
+          tools: chatTools({ ...reach(), by: `chat/${chat}` }),
           maxRounds: MAX_ROUNDS,
         }
       },
       onLive: (chat, working) => {
-        const coworker = this.chatStore.coworkerOfChat(chat)
-        if (coworker) this.broadcast({ type: 'coworker', id: coworker.id, working })
+        const agent = this.chatStore.agentOfChat(chat)
+        if (agent) this.broadcast({ type: 'agent', id: agent.id, working })
       },
     })
-    this.coworkers = new Coworkers({
+    this.agents = new Agents({
       store: this.chatStore,
       chats: this.chats,
       project: () =>
@@ -259,11 +263,18 @@ export class AppContext {
       persona: (name) =>
         this.projectOpen ? readPersona(this.projectOpen.path, name) : Promise.resolve(null),
       profile: () => this.profiles.active?.name ?? null,
-      brief: () => brief(this.briefState(this.here(), this.scope, 'coworker')),
+      brief: () => brief(this.briefState(this.here(), this.scope, 'agent')),
       terminalBrief: () => brief(this.briefState(this.here(), this.scope)),
       checkout: () => this.here(),
       env: () => this.agentEnv(),
       tools: reach(),
+    })
+    // Records are the project's, the way wikilinks and sync are: a repo is a code repository
+    // and what is written down about it is written down next door.
+    this.entities = new Entities({
+      project: () => this.projectOpen?.tree ?? null,
+      links: () => this.projectOpen?.links ?? null,
+      writeDoc: (path, markdown) => this.writeDoc('project', path, markdown),
     })
   }
 
@@ -502,13 +513,13 @@ export class AppContext {
     return this.rootOf(root).git.checkAccess()
   }
 
-  private async followAgents(): Promise<void> {
+  private async followActivity(): Promise<void> {
     const dir = this.profiles.active?.claudeCfgDir
-    await this.agents.follow(dir ? expandHome(dir) : null).catch(() => null)
+    await this.activityService.follow(dir ? expandHome(dir) : null).catch(() => null)
   }
 
-  get agentStates(): AgentStates {
-    return this.agents.agents
+  get activity(): ActivityStates {
+    return this.activityService.activity
   }
 
   /** The checkout the scope is standing in — a repo's, or the project's, or the home on a
@@ -582,7 +593,7 @@ export class AppContext {
     this.chatStore.close()
     this.relay.close()
     this.terminals.close()
-    await this.agents.close()
+    await this.activityService.close()
     await this.projectOpen?.close()
     for (const repo of this.reposOpen.values()) {
       await repo.treeService?.close()
