@@ -41,6 +41,16 @@ async function open(section: string) {
   await userEvent.click(screen.getByRole('tab', { name: section }))
 }
 
+/** Claude's row of the coding-agent list. The models table on the same page has a Save of
+ *  its own, so the button is taken from inside the row rather than off the page. */
+async function setClaudeConfig(value: string) {
+  const dir = screen.getByLabelText('Claude config directory')
+  await userEvent.type(dir, value)
+  const row = dir.closest('li')
+  if (!row) throw new Error('the config field is not in a row')
+  await userEvent.click(within(row).getByRole('button', { name: 'Save' }))
+}
+
 /** The swatches the profile is offered, in the order the row wears them. */
 function palette() {
   const row = screen.getByRole('radiogroup', { name: 'Color' })
@@ -94,26 +104,6 @@ it('opens on the profile, and shows one section at a time', async () => {
   expect(screen.getByRole('heading', { name: 'Git sync' })).toBeVisible()
   expect(screen.getByLabelText('Repository')).toBeVisible()
   expect(screen.queryByLabelText('Author Name')).not.toBeInTheDocument()
-})
-
-/* A section is about something you have open: there is nothing to say about a repo when
-   the project has none. */
-it('offers the repo section only while a repo is open', async () => {
-  await show()
-  expect(screen.queryByRole('tab', { name: 'Repo' })).not.toBeInTheDocument()
-
-  await show(
-    createMockClient({
-      repos: [
-        { name: 'api', repo: '/Users/you/.broodmother/you/handbook/.repos/api/local' },
-      ],
-      repo: 'api',
-    }),
-  )
-  await open('Repo')
-  expect(screen.getByLabelText('Repository')).toHaveValue(
-    '~/.broodmother/you/handbook/.repos/api/local',
-  )
 })
 
 it('saves the sync settings for the open project', async () => {
@@ -243,13 +233,11 @@ it('says the machine’s own credentials are used before offering to make a key'
   expect(screen.getByText(/already uses whatever ssh and git have/)).toBeVisible()
 })
 
-/* Pointing the config at a folder broodmother never made is not a setting, it is a break.
-   The repository is read off the checkout, so it is not typed here either. */
-it('will not let the project folder or its repository be retyped', async () => {
+/* The repository is read off the checkout rather than typed: pointing the config at one
+   broodmother never made is not a setting, it is a break. */
+it('will not let the project repository be retyped', async () => {
   await show()
   await open('Project')
-  expect(screen.getByLabelText('Folder')).toHaveAttribute('readonly')
-  expect(screen.getByText(/make\s+another project/)).toBeInTheDocument()
   expect(screen.getByLabelText('Repository')).toHaveAttribute('readonly')
 })
 
@@ -376,14 +364,43 @@ it('saves the credentials the profile works with', async () => {
   const client = await show()
   await open('Profile')
   await userEvent.type(screen.getByLabelText('SSH Key'), '~/.ssh/id_ed25519')
-  await userEvent.type(screen.getByLabelText('Config Directory'), '~/.claude-work')
+  await userEvent.click(screen.getByRole('button', { name: 'Save Profile' }))
+
+  const { active } = await client.request('GET /api/profiles', null)
+  expect(active).toMatchObject({ sshKeyPath: '~/.ssh/id_ed25519', soul: null })
+})
+
+/* The claude login is a sign-in rather than something about who you are, so it stands with
+   the model keys and saves on a button of its own. */
+it('saves the claude config directory from the integrations page', async () => {
+  const client = await show()
+  await open('Integrations')
+  await setClaudeConfig('~/.claude-work')
+
+  const { active } = await client.request('GET /api/profiles', null)
+  expect(active).toMatchObject({ claudeCfgDir: '~/.claude-work' })
+})
+
+/* Saving one page must not roll back what another set: the profile's button carries the
+   claude login through untouched rather than writing the field it no longer shows. */
+it('does not lose the claude config when the profile is saved', async () => {
+  const client = await show()
+  await open('Integrations')
+  await setClaudeConfig('~/.claude-work')
+  await waitFor(async () =>
+    expect((await client.request('GET /api/profiles', null)).active).toMatchObject({
+      claudeCfgDir: '~/.claude-work',
+    }),
+  )
+
+  await open('Profile')
+  await userEvent.type(screen.getByLabelText('SSH Key'), '~/.ssh/id_ed25519')
   await userEvent.click(screen.getByRole('button', { name: 'Save Profile' }))
 
   const { active } = await client.request('GET /api/profiles', null)
   expect(active).toMatchObject({
     sshKeyPath: '~/.ssh/id_ed25519',
     claudeCfgDir: '~/.claude-work',
-    soul: null,
   })
 })
 
@@ -392,7 +409,7 @@ it('saves the credentials the profile works with', async () => {
 it('saves the soul the claude shells of this profile wake up with', async () => {
   const client = await show()
   await open('Soul')
-  await userEvent.type(screen.getByLabelText('Base Soul'), '# You\n\nTerse.')
+  await userEvent.type(screen.getByRole('textbox', { name: 'Soul' }), '# You\n\nTerse.')
   await userEvent.click(screen.getByRole('button', { name: 'Save Soul' }))
 
   const { active } = await client.request('GET /api/profiles', null)
@@ -403,11 +420,15 @@ it('saves the soul the claude shells of this profile wake up with', async () => 
    with — the bargain the GitHub token beside it already makes. */
 it('takes a model key and shows the provider as connected, never the key', async () => {
   const client = await show(createMockClient({ profiles: [unkeyed] }))
+  await open('Integrations')
 
   const key = screen.getByLabelText('Anthropic key')
   expect(key).toHaveAttribute('type', 'password')
   await userEvent.type(key, 'sk-ant-secret')
-  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+  // The coding-agent table below has a Save of its own, so this one comes off the row.
+  const row = key.closest('tr')
+  if (!row) throw new Error('the key field is not in a row')
+  await userEvent.click(within(row).getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('Connected')).toBeVisible()
   expect(screen.queryByDisplayValue('sk-ant-secret')).not.toBeInTheDocument()
@@ -418,6 +439,7 @@ it('takes a model key and shows the provider as connected, never the key', async
 
 it('forgets a provider, leaving the row ready for another key', async () => {
   await show()
+  await open('Integrations')
   await userEvent.click(screen.getByRole('button', { name: 'Forget' }))
   expect(await screen.findByLabelText('Anthropic key')).toBeVisible()
 })
@@ -425,6 +447,7 @@ it('forgets a provider, leaving the row ready for another key', async () => {
 /* A link beats a description of where to look, for the same reason the ssh key has one. */
 it('points at where a provider’s keys are made', async () => {
   await show(createMockClient({ profiles: [unkeyed] }))
+  await open('Integrations')
   expect(screen.getByRole('link', { name: /Get a Key/ })).toHaveAttribute(
     'href',
     'https://console.anthropic.com/settings/keys',

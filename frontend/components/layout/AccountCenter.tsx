@@ -6,6 +6,7 @@ import type { ProjectSummary } from '@broodmother/types/project'
 import Avatar from '@/components/core/Avatar'
 import Collapse, { snap } from '@/components/core/Collapse'
 import CoreIcon from '@/components/core/Icon'
+import { Menu, type MenuSection } from '@/components/core/Menu'
 import { useDismiss } from '@/hooks/Dismiss'
 import { cx } from '@/Cx'
 
@@ -25,6 +26,10 @@ const docsUrl = process.env.NEXT_PUBLIC_DOCS_URL
 /** How close the pointer comes, in pixels from the card's edge, before the strip under the
  *  name shows itself. */
 const NEAR = 140
+
+/** More profiles than anyone reads down, past which the dropdown takes a field. The branch
+ *  selector's own figure, so the two turn searchable at the same length. */
+const SEARCHABLE = 8
 
 const initials = (name: string) => name.trim().charAt(0).toUpperCase() || '?'
 
@@ -62,6 +67,8 @@ export function AccountCenter({
   onSettings: () => void
 }) {
   const [open, setOpen] = useState(false)
+  // The profile dropdown inside the card, held here because the card has to know it is up.
+  const [picking, setPicking] = useState(false)
   const [near, setNear] = useState(false)
   // Opening the menu spends the strip: it stays shut until the pointer has left the radius
   // entirely, so closing the menu does not flick it back out.
@@ -91,23 +98,48 @@ export function AccountCenter({
     if (open) setSpent(true)
   }
 
-  useDismiss(root, open, () => setOpen(false))
+  // Not while the profile dropdown is up. `Collapse` makes what it holds `inert` the moment
+  // it shuts, so a card dismissed out from under its own menu takes the menu's anchor with
+  // it mid-pick. The dropdown handles its own outside-clicks; this one waits its turn.
+  useDismiss(root, open && !picking, () => setOpen(false))
 
   if (!profile) return null
 
-  const others = profiles.filter((one) => one.name !== profile.name)
+  const picks: MenuSection[] = [
+    {
+      /* No heading: the anchor this drops from is the profile in use, and a menu whose first
+         line repeats what you pressed to open it has spent that line. */
+      search: profiles.length > SEARCHABLE ? 'search profiles' : undefined,
+      actions: profiles.map((one) => ({
+        id: one.name,
+        label: one.name,
+        badge: { text: initials(one.name), color: one.color },
+        // Every profile, the one in use included: it is what the check is on. The old list
+        // held only the others, and so could never say which of them you were.
+        selected: one.name === profile.name,
+        onSelect: () => {
+          setPicking(false)
+          setOpen(false)
+          if (one.name !== profile.name) onSelectProfile(one.name)
+        },
+      })),
+    },
+  ]
 
   return (
-    /* A host of exactly the card's resting size: the track's height, and as wide as what
-       stands in the head and no wider — the mark, the name, the caret and the gaps between
-       them. The head is the one thing here in flow, which is what makes that true; the card
-       is out of flow behind it and may grow over what is under it. */
+    /* A host of the card's resting size: the track's height, and as wide as what stands in
+       the head — the mark, the name, the caret and the gaps between them — within the floor
+       and the cap below. The head is the one thing here in flow, which is what makes that
+       true; the card is out of flow behind it and may grow over what is under it. */
     <div
       ref={root}
       /* The track's own control height, which is what a tab and every selector in the row
          are — rather than a figure of its own that has to be kept equal to theirs by hand.
-         The cap is the branch selector's, so no one profile's name can take the row. */
-      className="relative h-[var(--track-control)] max-w-[14rem] shrink-0"
+         The cap is the branch selector's, so no one profile's name can take the row. The
+         floor is what the card needs: the card is as wide as the host, so anything narrower
+         than its longest row — the icon, the gaps, the padding and "Switch Profile" — wraps
+         that line in two. */
+      className="relative h-[var(--track-control)] min-w-[8rem] max-w-[14rem] shrink-0"
       style={{ WebkitAppRegion: 'no-drag' } as CSSProperties}
     >
       {/* proprium's popup surface for the corner, the border and the blur, but on the app's
@@ -127,6 +159,37 @@ export function AccountCenter({
       )}
 
       <Collapse open={open} role="menu" className="flex flex-col px-1" openClassName="pb-1">
+        {/* First, under the name the head already shows: the card opens on who you are, and
+            what the app can do for you comes after. A row like the two below it rather than a
+            control of its own — the head above says which profile is in use, so this one only
+            has to offer the change, and the list it opens is where the profiles are. */}
+        <Menu
+          label="Who you work as"
+          sections={picks}
+          align="end"
+          anchorClass={itemButton}
+          open={picking}
+          onOpenChange={setPicking}
+        >
+          <CoreIcon name="user" size={13} className="block shrink-0 text-muted group-hover:text-foreground" />
+          Switch Profile
+        </Menu>
+
+        {/* Beside switching rather than inside it: the list above is the profiles there are,
+            and making one is not among them. */}
+        <button
+          type="button"
+          role="menuitem"
+          onClick={() => {
+            setOpen(false)
+            onAddProfile()
+          }}
+          className={itemButton}
+        >
+          <CoreIcon name="plus" size={13} className="block shrink-0 text-muted group-hover:text-foreground" />
+          New Profile…
+        </button>
+
         <button
           type="button"
           role="menuitem"
@@ -152,39 +215,6 @@ export function AccountCenter({
             Help
           </a>
         )}
-
-        <span className="px-2 pt-1.5 pb-0.5 text-[11px] font-semibold tracking-wide text-muted">
-          Profile
-        </span>
-        {others.map((one) => (
-          <button
-            key={one.name}
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setOpen(false)
-              onSelectProfile(one.name)
-            }}
-            className={itemButton}
-          >
-            <span aria-hidden className="flex shrink-0">
-              <Avatar initials={initials(one.name)} size={16} className="text-cream" style={{ background: one.color }} />
-            </span>
-            <span className="min-w-0 truncate">{one.name}</span>
-          </button>
-        ))}
-        <button
-          type="button"
-          role="menuitem"
-          onClick={() => {
-            setOpen(false)
-            onAddProfile()
-          }}
-          className={itemButton}
-        >
-          <CoreIcon name="plus" size={13} className="block shrink-0 text-muted group-hover:text-foreground" />
-          New profile…
-        </button>
         </Collapse>
       </div>
 
@@ -192,10 +222,17 @@ export function AccountCenter({
           is as wide as. `button:hover` in the app's stylesheet grounds every button; the
           card behind is the surface here, so the head itself takes no wash. The `!` is what
           clears an unlayered element rule from a utility, which is otherwise the weaker of
-          the two. */}
+          the two.
+
+          `w-full` because a button sizes to its content even as a flex container — it does
+          not fill a block parent the way a div does — and the host has a floor the content
+          can sit inside. Without it the caret's `ml-auto` has no room to push against and
+          the head stops short of the card's edge. It does not cost the line above: a
+          percentage width is read as auto while the host is being measured, so the head
+          still says how wide the whole thing is, and only then fills what it asked for. */}
       <button
         type="button"
-        className="relative z-40 flex h-[var(--track-control)] cursor-pointer items-center gap-2 border-0 bg-transparent! px-1.5 text-left text-foreground"
+        className="relative z-40 flex h-[var(--track-control)] w-full cursor-pointer items-center gap-2 border-0 bg-transparent! px-1.5 text-left text-foreground"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
@@ -227,7 +264,7 @@ export function AccountCenter({
           name="caret-down"
           size={13}
           className={cx(
-            'block shrink-0 text-muted transition-transform',
+            'ml-auto block shrink-0 text-muted transition-transform',
             snap,
             open && 'rotate-180',
           )}

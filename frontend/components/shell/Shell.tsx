@@ -321,12 +321,16 @@ export function Shell({ children }: { children: ReactNode }) {
     move: (root, from, to) => void app.move(root, from, to),
     remove: (ref) => void app.remove(ref),
     syncNow: () => void app.syncNow(),
-    settings: () => router.push('/settings'),
-    tasks: () => router.push('/tasks'),
-    agents: () => router.push('/agents'),
-    agentOrg: () => router.push('/agents/org'),
-    chat: () => router.push('/chat'),
-    entities: () => router.push('/entities'),
+    /* Through `show` rather than the router: an app page takes the whole pane, and a pane
+       that is up is what the pane is showing. Pushed past it, the route changes under a
+       terminal that stays on screen — the page arrives only on a reload, which is what
+       clears the pane by hand. */
+    settings: () => show('/settings'),
+    tasks: () => show('/tasks'),
+    agents: () => show('/agents'),
+    agentOrg: () => show('/agents/org'),
+    chat: () => show('/chat'),
+    entities: () => show('/entities'),
     projects: () => setPicker(true),
     repos: () => setWhereMenu(true),
     createRepo: () => setCreating(true),

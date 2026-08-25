@@ -23,12 +23,13 @@ const column = 'flex flex-col [&>button]:self-start'
 /**
  * A settings panel opens on what it is for rather than on its own name: the rail beside it
  * already says which section you are in, and a heading that repeats it costs a line and a
- * rule to say nothing. What is left is the sentence, then the fields.
+ * rule to say nothing. What is left is the sentence, then the fields — and the sentence goes
+ * too where the fields are plain enough to say it themselves.
  */
-export function Panel({ hint, children }: { hint: string; children: ReactNode }) {
+export function Panel({ hint, children }: { hint?: string; children: ReactNode }) {
   return (
     <div className={cx(column, 'gap-[0.9rem]')}>
-      <Hint>{hint}</Hint>
+      {hint && <Hint>{hint}</Hint>}
       {children}
     </div>
   )
@@ -54,7 +55,20 @@ export function Section({
   children: ReactNode
 }) {
   return (
-    <section className={cx(column, inset ? 'mt-[0.15rem] gap-[0.6rem]' : 'mt-5 gap-[0.9rem]')}>
+    /* A heading and the sentence under it are one block about one thing, so the column's
+       gap — which is what stands between one control and the next — is pulled back to the
+       tight step a caption's name and hint stand at. Only a hint that follows the heading
+       directly: further down the column it is a note under a control, not the section's
+       own sentence. The `!` is `.hint`'s own `margin: 0`, which is unlayered and outranks a
+       utility whatever its specificity — the same reason the heading below carries one. */
+    <section
+      className={cx(
+        column,
+        inset
+          ? 'mt-[0.15rem] gap-[0.6rem] [&>h3+.hint]:-mt-[0.45rem]!'
+          : 'mt-5 gap-[0.9rem] [&>h3+.hint]:-mt-[0.75rem]!',
+      )}
+    >
       {/* Named, not ruled off: the space above a section is what separates it, and a line
           under every heading in the app adds up to a page of them. Set as a field is named,
           because that is what it names — the page reads as one column of labels rather than
@@ -124,11 +138,26 @@ export function Field({
 }
 
 /** A field whose control is not one a label can point at — an editor, a row of swatches —
- *  is named the same way and stands in the same column. */
-export function Caption({ name, children }: { name: string; children: ReactNode }) {
+ *  is named the same way and stands in the same column. A `hint` goes under the name rather
+ *  than at the head of the panel, where a control tall enough to scroll would leave it
+ *  paragraphs above the thing it is about. */
+export function Caption({
+  name,
+  hint,
+  children,
+}: {
+  name: string
+  hint?: string
+  children: ReactNode
+}) {
   return (
-    <div className={caption}>
+    /* Tighter with a hint in it: the name, the sentence and the control are one block about
+       one thing, and the field's own gap set three times over reads as three. */
+    <div className={cx(caption, hint && 'gap-[0.15rem]')}>
       {name}
+      {/* The column carries the name's weight, and a hint is an aside in every other place
+          it is set. */}
+      {hint && <span className="hint font-normal">{hint}</span>}
       {children}
     </div>
   )

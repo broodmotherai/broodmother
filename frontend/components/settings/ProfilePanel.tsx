@@ -9,7 +9,6 @@ import { DangerZone } from './DangerZone'
 import { GithubAccount } from './GithubAccount'
 import { ProfileKey } from './ProfileKey'
 import { Caption, Field, Group, Hint, Panel } from './Layout'
-import { ModelKeys } from './ModelKeys'
 
 export function ProfilePanel() {
   const app = useApp()
@@ -29,7 +28,7 @@ export function ProfilePanel() {
   if (!identity) return null
 
   return (
-    <Panel hint="Who you commit and show up as. It lives in the profile, so changing it here changes every project that uses it.">
+    <Panel>
       {/* The same row of swatches the profile was made with, rather than a list of the same
           colours read out by name: it is one control, and picking a colour is a thing you do
           by looking at colours. */}
@@ -85,25 +84,11 @@ export function ProfilePanel() {
         <ProfileKey />
       </Group>
 
-      <Group legend="Claude">
-        <Field
-          label="Config Directory"
-          value={identity.claudeCfgDir ?? ''}
-          placeholder="~/.claude"
-          onChange={(event) =>
-            setIdentity({ ...identity, claudeCfgDir: event.target.value || null })
-          }
-        />
-
-        <Hint>The Claude login this profile&rsquo;s terminals run as.</Hint>
-      </Group>
-
       {/* The soul is saved as it stands on its own page; this button is for the fields
           here, and carries the soul through untouched. */}
       <Button onClick={() => void app.saveIdentity(identity)}>Save Profile</Button>
 
       <GithubAccount />
-      <ModelKeys />
       <DangerZone />
     </Panel>
   )

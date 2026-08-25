@@ -49,6 +49,7 @@ export type IconName =
   | 'pointer'
   | 'terminal'
   | 'claude'
+  | 'ghost'
   | 'muse'
   | 'user'
   | 'users'
@@ -357,6 +358,13 @@ const GLYPHS: Record<IconName, ReactNode> = {
   ),
   'message-square': (
     <path d="M22 17a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" />
+  ),
+  ghost: (
+    <>
+      <path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z" />
+      <path d="M9 10h.01" />
+      <path d="M15 10h.01" />
+    </>
   ),
   muse: (
     <path

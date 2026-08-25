@@ -5,8 +5,8 @@ import { useApp, type App } from '@/State'
 import { Icon, type IconName } from '@/components/core/Icons'
 import { Row } from '@/components/core/Row'
 import { ProfilePanel } from './ProfilePanel'
-import { RepoPanel } from './RepoPanel'
 import { SoulPanel } from './SoulPanel'
+import { IntegrationsPanel } from './IntegrationsPanel'
 import { ProjectPanel } from './ProjectPanel'
 
 interface Section {
@@ -18,7 +18,8 @@ interface Section {
   panel: () => ReactNode
 }
 
-/** Who you are, who your agents are, where you work, and what the work is about. */
+/** Who you are, who your agents are, who you have signed in with, where you work, and what
+ *  the work is about. */
 const SECTIONS: Section[] = [
   {
     id: 'profile',
@@ -30,9 +31,17 @@ const SECTIONS: Section[] = [
   {
     id: 'soul',
     label: 'Soul',
-    icon: 'claude',
+    icon: 'ghost',
     open: (app) => Boolean(app.profile),
     panel: SoulPanel,
+  },
+  {
+    id: 'integrations',
+    label: 'Integrations',
+    icon: 'zap',
+    // The keys live in the profile's own file, so the section is there while the profile is.
+    open: (app) => Boolean(app.profile),
+    panel: IntegrationsPanel,
   },
   {
     id: 'project',
@@ -40,13 +49,6 @@ const SECTIONS: Section[] = [
     icon: 'layout-dashboard',
     open: (app) => Boolean(app.project),
     panel: ProjectPanel,
-  },
-  {
-    id: 'repo',
-    label: 'Repo',
-    icon: 'folder',
-    open: (app) => Boolean(app.repo),
-    panel: RepoPanel,
   },
 ]
 
@@ -65,12 +67,12 @@ const SECTIONS: Section[] = [
  * over the words it is beside is worse than one standing next to them.
  */
 const page =
-  'grid min-h-0 flex-1 content-start items-start gap-x-8 gap-y-4 overflow-auto px-7 pt-[var(--page-top)] pb-24 grid-cols-[minmax(0,1fr)_minmax(0,var(--measure))_minmax(0,1fr)] @max-[76rem]/pane:grid-cols-[13rem_minmax(0,1fr)]'
+  'grid min-h-0 flex-1 content-start items-start gap-x-8 gap-y-4 overflow-auto px-7 pt-[var(--page-top)] pb-24 grid-cols-[minmax(0,1fr)_minmax(0,var(--measure))_minmax(0,1fr)] @max-[80rem]/pane:grid-cols-[13rem_minmax(0,1fr)]'
 
 /* Both placed rather than flowed: an item given a column is placed before the ones that are
    not, so left to the auto-placement the rail lands in the wrong row. */
 const rail =
-  'sticky top-0 col-start-1 row-start-1 flex w-52 flex-col gap-px justify-self-end @max-[76rem]/pane:row-start-2 @max-[76rem]/pane:justify-self-stretch'
+  'sticky top-0 col-start-1 row-start-1 flex w-52 flex-col gap-px justify-self-end @max-[80rem]/pane:row-start-2 @max-[80rem]/pane:justify-self-stretch'
 
 /* A row of the rail is the app's row — the same one the Explorer's files and the Tasks and
    Chat entries above them wear, from the kit rather than restated here. What is left is
@@ -86,7 +88,7 @@ export function SettingsView() {
   const [open, setOpen] = useState(SECTIONS[0].id)
 
   const sections = SECTIONS.filter((section) => section.open(app))
-  // Closing a repo while its settings are up leaves the rail without the row you were
+  // Closing a project while its settings are up leaves the rail without the row you were
   // on, so what is shown falls back to the first rather than to nothing.
   const current = sections.find((section) => section.id === open) ?? sections[0]
   if (!current) return <div className="empty" />

@@ -263,6 +263,23 @@ it('gives a terminal tab the whole pane, and hands it back on the way out', asyn
   expect(screen.getByText('the project')).toBeVisible()
 })
 
+/* A pane is what the pane is showing, so leaving for one of the app's own pages has to put it
+   away. Pushed past it the route moved under a terminal that stayed on screen, and the page
+   arrived only on a reload — which cleared the pane by hand. */
+it('puts an open pane away when it leaves for one of the app’s pages', async () => {
+  show(createMockClient())
+  await screen.findByText('the project')
+
+  await userEvent.click(screen.getByRole('button', { name: 'New tab' }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /Terminal/ }))
+  expect(screen.getByText('a running shell')).toBeVisible()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Agents' }))
+  expect(push).toHaveBeenCalledWith('/agents')
+  expect(screen.getByText('a running shell')).not.toBeVisible()
+  expect(screen.getByText('the project')).toBeVisible()
+})
+
 /* A shell runs in the backend, which a reload does not touch. What a reload loses is the tab
    that knew its name — so the strip is written down, and the tab that comes back asks for the
    shell it had. Documents are not written down: the route already brings back the one you
@@ -598,7 +615,8 @@ it('lists the open project’s repos, and drops them with the project', async ()
   await screen.findByRole('treeitem', { name: 'api' })
 
   await userEvent.click(screen.getByRole('button', { name: 'you' }))
-  await userEvent.click(await screen.findByRole('menuitem', { name: /ada/ }))
+  await userEvent.click(await screen.findByRole('button', { name: /Switch Profile/ }))
+  await userEvent.click(await screen.findByRole('menuitemradio', { name: /ada/ }))
 
   await waitFor(() =>
     expect(screen.getByRole('button', { name: /notes/ })).toBeInTheDocument(),
@@ -620,7 +638,7 @@ it('empties the tree of repos when the new profile has no project', async () => 
   await screen.findByRole('treeitem', { name: 'api' })
 
   await userEvent.click(screen.getByRole('button', { name: 'you' }))
-  await userEvent.click(await screen.findByRole('menuitem', { name: /New profile/ }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /New Profile/ }))
   await userEvent.type(screen.getByLabelText('Profile Name'), 'ada')
   await userEvent.type(screen.getByLabelText('Author Email'), 'ada@example.com')
   await userEvent.click(screen.getByRole('button', { name: 'Add Profile' }))

@@ -231,7 +231,7 @@
   --page-width: 60rem;
   --gutter: 0.5rem;
   --head: 2.6rem;
-  --measure: 50rem;
+  --measure: 54rem;
   --pad: 0.625rem;
 
   color-scheme: dark;
@@ -1223,8 +1223,8 @@ body[data-resizing='column'] {
 }
 
 /* The tab you are in catches the light. Three of the opals bloom across the same ground every
-   other chosen control stands on, sat where they fell rather than at the corners — a sheen
-   too slight to read as colour, felt only as the tab being warmer than its neighbours. Each
+   other chosen control stands on, sat where they fell rather than at the corners — enough to
+   be seen as colour when you look at it, not so much that the tab reads as tinted. Each
    wanders its own small circuit on its own clock, over waypoints spaced unevenly and periods
    sharing no factor, so the three never line up twice inside an hour of looking: the sheen
    drifts rather than pulses, which is the difference between weather and a metronome. */
@@ -1232,17 +1232,17 @@ body[data-resizing='column'] {
   background:
     radial-gradient(
       86% 132% at var(--tab-violet-x) var(--tab-violet-y),
-      color-mix(in srgb, var(--opal-violet) 11%, transparent),
+      color-mix(in srgb, var(--opal-violet) 18%, transparent),
       transparent 68%
     ),
     radial-gradient(
       104% 118% at var(--tab-cyan-x) var(--tab-cyan-y),
-      color-mix(in srgb, var(--opal-cyan) 9%, transparent),
+      color-mix(in srgb, var(--opal-cyan) 15%, transparent),
       transparent 66%
     ),
     radial-gradient(
       72% 154% at var(--tab-rose-x) var(--tab-rose-y),
-      color-mix(in srgb, var(--opal-rose) 8%, transparent),
+      color-mix(in srgb, var(--opal-rose) 13%, transparent),
       transparent 70%
     ),
     var(--active);
@@ -1516,6 +1516,17 @@ body[data-resizing='column'] {
 .terminal-tab-pane {
   flex: 1;
   min-height: 0;
+}
+
+/* A terminal in a tab is a `.terminal`, so it keeps the same inset the panel does — and with
+   the panel open underneath, the tab's bottom margin and the panel's top one land on the
+   same seam and put twice the gap there as there is at every other edge. It is the doubling
+   the panel already avoids against the tree by keeping no left margin, arriving from the
+   other side: whichever of the two is second gives its half up. Only while the panel is
+   showing. With it away that is the window's edge under the tab, and the inset is the tab's
+   own to keep. */
+.shell:has(> .terminal:not([hidden])) .terminal-tab-pane {
+  margin-bottom: 0;
 }
 
 /* Nothing on top: the track above already keeps the gap, as its own inset under the row of
@@ -3560,7 +3571,7 @@ p.palette-label {
   box-shadow: 0 0 0 2px var(--opal-indigo);
 }
 
-/* The plus is a swatch with nothing on it yet: dashed, dim, and lit on hover. Once a colour
+/* The plus is a swatch with nothing on it yet: flat, dim, and lit on hover. Once a colour
    is picked it wears it like the rest, keeping the plus as the sign it can be changed. */
 .color-custom {
   display: grid;
@@ -3571,11 +3582,6 @@ p.palette-label {
 
 .color-custom:not([aria-checked='true']) {
   box-shadow: 0 0 0 1px var(--line-hover);
-  background: repeating-linear-gradient(
-    -45deg,
-    var(--raised) 0 3px,
-    transparent 3px 6px
-  );
 }
 
 .color-custom:hover,
@@ -3737,6 +3743,48 @@ p.palette-label {
   color: var(--muted);
   font-size: 0.8rem;
   line-height: 1.5;
+}
+
+/* The panel's column starts its buttons at the left edge, which is right for a button that
+   is a word and wrong for one that is a picture: this one is the width of the measure's
+   middle and reads as a plate rather than as the next control down the form. The wrapper
+   would have swallowed that self-start anyway — it takes the placement instead. */
+.soul-save {
+  align-self: center;
+}
+
+/* The one button in the app wearing a face. The image is the whole of it: no ground under it,
+   no border around it, no blur behind it. The art has its own edges — the flames are the
+   shape of the button — and a rounded rectangle drawn around them is a second, squarer button
+   standing behind the one you can see.
+
+   253px is not a taste: the art is a 253-wide picture drawn at three times the size, so at
+   this width one of its pixels is one of the screen's and the edges are the edges that were
+   drawn. Any other width resamples them, and the picture is nothing but edges. `pixelated`
+   holds that if the page is ever zoomed.
+
+   Said again for hover, because the button's own hover sets `background` in shorthand and
+   would put the ground back under the face. The shorthand is the point in both: it takes the
+   colour out along with everything else, so what is left is the image and nothing. */
+.soul-save button,
+.soul-save button:hover {
+  background: url('/save-your-soul.png') center / contain no-repeat;
+  border: none;
+  backdrop-filter: none;
+  image-rendering: pixelated;
+}
+
+.soul-save button {
+  width: 253px;
+  aspect-ratio: 759 / 375;
+  padding: 0;
+}
+
+/* Something has to answer the pointer once the ground and the border are gone. Light rather
+   than a wash: the picture is already lit from inside, so it brightens instead of sitting on
+   something that changed colour. */
+.soul-save button:hover {
+  filter: brightness(1.12);
 }
 
 .field-error {
