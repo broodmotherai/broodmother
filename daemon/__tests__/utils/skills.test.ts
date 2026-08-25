@@ -1,13 +1,14 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
+import { SKILLS_DIR } from '@daemon/constants/files'
 import { cleanup, tempDir } from '@daemon/test'
 import { scanSkills, seedSkills } from '@daemon/utils/skills'
 
 afterAll(cleanup)
 
 async function seed(checkout: string, name: string, skill: string | null) {
-  const dir = path.join(checkout, '.skills', name)
+  const dir = path.join(checkout, SKILLS_DIR, name)
   await mkdir(dir, { recursive: true })
   if (skill !== null) await writeFile(path.join(dir, 'SKILL.md'), skill)
 }
@@ -50,6 +51,25 @@ describe('scanSkills', () => {
     expect(await scanSkills(checkout)).toEqual([
       { name: 'mystery', description: 'no description — read its SKILL.md' },
     ])
+  })
+
+  it('names a nested skill by its path', async () => {
+    const checkout = await tempDir()
+    await seed(checkout, 'dev/changelog', skill('description: what changed'))
+    await seed(checkout, 'flat', skill('description: at the top'))
+
+    expect(await scanSkills(checkout)).toEqual([
+      { name: 'dev/changelog', description: 'what changed' },
+      { name: 'flat', description: 'at the top' },
+    ])
+  })
+
+  it('does not look inside a skill for more skills', async () => {
+    const checkout = await tempDir()
+    await seed(checkout, 'deck', skill('description: builds a deck'))
+    await seed(checkout, 'deck/references', skill('description: not a skill'))
+
+    expect((await scanSkills(checkout)).map((one) => one.name)).toEqual(['deck'])
   })
 
   it('answers a project with no skills folder with nothing', async () => {

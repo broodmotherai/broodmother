@@ -23,4 +23,6 @@ export const tasks = {
   'GET /api/diagrams': async (c, ctx) => c.json({ diagrams: await ctx.diagrams() }),
 
   'GET /api/personas': (c, ctx) => c.json({ personas: ctx.opened?.personas ?? [] }),
+
+  'GET /api/skills': (c, ctx) => c.json({ skills: ctx.opened?.skills ?? [] }),
 } satisfies RouteTable
