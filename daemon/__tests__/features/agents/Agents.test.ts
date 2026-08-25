@@ -97,6 +97,26 @@ it('refuses a loop, direct or through others, and an agent as their own lead', a
   ])
 })
 
+/* The chart reaches the prompt as names: the rungs either side of whoever is taking the
+   turn, and nothing at all for the agent who is the only one in the project. */
+it('tells an agent who is above and below them, and an agent alone nothing', async () => {
+  const { agents, hire } = await team()
+  const sam = await hire('Sam')
+  const priya = await hire('Priya')
+  const ada = await hire('Ada')
+  agents.setLead(priya.id, sam.id)
+  agents.setLead(ada.id, priya.id)
+
+  const { system } = await agents.turn(priya, () => {})
+  expect(system).toContain('You report to Sam.')
+  expect(system).toContain('Ada reports to you')
+
+  const alone = await team()
+  const solo = await alone.hire('Bo')
+  const only = await alone.agents.turn(solo, () => {})
+  expect(only.system).not.toContain('## Who else is here')
+})
+
 /* The chart is per-project the way the agents are, so a lead from somewhere else is nobody
    here — the same answer as a lead who never existed. */
 it('refuses an agent and a lead this project has not got', async () => {

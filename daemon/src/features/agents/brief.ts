@@ -15,11 +15,23 @@ export interface AgentVoice {
   attachmentsAbs: string
   /** The same folder as the project sees it, for the message that names it. */
   attachments: string
+  /** Where they stand among the others, or absent where they are the only agent in the
+   *  project: a room of one is not worth describing to the one in it. */
+  team?: AgentTeam
+}
+
+/** The chart as the agent standing in it needs it: names, not ids, and only the two rungs
+ *  either side of them. Everyone else is a question for a tool that does not exist yet. */
+export interface AgentTeam {
+  lead: string | null
+  reports: string[]
 }
 
 /** The system prompt for an agent's turn: the app brief, then the person. */
 export function agentBrief(base: string, voice: AgentVoice): string {
-  return [base, who(voice), talking(voice), working(voice)].join('\n\n')
+  return [base, who(voice), others(voice), talking(voice), working(voice)]
+    .filter(Boolean)
+    .join('\n\n')
 }
 
 function who({ name, persona, personaBody }: AgentVoice): string {
@@ -32,6 +44,51 @@ up, and carry on as a capable, friendly colleague.)`
 You are ${name}. You wear the persona \`${persona}\`, which is who you are here:
 
 ${body}`
+}
+
+/**
+ * That the room has other people in it. Two things only: where you stand on the chart, and
+ * what to do about work you find that is not yours — the second stops at the consequence,
+ * because `who_did`'s own description already says work you did not do belongs to whoever
+ * did it, and a prompt paying twice for one fact is a prompt that will pay three times.
+ *
+ * Nothing here about reaching another agent: there is no tool that would, and naming one
+ * that does not exist is how a model learns to stop reading its prompt.
+ */
+function others({ team }: AgentVoice): string {
+  if (!team) return ''
+  return `## Who else is here
+
+${standing(team)}
+
+Other agents work in this same checkout, and you will find work you did not do — a file that
+has appeared, a branch that has moved on, a task already finished. Never redo it, and never
+report it as yours. If you are about to change it or you found it wrong, say so to the person
+first. If it blocks you, say what you are blocked on rather than working around it.`
+}
+
+/** Whole lines rather than wrapped ones: the clauses join into one paragraph, so a break
+ *  placed by hand lands wherever the names it sits among happen to leave it. */
+function standing({ lead, reports }: AgentTeam): string {
+  if (!lead && reports.length === 0)
+    return `Nobody in this project reports to anybody yet — everyone here is a peer, and what you are asked for is yours to do.`
+  return [
+    lead ? `You report to ${lead}.` : '',
+    reports.length
+      ? `${names(reports)} ${reports.length > 1 ? 'report' : 'reports'} to you, and work that is theirs goes to them with what you know about it rather than to your own hands.`
+      : '',
+    lead
+      ? `When you are stuck on something outside what you were asked for, tell ${lead} rather than widening your own remit.`
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+}
+
+function names(all: string[]): string {
+  return all.length < 3
+    ? all.join(' and ')
+    : `${all.slice(0, -1).join(', ')} and ${String(all.at(-1))}`
 }
 
 function talking({ name, profile }: AgentVoice): string {

@@ -89,6 +89,10 @@ it('hands an errand to claude, watches it go, and answers with what it said', as
   expect(whole).toContain('You are the hands of Priya')
   expect(whole).toContain(attachments)
   expect(whole).toContain('You are a careful researcher.')
+  // The hands are what walk into other people's work, and `noteErrand` files whatever they
+  // touch under this errand — so a stray edit does not merely change a file, it relabels it.
+  expect(whole).toContain('leave it alone and say so in what you report back')
+  expect(whole).toContain('everything this errand touches is filed as')
 
   expect(notes).toEqual([
     ['call-7', 'Looking at the notes first.'],

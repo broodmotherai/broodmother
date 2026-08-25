@@ -142,6 +142,23 @@ It also carries the project and how much it syncs, in one word.
 is written into no file — a profile with nothing of its own reads back as this, which is what
 lets it be edited on the profile's page like any other field.
 
+### Who is told about the others
+
+Only one room is: an agent's own turn. `agents/brief.ts` writes `## Who else is here` between
+who it is and how it talks — where it stands on the chart by name, hand down to a report,
+escalate to a lead, and the rule the chart is worth stating for: work you did not do belongs
+to whoever did it, so never redo it and never report it as yours. It is nothing at all for an
+agent alone in a project, and where nobody reports to anybody it says so, since several agents
+with no lead is the ordinary state of a small project rather than a gap.
+
+The Claude Code errand gets one sentence of the same rule, in `runClaude`'s `## Whose errand
+this is` — the errand is the thing that actually walks into somebody else's work, and
+`noteErrand` files every path it touches under the agent that sent it, so a stray edit
+relabels a file as well as changing it. The terminal and the page's chat are told nothing:
+neither can reach another agent, and `who_did`'s own description already carries the
+finding-out. Those two arms are where a rule about the others goes — including the paragraph
+about reaching one, when the tools that would do the reaching exist.
+
 ## Tasks
 
 `src/tasks/{core,db,scheduler,triggers,crontab,state,scratch}.ts`, `src/tasks/blocks/`

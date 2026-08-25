@@ -15,7 +15,7 @@ import type { Tree } from '@daemon/services/Tree'
 import { ChatError } from '../chat/error'
 import type { Chats, Turn } from '@daemon/features/chat/Chats'
 import type { ChatStore } from '../chat/db'
-import { agentBrief } from './brief'
+import { agentBrief, type AgentTeam } from './brief'
 import { agentTools, type AgentToolDeps } from './tools'
 
 export interface AgentSite {
@@ -170,6 +170,7 @@ export class Agents {
       profile: this.deps.profile(),
       attachmentsAbs,
       attachments: agent.attachments,
+      team: project ? this.team(agent, project.path) : undefined,
     })
     const tools: ToolSet = agentTools({
       ...this.deps.tools({
@@ -199,6 +200,18 @@ export class Agents {
       ...one,
       working: this.deps.chats.working(one.chat),
       lastAt: this.deps.store.lastSaidAt(one.chat),
+    }
+  }
+
+  /** Where an agent stands, for their own prompt: the rungs either side of them, by name.
+   *  Nothing where they are the only one — an agent alone is told about no room. */
+  private team(agent: Agent, project: string): AgentTeam | undefined {
+    const chart = this.deps.store.org(project)
+    if (chart.length < 2) return undefined
+    const mine = chart.find((one) => one.id === agent.id)
+    return {
+      lead: chart.find((one) => one.id === mine?.lead)?.name ?? null,
+      reports: chart.filter((one) => one.lead === agent.id).map((one) => one.name),
     }
   }
 
