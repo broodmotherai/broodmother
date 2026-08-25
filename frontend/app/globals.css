@@ -500,7 +500,8 @@ body[data-resizing='column'] {
   flex: none;
   width: 1.25rem;
   height: 1.25rem;
-  object-fit: contain;
+  mask: url('/mark.svg') center / contain no-repeat;
+  background: currentColor;
 }
 
 /* Standing off the row rather than filling it: the hover is a control you can see the edges
@@ -1423,12 +1424,92 @@ body[data-resizing='column'] {
   cursor: default;
 }
 
+/* The same mark the project row wears, in gold rather than ink. Four layers cut to the one
+   shape by the one mask, since the mask a parent wears reaches everything it draws: a leaf of
+   beaten gold, a highlight sweeping across it, and two sets of specks catching out of step
+   with each other, which is what makes it read as twinkling rather than blinking. Gaudy is
+   the brief — this is the sign the app shows when there is nothing else to show, so it may as
+   well be the only thing moving on the page. */
 .home .mark {
+  position: relative;
+  flex: none;
   width: 3.5rem;
   height: 3.5rem;
   margin-bottom: 0.9rem;
-  object-fit: contain;
-  -webkit-user-drag: none;
+  mask: url('/mark.svg') center / contain no-repeat;
+  background-image:
+    linear-gradient(
+      104deg,
+      transparent 40%,
+      rgb(255 255 255 / 0.95) 48%,
+      rgb(255 250 200 / 0.75) 53%,
+      transparent 62%
+    ),
+    linear-gradient(
+      152deg,
+      #7a4708 0%,
+      #c98f14 9%,
+      #fff3ae 18%,
+      #ffd24a 26%,
+      #a5670c 35%,
+      #ffe98a 44%,
+      #fffbe0 52%,
+      #f2b62a 60%,
+      #8f5a0b 69%,
+      #ffd95e 79%,
+      #fff7cd 88%,
+      #c98f14 100%
+    );
+  background-repeat: no-repeat;
+  background-size:
+    260% 100%,
+    100% 100%;
+  background-position:
+    -120% 0,
+    0 0;
+  filter: drop-shadow(0 0 0.55rem rgb(255 197 61 / 0.55));
+  animation: mark-glint 4.5s linear infinite;
+}
+
+.home .mark::before,
+.home .mark::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.home .mark::before {
+  background:
+    radial-gradient(circle at 28% 34%, rgb(255 255 255 / 0.95) 0 3%, transparent 8%),
+    radial-gradient(circle at 50% 44%, rgb(255 252 214 / 0.9) 0 4%, transparent 10%),
+    radial-gradient(circle at 70% 66%, rgb(255 255 255 / 0.9) 0 3%, transparent 8%);
+  animation: mark-sparkle 2.3s ease-in-out infinite alternate;
+}
+
+.home .mark::after {
+  background:
+    radial-gradient(circle at 70% 28%, rgb(255 255 255 / 0.9) 0 3%, transparent 8%),
+    radial-gradient(circle at 30% 62%, rgb(255 249 208 / 0.9) 0 3%, transparent 8%),
+    radial-gradient(circle at 50% 78%, rgb(255 255 255 / 0.95) 0 4%, transparent 10%);
+  animation: mark-sparkle 3.1s ease-in-out 0.7s infinite alternate;
+}
+
+@keyframes mark-glint {
+  to {
+    background-position:
+      220% 0,
+      0 0;
+  }
+}
+
+@keyframes mark-sparkle {
+  from {
+    opacity: 0.05;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .home h1 {
@@ -3104,10 +3185,11 @@ p.palette-label {
 }
 
 .modal-mark {
+  flex: none;
   width: 3.5rem;
   height: 3.5rem;
-  object-fit: contain;
-  -webkit-user-drag: none;
+  mask: url('/mark.svg') center / contain no-repeat;
+  background: currentColor;
 }
 
 .modal-close {

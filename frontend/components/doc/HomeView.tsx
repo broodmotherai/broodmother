@@ -15,14 +15,7 @@ const KEYS: { key: string; does: string }[] = [
 export function HomeView() {
   return (
     <div className="home">
-      <img
-        className="mark"
-        src="/logo.png"
-        alt=""
-        width={512}
-        height={512}
-        draggable={false}
-      />
+      <span className="mark" aria-hidden />
       <h1>broodmother</h1>
 
       <dl className="home-keys">
