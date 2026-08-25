@@ -16,6 +16,7 @@ export type IconName =
   | 'alarm-clock'
   | 'project'
   | 'package'
+  | 'chevron-left'
   | 'chevron-right'
   | 'play'
   | 'play-solid'
@@ -142,6 +143,7 @@ const GLYPHS: Record<IconName, ReactNode> = {
       <path d="m7.5 4.27 9 5.15" />
     </>
   ),
+  'chevron-left': <path d="m15 18-6-6 6-6" />,
   'chevron-right': <path d="m9 18 6-6-6-6" />,
   /* Lucide's play, filled solid: the stroke it keeps is what rounds the corners. */
   play: <path fill="currentColor" d="M8 5.5 19 12 8 18.5Z" />,

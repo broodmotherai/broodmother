@@ -23,6 +23,7 @@ import type {
   DeleteDoc,
   GetDoc,
   GetFile,
+  GetFileAt,
   GetLinks,
   PostDocMove,
   PostFolder,
@@ -113,6 +114,7 @@ interface ApiRoutes {
   'GET /api/agents': GetAgents
   'GET /api/personas': GetPersonas
   'GET /api/file': GetFile
+  'GET /api/file/:root/:path{.+}': GetFileAt
   'GET /api/doc': GetDoc
   'PUT /api/doc': PutDoc
   'POST /api/doc/move': PostDocMove

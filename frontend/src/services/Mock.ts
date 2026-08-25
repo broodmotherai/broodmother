@@ -37,9 +37,10 @@ import type { RepoSummary } from '@broodmother/types/repo'
 import type { ProjectSummary } from '@broodmother/types/project'
 import type { ApiClient, Connection } from './DataSource'
 
-/** Every route the typed client asks for. `GET /api/file` is not one of them: its answer is
- *  bytes, and the one place that wants them builds the URL itself for an `<img>` to fetch. */
-type MockRoute = Exclude<ApiRoute, 'GET /api/file'>
+/** Every route the typed client asks for. The two file routes are not among them: their
+ *  answer is bytes, and the places that want them build the URL themselves for an `<img>` or
+ *  an `<iframe>` to fetch. */
+type MockRoute = Exclude<ApiRoute, 'GET /api/file' | 'GET /api/file/:root/:path{.+}'>
 
 export interface MockClient extends ApiClient {
   emit(message: ServerMessage): void

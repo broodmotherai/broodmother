@@ -13,12 +13,30 @@ import type {
   TerminalServerMessage,
 } from '@broodmother/types/api/terminal'
 import type { ServerMessage, WsRoute } from '@broodmother/types/api/ws'
+import type { DocRef } from '@broodmother/types/doc'
 import type { ApiClient, Connection } from './DataSource'
 
 /** Where the backend is. Exported because bytes are fetched by the browser directly —
  *  an `<img src>` is a request this client does not make. */
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4242'
 const base = API_BASE
+
+/** The URL the server serves a file's bytes from, for the one reader that only needs the
+ *  bytes — an `<img>` has nothing beside it to go and find. */
+export const fileUrl = ({ root, path }: DocRef) =>
+  `${API_BASE}/api/file?root=${root}&path=${encodeURIComponent(path)}`
+
+/**
+ * The same bytes with the path in the URL, for a page that is rendered. A document on screen
+ * resolves its own `href` and `src` against the folder it appears to sit in, so the address
+ * has to put it in the folder it is really in — otherwise the stylesheet written beside a
+ * report is asked for from the site root, and the report comes up bare.
+ */
+export const browseUrl = ({ root, path }: DocRef) =>
+  `${API_BASE}/api/file/${encodeURIComponent(root)}/${path
+    .split('/')
+    .map(encodeURIComponent)
+    .join('/')}`
 
 /**
  * How long to wait before trying again, by how many tries have failed. It starts inside a

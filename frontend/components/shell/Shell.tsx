@@ -43,6 +43,7 @@ import { Icon } from '@/components/core/Icons'
 import { Resizer, useStoredSize } from '@/components/core/Resizer'
 import { type NewTab, type Tab, TabStrip } from './TabStrip'
 import { TerminalPanel, TerminalTab } from '@/components/terminal/TerminalPanel'
+import { BrowserTab } from '@/components/browser/BrowserView'
 import { closed as forget } from '@/components/terminal/Known'
 import { APP_PAGES, currentDoc, docRoute, useScopeTabs } from './ScopeTabs'
 
@@ -87,15 +88,17 @@ export function Shell({ children }: { children: ReactNode }) {
   const navigate = useCallback((route: string) => router.push(route), [router])
   const {
     tabs,
-    terminals,
+    panes,
     liveBranches,
     activeId,
-    terminalTab,
+    paneTab,
     show,
     pick,
     close,
     closeMany,
     newTerminal,
+    newBrowser,
+    amend,
   } = useScopeTabs({
     scopeKey: app.scopeKey,
     pathname,
@@ -103,12 +106,12 @@ export function Shell({ children }: { children: ReactNode }) {
     navigate,
   })
 
-  // The terminal tabs that have been on screen at least once. A pane mounts the first time
-  // its tab is picked — so its shell attaches to a terminal that is drawn and measured, and
-  // what it replays wraps at the width it will be read at — and then stays mounted in the
-  // background wherever you go, the shell attached the whole time.
-  const openedTerminals = useRef(new Set<string>())
-  if (terminalTab) openedTerminals.current.add(terminalTab)
+  // The panes that have been on screen at least once. One mounts the first time its tab is
+  // picked — so a shell attaches to a terminal that is drawn and measured, and what it
+  // replays wraps at the width it will be read at — and then stays mounted in the background
+  // wherever you go, the shell attached and the page loaded the whole time.
+  const openedPanes = useRef(new Set<string>())
+  if (paneTab) openedPanes.current.add(paneTab)
 
   // One panel per place, made the first time the terminal is opened there and kept mounted
   // in the background after: coming back finds its shells as you left them, still attached,
@@ -328,8 +331,11 @@ export function Shell({ children }: { children: ReactNode }) {
     toggleTerminal,
   }
 
-  const newTab = (what: NewTab) =>
-    what === 'note' ? ctx.newNote() : newTerminal(what, app.scope)
+  const newTab = (what: NewTab) => {
+    if (what === 'note') return ctx.newNote()
+    if (what === 'browser') return newBrowser(app.scope)
+    newTerminal(what, app.scope)
+  }
 
   /**
    * Closing a terminal tab is the one thing that ends a shell. Everything else that takes a
@@ -516,28 +522,37 @@ export function Shell({ children }: { children: ReactNode }) {
           />
         )}
         <div className="main-body">
-          <div className="pane" hidden={Boolean(terminalTab)}>
+          <div className="pane" hidden={Boolean(paneTab)}>
             {against && doc ? (
               <DiffView root={doc.root} path={doc.path} against={against} basis={basis} />
             ) : (
               children
             )}
           </div>
-          {terminals
-            .filter((tab) => tab.kind === 'terminal')
-            .filter((tab) => openedTerminals.current.has(tab.id))
-            .map((tab) => (
-              <TerminalTab
-                key={tab.id}
-                kind={tab.shell}
-                // The tab's own id, which is written down with it and comes back with it —
-                // so the shell it opened can be asked for again by the name it was given.
-                name={tab.id}
-                root={tab.root}
-                active={tab.id === terminalTab}
-                onExit={() => close(tab)}
-              />
-            ))}
+          {panes
+            .filter((tab) => openedPanes.current.has(tab.id))
+            .map((tab) =>
+              tab.kind === 'terminal' ? (
+                <TerminalTab
+                  key={tab.id}
+                  kind={tab.shell}
+                  // The tab's own id, which is written down with it and comes back with it —
+                  // so the shell it opened can be asked for again by the name it was given.
+                  name={tab.id}
+                  root={tab.root}
+                  active={tab.id === paneTab}
+                  onExit={() => close(tab)}
+                />
+              ) : tab.kind === 'browser' ? (
+                <BrowserTab
+                  key={tab.id}
+                  url={tab.url}
+                  active={tab.id === paneTab}
+                  onUrl={(url) => amend(tab.id, { url })}
+                  onTitle={(title) => amend(tab.id, { title })}
+                />
+              ) : null,
+            )}
         </div>
       </main>
       {Object.entries(panels).map(([scope, root]) => (

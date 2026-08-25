@@ -5243,3 +5243,97 @@ p.palette-label {
   flex: none;
   color: inherit;
 }
+
+/* ---------- pages ---------- */
+
+/* A document rendered rather than read. The frame is the page's own — it is fetched from the
+   server and painted by the browser, so nothing in here styles what is inside it. */
+.browser-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--editor-ground);
+}
+
+/* Not an address bar: the file has an address already, and the tab strip says it. What is
+   left is the name, and the way out to a real browser. */
+.browser-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+
+.browser-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browser-action {
+  display: flex;
+  align-items: center;
+  padding: 0.15rem;
+  border-radius: var(--surface-radius);
+  color: var(--faint);
+}
+
+.browser-action:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.browser-action .icon {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+/* White, not the app's ground: a page written for a browser expects a browser's blank page
+   behind it, and one that sets no background of its own would otherwise be read against a
+   colour it never asked for. */
+.browser-frame {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: 0;
+  background: #fff;
+}
+
+/* The bar of a browser tab, which unlike a preview's has somewhere to type. */
+.browser-address {
+  flex: 1;
+  min-width: 0;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+  background: var(--raised);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+
+.browser-address:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.browser-address[aria-invalid] {
+  border-color: var(--danger);
+}
+
+.browser-refused {
+  flex: none;
+  color: var(--danger);
+}
+
+/* Back with nothing behind it is not a button that does nothing — it is a button that says
+   there is nothing behind it. */
+.browser-action:disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
