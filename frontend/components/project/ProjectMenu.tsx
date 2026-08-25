@@ -5,7 +5,7 @@ import type { ProjectSummary } from '@broodmother/types/project'
 import { Confirm } from '@/components/core/Confirm'
 import { Icon } from '@/components/core/Icons'
 import { Menu, type MenuSection } from '@/components/core/Menu'
-const logo = <img className="logo" src="/logo.png" alt="" width={20} height={20} />
+const logo = <span className="logo" aria-hidden />
 
 /** The row a second gesture drilled into, and what can be done to it. */
 interface Drilled {

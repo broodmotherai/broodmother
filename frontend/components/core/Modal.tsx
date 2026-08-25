@@ -53,9 +53,7 @@ export function Modal({
           onInteractOutside={stay}
         >
           <header className="modal-head" data-mark={mark || undefined}>
-            {mark && (
-              <img className="modal-mark" src="/logo.png" alt="" width={56} height={56} />
-            )}
+            {mark && <span className="modal-mark" aria-hidden />}
             <Dialog.Title>{title}</Dialog.Title>
             {mark && tagline && <p className="modal-tagline">{tagline}</p>}
             {onClose && (
