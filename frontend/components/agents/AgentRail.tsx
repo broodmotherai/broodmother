@@ -18,6 +18,7 @@ export function AgentRail({
   open,
   onOpen,
   onNew,
+  onChart,
   onClear,
   onDelete,
 }: {
@@ -25,15 +26,29 @@ export function AgentRail({
   open: string | null
   onOpen: (agent: string) => void
   onNew: () => void
+  onChart: () => void
   onClear: (agent: string) => void
   onDelete: (agent: string) => void
 }) {
   return (
     <aside className="chat-history agent-rail" aria-label="Agents">
-      <button type="button" className="chat-new" onClick={onNew}>
-        <Icon name="plus" />
-        New agent
-      </button>
+      {/* Hiring, and the chart — the one you do often beside the one you do rarely, which is
+          why the chart is a mark rather than a row of its own. */}
+      <div className="agent-rail-head">
+        <button type="button" className="chat-new" onClick={onNew}>
+          <Icon name="plus" />
+          New agent
+        </button>
+        <button
+          type="button"
+          className="agent-chart"
+          aria-label="Org chart"
+          data-tip="who reports to whom"
+          onClick={onChart}
+        >
+          <Icon name="fork" />
+        </button>
+      </div>
       <ul>
         {agents.map((agent) => (
           <li key={agent.id}>

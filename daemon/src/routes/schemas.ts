@@ -91,6 +91,18 @@ export const agentModelBody = z.object({
   model: modelId(),
 })
 
+/** Who reports to whom. `null` is nobody, which is how a line is dragged off. Whether the
+ *  pair makes a loop is the feature's to say — this does not know the chart. */
+export const agentLeadBody = z.object({
+  agent: z.string().min(1),
+  lead: z.string().min(1).nullable(),
+})
+export const agentPlaceBody = z.object({
+  agent: z.string().min(1),
+  x: z.number().finite(),
+  y: z.number().finite(),
+})
+
 /** A record as a caller hands it over. The kind and the relations are closed enums rather
  *  than strings, so a caller reaching for one nobody defined is told at the door — which is
  *  also what makes the tool's schema worth having over the `api` tool. */

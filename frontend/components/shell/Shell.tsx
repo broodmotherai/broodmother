@@ -45,7 +45,7 @@ import { type NewTab, type Tab, TabStrip } from './TabStrip'
 import { TerminalPanel, TerminalTab } from '@/components/terminal/TerminalPanel'
 import { BrowserTab } from '@/components/browser/BrowserView'
 import { closed as forget } from '@/components/terminal/Known'
-import { APP_PAGES, currentDoc, docRoute, useScopeTabs } from './ScopeTabs'
+import { currentDoc, docRoute, isAppPage, useScopeTabs } from './ScopeTabs'
 
 const SIDEBAR_KEY = 'broodmother.sidebar'
 const TERMINAL_KEY = 'broodmother.terminal'
@@ -124,7 +124,7 @@ export function Shell({ children }: { children: ReactNode }) {
      nothing here is opened in a tab or run in a shell, so the plus and the terminal have
      nothing to offer while one is up. The terminal is hidden rather than closed — a pty that
      unmounts dies, and reading a page is not asking for the shell to end. */
-  const appPage = APP_PAGES.includes(pathname)
+  const appPage = isAppPage(pathname)
 
   /* The task editor and the diagram both take the bottom panel for their own options, so
      ⌘J is theirs there and the terminal stays hidden the way it does on an app page —
@@ -324,6 +324,7 @@ export function Shell({ children }: { children: ReactNode }) {
     settings: () => router.push('/settings'),
     tasks: () => router.push('/tasks'),
     agents: () => router.push('/agents'),
+    agentOrg: () => router.push('/agents/org'),
     chat: () => router.push('/chat'),
     entities: () => router.push('/entities'),
     projects: () => setPicker(true),

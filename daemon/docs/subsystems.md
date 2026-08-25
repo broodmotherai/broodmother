@@ -115,6 +115,17 @@ An agent is the chat page with hands: a shell and Claude Code in an actual check
 reached through its tools. `AGENT_ROUNDS` is 24 — a delegation is several tools deep, a
 look around, the errand, a check of what came back, and each is a round.
 
+Who reports to whom is the org chart, and it is rows rather than a document: a `reports`
+table in `features/chat/db.ts` beside the agents themselves, with a unique index on `agent`
+that is what makes it one lead each, and `x`/`y` on the agent for where it stands. It
+lives there because both ends of an edge are SQLite rowids that mean nothing outside that
+file — written to a document in the project they would be gibberish in git and broken by any
+rebuild of the store. The chart is a forest: several agents with no lead at all is the
+ordinary state of a small project, and a line that would close a loop is refused in
+`Agents.setLead` by walking upward from the proposed lead, because the question the chart is
+asked — who do I escalate to — has no answer inside a cycle. Removing an agent brings its
+reports up under its own lead, which is what an org does when somebody leaves.
+
 ## Brief
 
 `src/brief/{core,making,soul}.ts`

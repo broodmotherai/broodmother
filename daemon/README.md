@@ -15,7 +15,7 @@ npm install
 npm run dev        # tsx watch, on 4242
 npm start          # tsx, no watch
 npm run typecheck
-npm test           # vitest — 610 tests, ~14s
+npm test           # vitest — 670 tests, ~15s
 ```
 
 It listens on `127.0.0.1:4242`. The frontend runs on `4243` and is allowed through CORS by

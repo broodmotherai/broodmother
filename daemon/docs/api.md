@@ -79,6 +79,9 @@ turns one into a status code. The body is `{ error: string }`.
 | `DELETE` | `/api/agent` | Remove one |
 | `POST` | `/api/agent/clear` | Clear its state |
 | `POST` | `/api/agent/model` | Change which model answers as it |
+| `GET` | `/api/agents/org` | The org chart: everyone, with their lead and where their card stands |
+| `POST` | `/api/agent/lead` | Who one reports to, or nobody — refused where it would make a loop |
+| `POST` | `/api/agent/place` | Where its card was dragged to |
 | `GET` | `/api/personas` | The project's `.personas/` |
 | `GET` | `/api/activity` | What each checkout is doing |
 | `GET` | `/api/tasks` | Every task |

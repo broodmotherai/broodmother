@@ -1,7 +1,7 @@
 'use client'
 
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import type { AgentSummary, NewAgent } from '@broodmother/types/api/agents'
 import { useApp } from '@/State'
 import { AgentRail } from './AgentRail'
@@ -22,6 +22,10 @@ import { NewAgentDialog } from './NewAgentDialog'
  */
 export function AgentsView() {
   const app = useApp()
+  const router = useRouter()
+  /** Who to open on, when something linked here meant somebody in particular — the chart's
+   *  faces do, and so does the line under a document saying who last changed it. */
+  const asked = useSearchParams().get('agent')
   const project = app.project?.path ?? null
   const [agents, setAgents] = useState<AgentSummary[]>([])
   const [open, setOpen] = useState<string | null>(null)
@@ -37,25 +41,22 @@ export function AgentsView() {
     return answer.agents
   }, [app.client])
 
-  // Whose thread was asked for, where somebody arrived by clicking one — the line under a
-  // document, saying who last changed it. Only honoured if that agent is still here.
-  const asked = useSearchParams().get('agent')
-
   // Who there is, asked again when the project changes under the page. The first of them is
   // opened on: a rail beside an empty pane is a page asking you to click the only thing on it.
+  // Unless the route named somebody, which is a link that already knows who it meant.
   useEffect(() => {
     let alive = true
     setAgents([])
     setOpen(null)
     void list().then((found) => {
       if (!alive || !found) return
-      const wanted = found.find((one) => one.id === asked)
-      setOpen(wanted?.id ?? found[0]?.id ?? null)
+      const named = found.find((one) => one.id === asked)
+      setOpen(named?.id ?? found[0]?.id ?? null)
     })
     return () => {
       alive = false
     }
-  }, [list, project, asked])
+  }, [asked, list, project])
 
   const hire = async (input: NewAgent): Promise<string | null> => {
     try {
@@ -106,6 +107,7 @@ export function AgentsView() {
         open={open}
         onOpen={setOpen}
         onNew={() => setHiring(true)}
+        onChart={() => router.push('/agents/org')}
         onClear={clear}
         onDelete={fire}
       />
