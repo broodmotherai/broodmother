@@ -26,6 +26,7 @@ export const museBlock = defineBlock({
       env: { ...ambient(), ...ctx.env, ...flowEnv(ctx) },
       extendEnv: false,
       timeout: timeoutOf(node),
+      cancelSignal: ctx.signal,
       reject: false,
       stripFinalNewline: false,
     })

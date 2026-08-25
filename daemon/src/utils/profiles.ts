@@ -101,6 +101,26 @@ export const githubSchema = z.object({
 
 export type GithubAccount = z.infer<typeof githubSchema>
 
+/** Provider id to the account held for it. One shape for every service a task can reach,
+ *  so a second one is an entry here rather than another key beside `github`. */
+export const connectionsSchema = z.record(z.string().min(1), githubSchema)
+
+export type Connections = z.infer<typeof connectionsSchema>
+
+/**
+ * Where a profile's connections live in its file, and where they used to. GitHub was once a
+ * key of its own at the root; a file written before this still reads, and the first write
+ * of any connection carries it over — `writeConnection` drops the old key whatever provider
+ * it was handed, so a disconnect can never be undone by a leftover.
+ */
+function connectionsOf(raw: Record<string, unknown>): Connections {
+  const held = connectionsSchema.safeParse(raw.connections)
+  const connections = held.success ? held.data : {}
+  if (connections.github) return connections
+  const legacy = githubSchema.safeParse(raw.github)
+  return legacy.success ? { ...connections, github: legacy.data } : connections
+}
+
 const isFile = (target: string) =>
   stat(target).then(
     (info) => info.isFile(),
@@ -116,9 +136,11 @@ async function rawProfile(file: string): Promise<Record<string, unknown>> {
     : {}
 }
 
-export async function readAccount(profile: Profile): Promise<GithubAccount | null> {
-  const parsed = githubSchema.safeParse((await rawProfile(profile.path)).github)
-  return parsed.success ? parsed.data : null
+export async function readConnection(
+  profile: Profile,
+  provider: string,
+): Promise<GithubAccount | null> {
+  return connectionsOf(await rawProfile(profile.path))[provider] ?? null
 }
 
 /**
@@ -164,17 +186,32 @@ export async function writeModelKey(
   return { ...profile, models: Object.keys(models).sort() }
 }
 
-/** Null disconnects. The profile keeps everything else it had — signing out of a host is
- *  not forgetting who you commit as. */
-export async function writeAccount(
+/** Null disconnects that one provider. The profile keeps everything else it had — signing
+ *  out of a host is not forgetting who you commit as, or who else you have signed in with. */
+export async function writeConnection(
   profile: Profile,
+  provider: string,
   account: GithubAccount | null,
 ): Promise<Profile> {
   const raw = await rawProfile(profile.path)
-  const { github: _gone, ...rest } = raw
-  const next = account ? { ...rest, github: account } : rest
-  await atomicWrite(profile.path, `${JSON.stringify(next, null, 2)}\n`, 0o600)
-  return { ...profile, github: account?.login ?? null }
+  // The root `github` key goes on any write, whichever provider was written: leaving it
+  // would let a disconnect be undone by the fallback that reads it.
+  const { github: _legacy, ...rest } = raw
+  const { [provider]: _gone, ...held } = connectionsOf(raw)
+  const connections = account ? { ...held, [provider]: account } : held
+  await atomicWrite(
+    profile.path,
+    `${JSON.stringify({ ...rest, connections }, null, 2)}\n`,
+    0o600,
+  )
+  return { ...profile, connections: loginsOf(connections) }
+}
+
+/** What the browser is told: who each connection is as, and never what it speaks with. */
+function loginsOf(connections: Connections): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(connections).map(([provider, account]) => [provider, account.login]),
+  )
 }
 
 /**
@@ -222,15 +259,14 @@ export async function listProfiles(home = broodmotherHome()): Promise<Profile[]>
         const file = profileFile(home, entry.name)
         if (!(await isFile(file))) return null
         const raw = await rawProfile(file)
-        const account = githubSchema.safeParse(raw.github)
         const models = modelKeysSchema.safeParse(raw.models)
         return {
           name: entry.name,
           path: file,
           ...(await identityOf(file, entry.name)),
-          github: account.success ? account.data.login : null,
           // The names of what is held, never what is held: the browser is told which
           // providers are connected and nothing that would let it speak as one.
+          connections: loginsOf(connectionsOf(raw)),
           models: models.success ? Object.keys(models.data).sort() : [],
         }
       }),
@@ -315,7 +351,7 @@ export async function createProfile(
   await mkdir(path.join(home, name), { recursive: true })
 
   return writeIdentity(
-    { name, path: profileFile(home, name), github: null, models: [], ...identity },
+    { name, path: profileFile(home, name), connections: {}, models: [], ...identity },
     identity,
   )
 }

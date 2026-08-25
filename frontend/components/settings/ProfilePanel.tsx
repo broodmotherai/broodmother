@@ -6,7 +6,6 @@ import { useApp } from '@/State'
 import { Button } from '@/components/core/Button'
 import { ColorField } from '@/components/core/ColorField'
 import { DangerZone } from './DangerZone'
-import { GithubAccount } from './GithubAccount'
 import { Caption, Panel } from './Layout'
 
 export function ProfilePanel() {
@@ -43,7 +42,6 @@ export function ProfilePanel() {
           this button is for the fields here, and carries both through untouched. */}
       <Button onClick={() => void app.saveIdentity(identity)}>Save Account</Button>
 
-      <GithubAccount />
       <DangerZone />
     </Panel>
   )

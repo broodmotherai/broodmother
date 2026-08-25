@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react'
 import {
+  HTTP_METHODS,
   LEGACY_KINDS,
   KIND_LABEL,
   isGithub,
@@ -24,7 +25,10 @@ import {
   type Task,
   type TaskKind,
   type TaskNode,
+  WEEKDAYS,
+  type HttpMethod,
   type MuseNode,
+  type Weekday,
 } from '@broodmother/types/task/schema'
 import { parseTask, serializeTask } from '@broodmother/types/task/codec'
 import { runOrder } from '@broodmother/types/task/graph'
@@ -54,6 +58,9 @@ const ICONS: Record<TaskKind, IconName> = {
   'agent.claude': 'claude',
   'agent.muse': 'muse',
   'agent.shell': 'terminal',
+  'agent.approve': 'user',
+  'agent.notify': 'alert',
+  'agent.http': 'globe',
   'trigger.github.issue': 'circle-dot',
   'trigger.github.pull': 'git-pull-request',
   'trigger.github.mention': 'at-sign',
@@ -167,6 +174,8 @@ export function TaskView({
   const [options, setOptions] = useState(false)
   /** The agent node whose dialog is up, by id — a click opens it, a drag never does. */
   const [agentOpen, setAgentOpen] = useState<string | null>(null)
+  /** Whether the run is being typed rather than just pressed. */
+  const [asking, setAsking] = useState(false)
   const [liveId, setLiveId] = useState<string | null>(null)
 
   const viewport = useViewport()
@@ -495,9 +504,14 @@ export function TaskView({
     })
   }
 
-  async function runNow() {
+  async function runNow(input?: string) {
+    setAsking(false)
     try {
-      const started = await app.client.request('POST /api/task/run', { root, path })
+      const started = await app.client.request('POST /api/task/run', {
+        root,
+        path,
+        ...(input ? { input } : {}),
+      })
       setRun(started.run)
     } catch (cause) {
       setBroken(cause instanceof Error ? cause.message : String(cause))
@@ -577,6 +591,9 @@ export function TaskView({
                 state={steps.get(node.id)?.state ?? null}
                 magnet={magnet?.id === node.id ? magnet : null}
                 onRun={node.kind === 'trigger.manual' ? () => void runNow() : undefined}
+                onRunWith={
+                  node.kind === 'trigger.manual' ? () => setAsking(true) : undefined
+                }
                 onToggle={() => rework(node.id, { off: node.off ? undefined : true })}
                 onRename={(name) => rework(node.id, { name })}
                 onGrab={(event) => {
@@ -627,6 +644,12 @@ export function TaskView({
           )}
         </div>
       </section>
+      {asking && (
+        <RunInput
+          onRun={(input) => void runNow(input)}
+          onClose={() => setAsking(false)}
+        />
+      )}
       {agentNode && (
         <AgentPopup
           node={agentNode}
@@ -756,6 +779,10 @@ function AgentPopup({
             }}
           />
         </Field>
+        <RetriesField
+          value={node.retries}
+          onChange={(retries) => onChange({ retries })}
+        />
         {step && (step.output || step.error || step.halted) && (
           <div className="task-step" data-state={step.state}>
             <span>{step.state}</span>
@@ -833,6 +860,7 @@ function NodeCard({
   state,
   magnet,
   onRun,
+  onRunWith,
   onToggle,
   onRename,
   onGrab,
@@ -846,6 +874,9 @@ function NodeCard({
   /** Runs the task from this node — the manual trigger's own action, next to the switch
    *  every node wears. */
   onRun?: () => void
+  /** The same, with something typed to open the run on — beside play rather than instead of
+   *  it, because most runs have nothing to say and asking every time would be a wall. */
+  onRunWith?: () => void
   /** Switches the node off and on again: off, it passes what feeds it straight through. */
   onToggle: () => void
   /** The name under the card, retyped: a double click on it opens the field. */
@@ -897,6 +928,17 @@ function NodeCard({
             onClick={onRun}
           >
             <Icon name="play-solid" />
+          </button>
+        )}
+        {onRunWith && (
+          <button
+            type="button"
+            className="task-node-action"
+            aria-label="run task with input"
+            data-tip="run with input"
+            onClick={onRunWith}
+          >
+            <Icon name="type" />
           </button>
         )}
       </div>
@@ -952,12 +994,117 @@ function NodeCard({
   )
 }
 
+/**
+ * What the run opens on, typed. It becomes the manual trigger's payload, which is the same
+ * channel a watch's firing arrives down — so the steps after it need to know nothing about
+ * where the words came from.
+ */
+function RunInput({
+  onRun,
+  onClose,
+}: {
+  onRun: (input: string) => void
+  onClose: () => void
+}) {
+  const [input, setInput] = useState('')
+  return (
+    <section className="task-agent" role="dialog" aria-label="run with input">
+      <header className="task-options-head">
+        Run with input
+        <span className="spacer" />
+        <button
+          type="button"
+          className="terminal-hide"
+          aria-label="close run input"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+      </header>
+      <div className="task-agent-body">
+        <Field label="Input">
+          <textarea
+            rows={4}
+            autoFocus
+            value={input}
+            placeholder="what this run is about"
+            onChange={(event) => setInput(event.target.value)}
+          />
+        </Field>
+        <button type="button" onClick={() => onRun(input)}>
+          Run
+        </button>
+      </div>
+    </section>
+  )
+}
+
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="task-field">
       <span>{label}</span>
       {children}
     </label>
+  )
+}
+
+/** How many more times a step is tried after it fails. Only the kinds that run a process
+ *  carry it: a step that posts a comment retried by the machine is two comments. */
+function RetriesField({
+  value,
+  onChange,
+}: {
+  value: number | undefined
+  onChange: (retries: number | undefined) => void
+}) {
+  return (
+    <Field label="Retries">
+      <input
+        type="number"
+        min={0}
+        placeholder="0"
+        value={value ?? ''}
+        onChange={(event) => {
+          const retries = Number(event.target.value)
+          onChange(retries >= 1 ? retries : undefined)
+        }}
+      />
+    </Field>
+  )
+}
+
+/** The days a time trigger keeps to. None checked is every day — the same thing the file
+ *  says by leaving the field out, so the plain daily trigger writes nothing extra. */
+function DaysField({
+  value,
+  onChange,
+}: {
+  value: Weekday[] | undefined
+  onChange: (days: Weekday[] | undefined) => void
+}) {
+  const held = new Set(value ?? [])
+  return (
+    <div className="task-field">
+      <span>On</span>
+      <div className="task-days">
+        {WEEKDAYS.map((day) => (
+          <label key={day}>
+            <input
+              type="checkbox"
+              checked={held.has(day)}
+              onChange={(event) => {
+                const next = new Set(held)
+                if (event.target.checked) next.add(day)
+                else next.delete(day)
+                const days = WEEKDAYS.filter((one) => next.has(one))
+                onChange(days.length > 0 ? days : undefined)
+              }}
+            />
+            {day}
+          </label>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -991,9 +1138,12 @@ function Inspector({
         </Field>
       )}
       {node.kind === 'trigger.time' && (
-        <Field label="At">
-          <TimeField value={node.at} label="At" onChange={(at) => onChange({ at })} />
-        </Field>
+        <>
+          <Field label="At">
+            <TimeField value={node.at} label="At" onChange={(at) => onChange({ at })} />
+          </Field>
+          <DaysField value={node.days} onChange={(days) => onChange({ days })} />
+        </>
       )}
       {node.kind === 'trigger.file' && (
         <Field label="File Path">
@@ -1118,18 +1268,82 @@ function Inspector({
         </Field>
       )}
       {node.kind === 'agent.shell' && (
-        <Field label="Time Limit (Minutes)">
-          <input
-            type="number"
-            min={1}
-            placeholder="5"
-            value={node.minutes ?? ''}
-            onChange={(event) => {
-              const minutes = Number(event.target.value)
-              onChange({ minutes: minutes >= 1 ? minutes : undefined })
-            }}
+        <>
+          <Field label="Time Limit (Minutes)">
+            <input
+              type="number"
+              min={1}
+              placeholder="5"
+              value={node.minutes ?? ''}
+              onChange={(event) => {
+                const minutes = Number(event.target.value)
+                onChange({ minutes: minutes >= 1 ? minutes : undefined })
+              }}
+            />
+          </Field>
+          <RetriesField
+            value={node.retries}
+            onChange={(retries) => onChange({ retries })}
+          />
+        </>
+      )}
+      {/* The name is the question unless a longer one is written here — a step called
+          "Ship it?" needs nothing else said. */}
+      {node.kind === 'agent.approve' && (
+        <Field label="Question">
+          <textarea
+            rows={2}
+            value={node.question ?? ''}
+            placeholder={node.name}
+            onChange={(event) =>
+              onChange({ question: event.target.value.trim() || undefined })
+            }
           />
         </Field>
+      )}
+      {node.kind === 'agent.http' && (
+        <>
+          <Field label="URL">
+            <input
+              value={node.url}
+              placeholder="https://example.com/hook"
+              onChange={(event) => onChange({ url: event.target.value })}
+            />
+          </Field>
+          <Field label="Method">
+            <select
+              value={node.method ?? 'POST'}
+              onChange={(event) => onChange({ method: event.target.value as HttpMethod })}
+            >
+              {HTTP_METHODS.map((method) => (
+                <option key={method} value={method}>
+                  {method}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Header">
+            <input
+              value={node.header ?? ''}
+              placeholder="Authorization: Bearer …"
+              onChange={(event) =>
+                onChange({ header: event.target.value.trim() || undefined })
+              }
+            />
+          </Field>
+          <Field label="Time Limit (Minutes)">
+            <input
+              type="number"
+              min={1}
+              placeholder="5"
+              value={node.minutes ?? ''}
+              onChange={(event) => {
+                const minutes = Number(event.target.value)
+                onChange({ minutes: minutes >= 1 ? minutes : undefined })
+              }}
+            />
+          </Field>
+        </>
       )}
       {step && (step.output || step.error || step.halted) && (
         <div className="task-step" data-state={step.state}>

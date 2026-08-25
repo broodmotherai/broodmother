@@ -1,7 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import type { TaskNode } from '@daemon/types/task/schema'
-import type { GithubTarget } from './triggers'
+import type { Subject } from './triggers'
 
 /**
  * One folder per run, under the broodmother home: the files the steps handed each other,
@@ -24,25 +24,29 @@ export async function pruneScratch(base: string, runIds: string[]): Promise<void
 }
 
 /**
- * What the run is about on GitHub, for the steps that come after the one that knows. A
- * trigger's payload only ever reaches the first step, so an action three along — comment on
- * the issue we have been discussing — would have nothing to go on; this is the one file in
- * the folder that is the run's rather than a step's.
+ * What the run is about, for the steps that come after the one that knows. A trigger's
+ * payload only ever reaches the first step, so an action three along — comment on the issue
+ * we have been discussing — would have nothing to go on; this is the one file in the folder
+ * that is the run's rather than a step's.
+ *
+ * One file whatever the service, tagged with which one it was: a step reads it and checks
+ * whose subject it is, so a run started by one provider cannot be acted on by another's step
+ * reading a shape that happens to fit.
  */
-const TARGET = 'github.json'
+const SUBJECT = 'about.json'
 
-export async function writeGithubTarget(dir: string, about: GithubTarget): Promise<void> {
-  await writeFile(path.join(dir, TARGET), `${JSON.stringify(about, null, 2)}\n`).catch(
+export async function writeSubject(dir: string, about: Subject): Promise<void> {
+  await writeFile(path.join(dir, SUBJECT), `${JSON.stringify(about, null, 2)}\n`).catch(
     () => null,
   )
 }
 
-export async function readGithubTarget(dir: string): Promise<GithubTarget | null> {
+export async function readSubject(dir: string): Promise<Subject | null> {
   if (!dir) return null
-  const text = await readFile(path.join(dir, TARGET), 'utf8').catch(() => null)
+  const text = await readFile(path.join(dir, SUBJECT), 'utf8').catch(() => null)
   if (text === null) return null
   const parsed: unknown = JSON.parse(text)
-  return parsed && typeof parsed === 'object' ? (parsed as GithubTarget) : null
+  return parsed && typeof parsed === 'object' ? (parsed as Subject) : null
 }
 
 export interface StepFiles {

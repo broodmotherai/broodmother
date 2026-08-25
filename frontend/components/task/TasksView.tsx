@@ -10,7 +10,10 @@ import { docRoute } from '@/components/shell/ScopeTabs'
 import { TaskTree } from './TaskTree'
 import { ago } from '@/Time'
 
-const POLL_MS = 2000
+/** The server says when a run moves, so this is the net under that rather than the way the
+ *  page finds out — slow enough to cost nothing, often enough that a dropped socket is a
+ *  half-minute stale and not a page that has stopped. */
+const POLL_MS = 30_000
 
 function whereOf(root: DocRoot): string {
   return repoOf(root) ?? 'project'
@@ -26,14 +29,16 @@ function tookOf(run: TaskRun): string | null {
   return seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}m ${seconds % 60}s`
 }
 
-/** The tasks page: what is set to run, and what running has looked like lately. Both
- *  halves are polled while the page is up, so a run underway moves as it walks. */
+/** The tasks page: what is set to run, and what running has looked like lately. It asks
+ *  again whenever the server says a run moved, so a run underway moves as it walks. */
 export function TasksView() {
   const app = useApp()
   const router = useRouter()
   const [tasks, setTasks] = useState<TaskSummary[] | null>(null)
   const [runs, setRuns] = useState<TaskRun[] | null>(null)
   const [opened, setOpened] = useState<string | null>(null)
+
+  const moved = app.tasksMoved
 
   useEffect(() => {
     let alive = true
@@ -53,7 +58,21 @@ export function TasksView() {
       alive = false
       clearInterval(timer)
     }
-  }, [app.client])
+    // `moved` is the nudge, not a value read here: every count the socket sends asks again.
+  }, [app.client, moved])
+
+  /** Answers the step a run is standing at, and asks again — the reply is one run and the
+   *  page is showing every task's. */
+  function settle(run: TaskRun, approved: boolean) {
+    void app.client
+      .request('POST /api/task/approve', { ...run.ref, approved, run: run.id })
+      .then((result) =>
+        setRuns((held) =>
+          (held ?? []).map((one) => (one.id === result.run.id ? result.run : one)),
+        ),
+      )
+      .catch(() => null)
+  }
 
   const now = Date.now()
 
@@ -107,6 +126,20 @@ export function TasksView() {
                         </span>
                         {(step.error ?? step.output) && (
                           <pre>{step.error ?? step.output}</pre>
+                        )}
+                        {/* The one step that is a question. It is asked here rather than on
+                            the board, because this is the page you come to when something
+                            told you a run is waiting. */}
+                        {step.state === 'held' && (
+                          <div className="tasks-ask">
+                            {step.asked && <p>{step.asked}</p>}
+                            <button type="button" onClick={() => settle(run, true)}>
+                              Approve
+                            </button>
+                            <button type="button" onClick={() => settle(run, false)}>
+                              Deny
+                            </button>
+                          </div>
                         )}
                       </div>
                     ))}

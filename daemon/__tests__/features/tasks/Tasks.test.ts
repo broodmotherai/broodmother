@@ -86,8 +86,8 @@ async function harness(
       clock += ms
     },
     /** GitHub, handed in after the fact: the deps object is read on every beat. */
-    connect: (reach: GithubReach | null) => {
-      ;(deps as TasksDeps).github = async () => reach
+    connect: (github: GithubReach | null) => {
+      ;(deps as TasksDeps).reach = (async () => github) as TasksDeps['reach']
     },
     asked,
     stateFile,
@@ -101,6 +101,10 @@ async function harness(
       }),
     answer: (text: string) => {
       answer = async () => text
+    },
+    /** The agent's whole reply, for a test about how many times it is asked or when. */
+    answerWith: (reply: (prompt: string) => Promise<string | StepResult>) => {
+      answer = reply
     },
     decide: (result: StepResult) => {
       answer = async () => result
@@ -868,13 +872,152 @@ it('carries what a GitHub watch fired on through to the step that answers it', a
   expect(h.asked[0]?.input).toContain('it says Q1')
   expect(github.posted).toEqual([{ issue: 7, body: 'answered answer it' }])
   // And the run kept what it was about, beside the files the steps handed each other.
-  expect(JSON.parse(await readFile(path.join(run.scratch!, 'github.json'), 'utf8'))).toEqual(
+  expect(JSON.parse(await readFile(path.join(run.scratch!, 'about.json'), 'utf8'))).toEqual(
     {
+      provider: 'github',
       repo: 'you/handbook',
       number: 7,
       url: 'https://github.com/you/handbook/issues/7',
     },
   )
+})
+
+/** A watch with more than one thing to report, which is the ordinary case for a repository
+ *  nobody has looked at in an hour. */
+function busy(count: number): GithubReach {
+  let looked = false
+  const service = {
+    issues: async () => {
+      const items = looked
+        ? Array.from({ length: count }, (_, n) => ({
+            repo: 'you/handbook',
+            number: n + 1,
+            title: `issue ${n + 1}`,
+            url: `https://github.com/you/handbook/issues/${n + 1}`,
+            author: 'someone',
+            body: `body ${n + 1}`,
+          }))
+        : []
+      looked = true
+      return { items, cursor: { since: 'now' } }
+    },
+  } as unknown as GitHubService
+  return { service, slug: 'you/handbook', branch: 'main' }
+}
+
+/* The cursor moves past everything a look turned up, so a firing dropped here is one nothing
+   will ever see again. Three issues is three runs, one after another. */
+it('runs every firing a single look turned up, not just the first', async () => {
+  const watching = graph(
+    [at('trigger.github.issue', 'issue-1'), at('agent.note', 'log', { path: 'Log.md' })],
+    [['issue-1', 'log']],
+  )
+  const h = await harness(watching)
+  h.connect(busy(3))
+
+  await h.tasks.tick()
+  h.advance(6 * 60_000)
+  await h.tasks.tick()
+
+  await until(
+    () =>
+      h.tasks.runsFor(h.ref).length === 3 &&
+      h.tasks.runsFor(h.ref).every((run) => run.state !== 'running'),
+  )
+  // Newest first, so the run that carried issue 1 is last.
+  expect(
+    h.tasks.runsFor(h.ref).map((run) => run.steps[0]?.output?.split('\n')[0]),
+  ).toEqual([
+    'you/handbook#3 — issue 3',
+    'you/handbook#2 — issue 2',
+    'you/handbook#1 — issue 1',
+  ])
+})
+
+/* A firing that lands while the task is busy waits its turn rather than being dropped for
+   the one already walking. */
+it('holds a firing that arrives mid-run until the run is done', async () => {
+  const watching = graph(
+    [
+      at('trigger.github.issue', 'issue-1'),
+      at('agent.claude', 'read', { prompt: 'answer it' }),
+    ],
+    [['issue-1', 'read']],
+  )
+  const h = await harness(watching)
+  h.connect(busy(2))
+  const release = h.slow()
+
+  await h.tasks.tick()
+  h.advance(6 * 60_000)
+  await h.tasks.tick()
+
+  // The first run is held at its agent; the second firing has nowhere to go yet.
+  await until(() => h.asked.length > 0)
+  expect(h.tasks.runsFor(h.ref)).toHaveLength(1)
+  release()
+
+  await until(
+    () =>
+      h.tasks.runsFor(h.ref).length === 2 &&
+      h.tasks.runsFor(h.ref).every((run) => run.state === 'done'),
+  )
+  expect(h.tasks.runsFor(h.ref)).toHaveLength(2)
+})
+
+/* Stopping reaches the process, not just the row: a step sleeping for half a minute ends
+   when the button is pressed rather than when it was going to. */
+it('stops the running step rather than leaving it to its timeout', async () => {
+  const slow = graph(
+    [at('trigger.manual', 'go'), at('agent.shell', 'wait', { command: 'sleep 30' })],
+    [['go', 'wait']],
+  )
+  const h = await harness(slow)
+  await h.tasks.run(h.ref)
+  await until(() => h.tasks.runsFor(h.ref)[0]?.steps[1]?.state === 'running')
+
+  const stopped = await h.tasks.stopRun(h.ref)
+  expect(stopped.state).toBe('error')
+  expect(stopped.error).toBe('stopped')
+  // The walk lets go rather than running on to say something else about the step.
+  await until(() => h.tasks.runsFor(h.ref)[0]?.state === 'error')
+  expect(h.tasks.runsFor(h.ref)[0]?.error).toBe('stopped')
+}, 10_000)
+
+/* A run the last server was mid-walk on is ended with the reason, because the step it was
+   in may have half-happened. A paused one was written at a boundary and is left alone. */
+it('settles what the last server left running, and leaves a paused run standing', async () => {
+  const h = await harness(chain)
+  const store = new RunStore(path.join(path.dirname(h.stateFile), 'tasks.db'))
+  const died = store.add({
+    ref: h.ref,
+    startedAt: 1,
+    state: 'running',
+    steps: [
+      { node: 'go', name: 'go', kind: 'trigger.manual', state: 'done' },
+      { node: 'first', name: 'first', kind: 'agent.claude', state: 'running' },
+      { node: 'second', name: 'second', kind: 'agent.claude', state: 'waiting' },
+    ],
+  })
+  const held = store.add({
+    ref: h.ref,
+    startedAt: 2,
+    state: 'paused',
+    steps: [{ node: 'go', name: 'go', kind: 'trigger.manual', state: 'held' }],
+  })
+
+  h.reborn().recover()
+
+  const after = new RunStore(path.join(path.dirname(h.stateFile), 'tasks.db'))
+  const wrecked = after.run(died.id)
+  expect(wrecked?.state).toBe('error')
+  expect(wrecked?.error).toBe('the server stopped mid-run')
+  expect(wrecked?.steps.map((step) => step.state)).toEqual([
+    'done',
+    'skipped',
+    'skipped',
+  ])
+  expect(after.run(held.id)?.state).toBe('paused')
 })
 
 /* A watch that cannot look is somebody's to fix. Silence would read as "nothing happened". */
@@ -890,4 +1033,221 @@ it('wears the reason a GitHub trigger could not look, and drops it once it can',
   await h.tasks.tick()
   const [mended] = await h.tasks.summaries()
   expect(mended?.triggers[0]?.error).toBeUndefined()
+})
+
+/* The half of `agent.approve` the engine owns: the run stands at the step wearing the
+   question, and what it was asked survives a restart because it is in the row. */
+it('pauses at an approval and walks on when it is approved', async () => {
+  const asking = graph(
+    [
+      at('trigger.manual', 'go'),
+      at('agent.approve', 'ask', { question: 'ship it?' }),
+      at('agent.claude', 'after', { prompt: 'do the thing' }),
+    ],
+    [
+      ['go', 'ask'],
+      ['ask', 'after'],
+    ],
+  )
+  const h = await harness(asking)
+  await h.tasks.run(h.ref)
+  const paused = await h.settled()
+  expect(paused.state).toBe('paused')
+  expect(paused.steps.map((step) => step.state)).toEqual(['done', 'held', 'waiting'])
+  expect(paused.steps[1].asked).toBe('ship it?')
+
+  await h.tasks.settle(h.ref, true)
+  const done = await h.settled()
+  expect(done.state).toBe('done')
+  expect(done.steps.map((step) => step.state)).toEqual(['done', 'done', 'done'])
+  // Approving passes what fed the step straight on, so the step after it opens on that.
+  expect(h.asked.map((one) => one.prompt)).toEqual(['do the thing'])
+})
+
+/* A person saying no is an outcome, not a fault: the branch beyond the step ends and the
+   run finishes, the way a gate that held would. */
+it('ends the branch beyond an approval that is denied, without failing the run', async () => {
+  const asking = graph(
+    [
+      at('trigger.manual', 'go'),
+      at('agent.approve', 'ask'),
+      at('agent.claude', 'after', { prompt: 'do the thing' }),
+    ],
+    [
+      ['go', 'ask'],
+      ['ask', 'after'],
+    ],
+  )
+  const h = await harness(asking)
+  await h.tasks.run(h.ref)
+  await h.settled()
+
+  const run = await h.tasks.settle(h.ref, false, 'not this time')
+  await h.settled()
+  const after = h.tasks.runsFor(h.ref)[0]
+  expect(after.state).toBe('done')
+  expect(after.steps.map((step) => step.state)).toEqual(['done', 'stopped', 'skipped'])
+  expect(after.steps[1].halted).toBe('not this time')
+  expect(h.asked).toEqual([])
+  expect(run.id).toBe(after.id)
+})
+
+/* A run standing at a question is one nothing is walking, so answering one that is not
+   there has to say so rather than starting something. */
+it('refuses an answer when nothing is waiting for one', async () => {
+  const h = await harness(chain)
+  await expect(h.tasks.settle(h.ref, true)).rejects.toThrow(
+    'nothing is waiting to be approved',
+  )
+})
+
+/* Retries belong to the engine, not the blocks: a flaky step is a fact about the flow. */
+it('tries a step again as many times as it was told to', async () => {
+  const flaky = graph(
+    [
+      at('trigger.manual', 'go'),
+      at('agent.claude', 'try', { prompt: 'flaky', retries: 2 }),
+    ],
+    [['go', 'try']],
+  )
+  const h = await harness(flaky)
+  let tries = 0
+  h.answerWith(async () => {
+    tries += 1
+    if (tries < 3) throw new Error('the network blinked')
+    return 'landed'
+  })
+
+  await h.tasks.run(h.ref)
+  const run = await h.settled()
+  expect(tries).toBe(3)
+  expect(run.state).toBe('done')
+  expect(run.steps[1].output).toBe('landed')
+})
+
+/* And a step that keeps failing runs out of tries and fails the run, wearing the last
+   reason rather than the first. */
+it('gives up once the tries are spent', async () => {
+  const flaky = graph(
+    [
+      at('trigger.manual', 'go'),
+      at('agent.claude', 'try', { prompt: 'flaky', retries: 1 }),
+    ],
+    [['go', 'try']],
+  )
+  const h = await harness(flaky)
+  let tries = 0
+  h.answerWith(async () => {
+    tries += 1
+    throw new Error(`blinked ${tries}`)
+  })
+
+  await h.tasks.run(h.ref)
+  const run = await h.settled()
+  expect(tries).toBe(2)
+  expect(run.state).toBe('error')
+  expect(run.error).toBe('try: blinked 2')
+})
+
+/* Two branches off one trigger feed nothing to each other, so they run at once — the point
+   of a graph over a list. A chain still runs in order, which the walk tests above hold. */
+it('runs the branches of a layer at the same time', async () => {
+  const forked = graph(
+    [
+      at('trigger.manual', 'go'),
+      at('agent.claude', 'left', { prompt: 'left' }),
+      at('agent.claude', 'right', { prompt: 'right' }),
+    ],
+    [
+      ['go', 'left'],
+      ['go', 'right'],
+    ],
+  )
+  const h = await harness(forked)
+  // Neither branch can answer until both have arrived, so a walk that ran them one after
+  // the other would stand here rather than quietly passing on a timing that happened to fit.
+  let bothHere = () => {}
+  const both = new Promise<void>((resolve) => (bothHere = resolve))
+  let arrived = 0
+  h.answerWith(async (prompt) => {
+    if ((arrived += 1) === 2) bothHere()
+    await both
+    return `answered ${prompt}`
+  })
+
+  await h.tasks.run(h.ref)
+  const run = await h.settled()
+  expect(arrived).toBe(2)
+  expect(run.state).toBe('done')
+})
+
+/* A join opens on everything that reached it, and after a pause that has to come off the
+   saved steps rather than out of a closure nobody kept. */
+it('rebuilds a join from the outputs saved before the pause', async () => {
+  const joining = graph(
+    [
+      at('trigger.manual', 'go'),
+      at('agent.claude', 'left', { prompt: 'left' }),
+      at('agent.approve', 'ask'),
+      at('agent.claude', 'join', { prompt: 'join' }),
+    ],
+    [
+      ['go', 'left'],
+      ['go', 'ask'],
+      ['left', 'join'],
+      ['ask', 'join'],
+    ],
+  )
+  const h = await harness(joining)
+  h.answer('the left answer')
+  await h.tasks.run(h.ref)
+  expect((await h.settled()).state).toBe('paused')
+
+  h.answer('joined')
+  await h.tasks.settle(h.ref, true)
+  const run = await h.settled()
+  expect(run.state).toBe('done')
+  // Both feeds are there, named — the approval passing its input on is the empty one.
+  const joined = h.asked.find((one) => one.prompt === 'join')
+  expect(joined?.input).toContain('the left answer')
+  expect(joined?.input).toContain('left')
+})
+
+/* A firing that lands while somebody is being asked gets a run of its own, and can stand at
+   a question of its own. They are answered oldest first, so a queue of them empties in the
+   order the questions were put rather than leaving the first unanswerable. */
+it('answers the question that has been waiting longest', async () => {
+  const asking = graph(
+    [
+      at('trigger.manual', 'go'),
+      at('agent.approve', 'ask'),
+      at('agent.claude', 'after', { prompt: 'do the thing' }),
+    ],
+    [
+      ['go', 'ask'],
+      ['ask', 'after'],
+    ],
+  )
+  const h = await harness(asking)
+  await h.tasks.run(h.ref)
+  const paused = await h.settled()
+  expect(paused.state).toBe('paused')
+
+  // Nothing is walking, so a second run starts beside the paused one rather than joining it.
+  await h.tasks.run(h.ref)
+  const second = await h.settled()
+  expect(second.id).not.toBe(paused.id)
+  expect(second.state).toBe('paused')
+
+  // Named, the newer question is the one answered — the page knows which button was pressed.
+  expect((await h.tasks.settle(h.ref, true, undefined, second.id)).id).toBe(second.id)
+  await until(
+    () => h.tasks.runsFor(h.ref).find((one) => one.id === second.id)?.state === 'done',
+  )
+
+  const answered = await h.tasks.settle(h.ref, true)
+  expect(answered.id).toBe(paused.id)
+  await until(
+    () => h.tasks.runsFor(h.ref).find((one) => one.id === paused.id)?.state === 'done',
+  )
 })

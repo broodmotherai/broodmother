@@ -7,25 +7,35 @@ import type {
   TaskNode,
 } from '@daemon/types/task/schema'
 import type { GitHubService, GithubItem } from '@daemon/services/GitHubService'
+import type { GithubReach, Reach } from './blocks/Block'
 
 /** What a trigger remembers between checks: a small JSON cursor — an mtime, an etag, a
  *  last-seen id — whatever the source hands out that says "seen up to here". */
 export type TriggerState = Record<string, string | number>
 
-/** What a firing was about, where the source has something a later step can act on: the
- *  issue to answer, the commit that went red. Written into the run's folder, so a step
- *  three along still knows which issue the run is about. */
-export interface GithubTarget {
+/** What a firing was about on GitHub: the issue to answer, the commit that went red. */
+export interface GithubSubject {
+  provider: 'github'
   repo: string
   number?: number
   url: string
   sha?: string
 }
 
+/**
+ * What a firing was about, where the source has something a later step can act on. Written
+ * into the run's folder, so a step three along still knows what the run is about.
+ *
+ * Tagged by provider rather than shaped like whichever service happened to be first: a step
+ * that reads one checks whose it is before trusting the rest, so a second service is another
+ * member here rather than a second file in the run's folder.
+ */
+export type Subject = GithubSubject
+
 export interface TriggerFiring {
   /** Becomes the trigger node's output, so the graph downstream can read what happened. */
   payload: string
-  about?: GithubTarget
+  about?: Subject
 }
 
 export interface TriggerCheck {
@@ -36,14 +46,9 @@ export interface TriggerCheck {
 export interface TriggerTools {
   /** The folder the task's checkout lives in, for sources named by relative path. */
   cwd: string
-  /** GitHub as this profile is connected to it, or null where nothing is connected. */
-  github?: GitHubService | null
-  /** `owner/name` for the checkout's own remote, where it has a GitHub one — what a node
-   *  that names no repository means. Asked lazily: it is a git call, and most triggers
-   *  never need it. */
-  slug?: () => Promise<string | null>
-  /** The branch the checkout is on, for a watch that names none. */
-  branch?: () => Promise<string | null>
+  /** Whichever service this watch needs, as this profile is connected to it — null where
+   *  nothing is. A watch asks for the one it watches and knows nothing of the others. */
+  reach: Reach
   now?: () => number
 }
 
@@ -104,9 +109,10 @@ async function checkGithub(
   state: TriggerState | null,
   tools: TriggerTools,
 ): Promise<TriggerCheck> {
-  const github = tools.github ?? null
-  if (!github)
+  const reach = await tools.reach('github')
+  if (!reach)
     throw new TaskError('no GitHub connection — connect GitHub in Settings to watch one')
+  const github = reach.service
 
   const now = tools.now?.() ?? Date.now()
   const every = (node.minutes ?? EVERY_MINUTES) * 60_000
@@ -115,11 +121,12 @@ async function checkGithub(
   // somebody else's API, so a watch that looked recently answers without asking.
   if (state !== null && now - looked < every) return { firings: [], state }
 
-  const watch = await run(node, state, tools, github)
+  const watch = await run(node, state, reach)
   return {
     firings: watch.items.map((item) => ({
       payload: said(node, item),
       about: {
+        provider: 'github' as const,
         repo: item.repo,
         ...(item.number === null ? {} : { number: item.number }),
         url: item.url,
@@ -133,17 +140,17 @@ async function checkGithub(
 async function run(
   node: GithubWatchNode,
   state: TriggerState | null,
-  tools: TriggerTools,
-  github: GitHubService,
+  reach: GithubReach,
 ) {
+  const github = reach.service
   if (node.kind === 'trigger.github.mention') return github.mentions(state)
-  const repo = node.repo ?? (await tools.slug?.()) ?? null
+  const repo = node.repo ?? reach.slug
   if (!repo)
     throw new TaskError(
       'no repository to watch: this checkout has no GitHub remote, so name one on the node',
     )
   if (node.kind === 'trigger.github.check') {
-    const branch = node.branch ?? (await tools.branch?.()) ?? null
+    const branch = node.branch ?? reach.branch
     if (!branch) throw new TaskError('no branch to watch: name one on the node')
     return github.checks(repo, branch, state)
   }

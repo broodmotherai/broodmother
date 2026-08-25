@@ -13,7 +13,7 @@ const profiles: Profile[] = [
     sshKeyPath: '~/.ssh/id_work',
     agentCommands: {},
     soul: null,
-    github: null,
+    connections: {},
     models: [],
   },
   {
@@ -24,7 +24,7 @@ const profiles: Profile[] = [
     sshKeyPath: null,
     agentCommands: {},
     soul: null,
-    github: null,
+    connections: {},
     models: [],
   },
 ]

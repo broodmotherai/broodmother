@@ -1,15 +1,24 @@
 import { parse, query, root } from './request'
 import type { RouteTable } from './route'
-import { folderBody } from './schemas'
+import { approveTaskBody, folderBody, runTaskBody } from './schemas'
 
 export const tasks = {
   'POST /api/task/run': async (c, ctx) => {
-    const { root: of, path } = await parse(c, folderBody)
-    return c.json({ run: await ctx.tasks.run({ root: of, path }) })
+    const { root: of, path, input } = await parse(c, runTaskBody)
+    return c.json({ run: await ctx.tasks.run({ root: of, path }, input) })
   },
 
   'POST /api/task/stop': async (c, ctx) =>
     c.json({ run: await ctx.tasks.stopRun(await parse(c, folderBody)) }),
+
+  /** The other half of `agent.approve`: the run standing at a held step is told which way,
+   *  and walks on from there. */
+  'POST /api/task/approve': async (c, ctx) => {
+    const { root: of, path, approved, note, run } = await parse(c, approveTaskBody)
+    return c.json({
+      run: await ctx.tasks.settle({ root: of, path }, approved, note, run),
+    })
+  },
 
   'GET /api/task/runs': (c, ctx) =>
     c.json({ runs: ctx.tasks.runsFor({ root: root(c), path: query(c, 'path') }) }),

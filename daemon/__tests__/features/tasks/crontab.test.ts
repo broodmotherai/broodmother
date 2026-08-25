@@ -131,3 +131,16 @@ it('does not touch the crontab when the schedule has not changed', async () => {
   await crontab.sync([])
   expect(writes()).toBe(2)
 })
+
+/* Weekdays are said in cron's own terms, which is where the names came from. */
+it('writes the days a time trigger keeps to into the day-of-week field', () => {
+  const task = graph(
+    [at('trigger.time', 'standup', { at: '09:30', days: ['mon', 'fri'] }), note],
+    [['standup', 'log']],
+  )
+  const lines = scheduleLines(
+    [{ ref: { root: 'project', path: 'Nightly.task' }, task }],
+    url,
+  )
+  expect(lines[0].startsWith('30 9 * * mon,fri ')).toBe(true)
+})

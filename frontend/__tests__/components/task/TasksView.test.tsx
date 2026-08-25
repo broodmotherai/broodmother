@@ -65,9 +65,7 @@ it('folds a folder shut and open again', async () => {
   expect(folder).toHaveAttribute('aria-expanded', 'true')
 
   await userEvent.click(folder)
-  expect(
-    screen.queryByRole('treeitem', { name: 'Nightly.task' }),
-  ).not.toBeInTheDocument()
+  expect(screen.queryByRole('treeitem', { name: 'Nightly.task' })).not.toBeInTheDocument()
 
   await userEvent.click(folder)
   expect(
@@ -104,4 +102,56 @@ it('logs the runs, and a run opens into its steps', async () => {
   const row = screen.getByRole('treeitem', { name: 'Nightly.task' })
   expect(row).toHaveTextContent('done')
   expect(row).not.toHaveTextContent('never')
+})
+
+const approving: Task = {
+  version: 1,
+  nodes: [
+    { id: 'go', kind: 'trigger.manual', name: 'Trigger manually', x: 0, y: 0 },
+    { id: 'ask', kind: 'agent.approve', name: 'Ship it?', x: 200, y: 0 },
+    { id: 'log', kind: 'agent.note', name: 'Log it', x: 400, y: 0, path: 'Ran.md' },
+  ],
+  edges: [
+    { from: 'go', to: 'ask' },
+    { from: 'ask', to: 'log' },
+  ],
+}
+
+/* This is the page you come to when something told you a run is waiting, so the question and
+   the two answers are here rather than on the board. */
+it('puts the question to you on a run that is standing at one', async () => {
+  const client = createMockClient({
+    docs: { 'Ops/Approve.task': serializeTask(approving) },
+  })
+  await client.request('POST /api/task/run', {
+    root: 'project',
+    path: 'Ops/Approve.task',
+  })
+  await show(client)
+
+  const log = await screen.findByRole('region', { name: 'task runs' })
+  const entry = await within(log).findByRole('button', { name: /Approve/ })
+  expect(entry).toHaveTextContent('paused')
+  await userEvent.click(entry)
+  expect(screen.getByText('Ship it?')).toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Approve' }))
+  expect(await within(log).findByText('done')).toBeInTheDocument()
+})
+
+/* The server says when a run moves; the page asks again rather than being told what moved,
+   so there is one answer to read and not two that could disagree. */
+it('asks again when the server says a run moved', async () => {
+  const client = seeded()
+  await show(client)
+  expect(await screen.findByText('Nothing has run yet.')).toBeInTheDocument()
+
+  await client.request('POST /api/task/run', {
+    root: 'project',
+    path: 'Ops/Nightly.task',
+  })
+  client.emit({ type: 'task' })
+
+  const log = await screen.findByRole('region', { name: 'task runs' })
+  expect(await within(log).findByRole('button', { name: /Nightly/ })).toBeInTheDocument()
 })

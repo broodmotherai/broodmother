@@ -55,6 +55,10 @@ export interface App {
    *  they move while some other thread is on screen. What the socket has said since the page
    *  loaded; the list itself says where each stood when it was asked for. */
   agentsWorking: Record<string, boolean>
+  /** Bumped every time the server says a run moved. The tasks page watches it and asks
+   *  again — a count rather than the runs themselves, because the page already knows how
+   *  to fetch them and two answers could disagree. */
+  tasksMoved: number
   /** The suggestion Mother has surfaced and nobody has answered: what the popup shows,
    *  and — expired — what the badge on her row points at. Null is Mother with nothing to
    *  say, which is most afternoons. */
@@ -199,6 +203,24 @@ function scopeOf(config: BroodmotherConfig | null): DocRoot {
   return name ? repoRoot(name) : 'project'
 }
 
+/**
+ * Puts a step's notification in front of whoever is looking. The web API, which is the same
+ * code in the desktop app and in a plain tab; permission is asked the first time something
+ * wants to say one rather than on a page nobody asked anything of yet.
+ *
+ * Denied, nothing happens and nothing is reported: the step said its piece, and a page that
+ * declined to show it is the page's answer, not the run's failure.
+ */
+async function notify(title: string, body: string): Promise<void> {
+  if (typeof Notification === 'undefined') return
+  const allowed =
+    Notification.permission === 'default'
+      ? await Notification.requestPermission().catch(() => 'denied')
+      : Notification.permission
+  if (allowed !== 'granted') return
+  new Notification(title, { body })
+}
+
 /** A root's branches and which one its checkout is on. */
 interface RootBranches {
   branches: Branch[]
@@ -229,6 +251,7 @@ export function AppProvider({
   const [sync, setSync] = useState<SyncStatus>(idleSync)
   const [activity, setActivity] = useState<ActivityStates>({})
   const [agentsWorking, setAgentsWorking] = useState<Record<string, boolean>>({})
+  const [tasksMoved, setTasksMoved] = useState(0)
   const [motherSuggestion, setMotherSuggestion] = useState<Suggestion | null>(null)
   const [ready, setReady] = useState(false)
   const [config, setConfig] = useState<BroodmotherConfig | null>(null)
@@ -424,6 +447,12 @@ export function AppProvider({
           case 'agent':
             setAgentsWorking((held) => ({ ...held, [message.id]: message.working }))
             break
+          case 'task':
+            setTasksMoved((count) => count + 1)
+            break
+          case 'notify':
+            void notify(message.title, message.body)
+            break
           case 'mother':
             // One popup at most, newest wins: a second suggestion takes the screen over.
             setMotherSuggestion(message.suggestion)
@@ -508,6 +537,7 @@ export function AppProvider({
     sync,
     activity,
     agentsWorking,
+    tasksMoved,
     motherSuggestion,
     ready,
     config,

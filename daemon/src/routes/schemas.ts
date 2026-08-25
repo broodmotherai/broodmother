@@ -29,6 +29,24 @@ export const moveBody = z.object({
 })
 export const branchBody = z.object({ root: rootSchema, name: z.string().min(1) })
 
+/** A run started by hand, and what was typed to open it on. Optional: the Run button on its
+ *  own is the ordinary gesture, and a task whose trigger is a person often needs no words. */
+export const runTaskBody = z.object({
+  root: rootSchema,
+  path: z.string(),
+  input: z.string().optional(),
+})
+
+/** An answer to a held step. The note is the denial's reason, and is nothing on an
+ *  approval — what an approval means is already written on the step it releases. */
+export const approveTaskBody = z.object({
+  root: rootSchema,
+  path: z.string(),
+  approved: z.boolean(),
+  note: z.string().optional(),
+  run: z.string().optional(),
+})
+
 /** Git is optional, so the remote and branch are too — but a project asked to sync needs
  *  somewhere to sync to, and that is worth refusing early rather than half-creating. */
 export const newProjectBody = z

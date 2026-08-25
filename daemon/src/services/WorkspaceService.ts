@@ -16,7 +16,7 @@ import {
   findProject,
   listProjects,
 } from '@daemon/utils/project'
-import { readAccount } from '@daemon/utils/profiles'
+import { readConnection } from '@daemon/utils/profiles'
 import { RepoError, createRepo, deleteRepo, listRepos } from '@daemon/utils/repo'
 
 export interface WorkspaceDeps {
@@ -71,7 +71,7 @@ export class WorkspaceService {
     const profile = this.deps.profile()
     // The credential the profile pushes with, whichever kind it has: a key for the remote
     // it reaches over ssh, a host token for the one it reaches over https.
-    const token = (await readAccount(profile))?.token ?? null
+    const token = (await readConnection(profile, 'github'))?.token ?? null
     const project = await createProject(input, profile, token)
     const config = this.deps.config()
     await this.deps.save({
@@ -157,7 +157,7 @@ export class WorkspaceService {
     if (!project) throw new RepoError(`no project named "${input.project}"`)
 
     const profile = this.deps.profile()
-    const token = (await readAccount(profile))?.token ?? null
+    const token = (await readConnection(profile, 'github'))?.token ?? null
     const repo = await createRepo(project.path, input, profile, token)
     if (project.path !== this.deps.project()?.path) return repo
     await this.deps.openRepos()

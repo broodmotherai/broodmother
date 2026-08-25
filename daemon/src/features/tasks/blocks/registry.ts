@@ -1,16 +1,22 @@
 import type { TaskKind, TaskNode } from '@daemon/types/task/schema'
 import type { Block, StepCtx, StepResult } from './Block'
+import { approveBlock } from './approve'
 import { claudeBlock } from './claude'
 import { gateBlock } from './gate'
 import { commentBlock, pullBlock } from './github'
+import { httpBlock } from './http'
 import { museBlock } from './muse'
 import { noteBlock } from './note'
+import { notifyBlock } from './notify'
 import { shellBlock } from './shell'
 
 const BLOCKS: readonly Block[] = [
   claudeBlock,
   museBlock,
   shellBlock,
+  approveBlock,
+  notifyBlock,
+  httpBlock,
   gateBlock,
   noteBlock,
   commentBlock,

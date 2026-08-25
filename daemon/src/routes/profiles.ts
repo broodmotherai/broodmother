@@ -1,4 +1,5 @@
 import { configured as githubConfigured } from '@daemon/utils/github'
+import { INTEGRATIONS } from '@daemon/features/tasks/integrations'
 import { identitySchema, machineAuthor, machineSshKey } from '@daemon/utils/profiles'
 import { parse, query } from './request'
 import type { RouteTable } from './route'
@@ -35,4 +36,15 @@ export const profiles = {
 
   'DELETE /api/model-keys': async (c, ctx) =>
     c.json({ profile: await ctx.profiles.setModelKey(query(c, 'provider'), null) }),
+
+  /* Every service a task can reach, joined with who this profile is each of them as. The
+     whole list whether connected or not: connecting is done from this page, so a page of
+     only the connected ones would have nothing to connect from. */
+  'GET /api/integrations': (c, ctx) =>
+    c.json({
+      integrations: INTEGRATIONS.map((one) => ({
+        ...one,
+        connectedAs: ctx.profile?.connections[one.id] ?? null,
+      })),
+    }),
 } satisfies RouteTable

@@ -234,7 +234,7 @@ it('offers the project personas on a Claude node and wears the pick into the fil
 it('runs the task from the play on the manual trigger and paints each node with its step', async () => {
   await show()
   const trigger = screen.getByRole('group', { name: 'Trigger manually' })
-  await userEvent.click(within(trigger).getByRole('button', { name: /run/ }))
+  await userEvent.click(within(trigger).getByRole('button', { name: 'run task' }))
   await waitFor(
     () => {
       expect(screen.getByRole('group', { name: 'Trigger manually' })).toHaveAttribute(

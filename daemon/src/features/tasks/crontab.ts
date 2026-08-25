@@ -34,7 +34,9 @@ export interface ScheduledTask {
 function cronOf(node: TaskNode): string | null {
   if (node.kind === 'trigger.time') {
     const [hours, minutes] = node.at.split(':').map(Number)
-    return `${minutes} ${hours} * * *`
+    // Cron's own day-of-week field, which is where the names came from.
+    const days = node.days?.length ? node.days.join(',') : '*'
+    return `${minutes} ${hours} * * ${days}`
   }
   if (node.kind !== 'trigger.interval') return null
   if (node.minutes <= 59) return `*/${node.minutes} * * * *`

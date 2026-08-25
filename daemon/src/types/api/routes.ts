@@ -6,7 +6,14 @@ import type {
 } from './branches'
 import type { DeleteData } from './data'
 import type { GetDiff, GetDiffFile } from './diff'
-import type { GetTaskLog, GetTaskRuns, GetTasks, PostTaskRun } from './tasks'
+import type {
+  GetTaskLog,
+  GetTaskRuns,
+  GetTasks,
+  PostTaskApprove,
+  PostTaskRun,
+  PostTaskStop,
+} from './tasks'
 import type { DeleteChat, GetChat, GetChats, PostChats } from './chat'
 import type {
   DeleteAgent,
@@ -20,6 +27,7 @@ import type {
 } from './agents'
 import type { GetDiagrams } from './canvas'
 import type { GetActivity } from './activity'
+import type { GetIntegrations } from './integrations'
 import type {
   GetEntities,
   GetEntitiesCatalogue,
@@ -91,6 +99,7 @@ interface ApiRoutes {
   'POST /api/profiles/key': PostProfileKey
   'PUT /api/model-keys': PutModelKey
   'DELETE /api/model-keys': DeleteModelKey
+  'GET /api/integrations': GetIntegrations
   'POST /api/github/device': PostGithubDevice
   'POST /api/github/connect': PostGithubConnect
   'DELETE /api/github': DeleteGithub
@@ -117,7 +126,8 @@ interface ApiRoutes {
   'GET /api/task/runs': GetTaskRuns
   'GET /api/tasks': GetTasks
   'GET /api/task/log': GetTaskLog
-  'POST /api/task/stop': PostTaskRun
+  'POST /api/task/stop': PostTaskStop
+  'POST /api/task/approve': PostTaskApprove
   'GET /api/chats': GetChats
   'POST /api/chats': PostChats
   'GET /api/chat': GetChat

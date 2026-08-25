@@ -84,7 +84,7 @@ const unkeyed: Profile = {
   sshKeyPath: null,
   agentCommands: {},
   soul: null,
-  github: null,
+  connections: {},
   models: [],
 }
 
@@ -134,6 +134,7 @@ it('stands the rail in named bands', async () => {
   expect(within(general).getAllByRole('tab').map(named)).toEqual(['Account', 'Soul'])
   expect(within(workflow).getAllByRole('tab').map(named)).toEqual([
     'Agents',
+    'Integrations',
     'Git & Worktrees',
   ])
   // What belongs to the project rather than to whoever has it open: the project you are in,
@@ -307,6 +308,7 @@ it('names a folder with no repository rather than calling it a failure', async (
    and typed into another. */
 it('connects to GitHub with a code, and drops the connection when asked', async () => {
   const client = await show(createMockClient({ githubReady: true }))
+  await open('Integrations')
 
   await userEvent.click(screen.getByRole('button', { name: 'Connect GitHub' }))
   expect(await screen.findByText('ABCD-1234')).toBeVisible()
@@ -316,13 +318,17 @@ it('connects to GitHub with a code, and drops the connection when asked', async 
 
   await userEvent.click(screen.getByRole('button', { name: 'Disconnect' }))
   expect(await screen.findByRole('button', { name: 'Connect GitHub' })).toBeVisible()
-  expect((await client.request('GET /api/profiles', null)).active?.github).toBeNull()
+  expect(
+    (await client.request('GET /api/profiles', null)).active?.connections.github,
+  ).toBeUndefined()
 })
 
 /* A button that cannot work is worse than no button, and a build with no client id has
    nothing to connect with. */
 it('offers no GitHub connection in a build that has none', async () => {
   await show()
+  await open('Integrations')
+  expect(await screen.findByText('GitHub')).toBeVisible()
   expect(screen.queryByRole('button', { name: 'Connect GitHub' })).not.toBeInTheDocument()
 })
 
@@ -385,7 +391,7 @@ it('checks the swatch the profile already is', async () => {
           sshKeyPath: null,
           agentCommands: {},
           soul: null,
-          github: null,
+          connections: {},
           models: [],
         },
       ],
@@ -409,7 +415,7 @@ it('wears a colour off the palette on the custom swatch', async () => {
           sshKeyPath: null,
           agentCommands: {},
           soul: null,
-          github: null,
+          connections: {},
           models: [],
         },
       ],

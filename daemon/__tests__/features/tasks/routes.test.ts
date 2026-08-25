@@ -104,3 +104,56 @@ it('answers a task that cannot run with a reason', async () => {
   })
   expect(missing.status).toBe(404)
 })
+
+/* What is typed opens the run, as though a trigger had seen it: the manual trigger's step
+   wears it, and everything downstream reads it the way it reads a watch's payload. */
+it('opens a run on what was typed with it', async () => {
+  const { call } = await server()
+  const started = await call('POST', '/api/task/run', {
+    root: 'project',
+    path: 'Nightly.task',
+    input: 'look at the deploy',
+  })
+  const { run } = started.body as ApiResponse<'POST /api/task/run'>
+  expect(run.state).toBe('running')
+
+  await until(async () => {
+    const asked = await call('GET', '/api/task/runs?root=project&path=Nightly.task')
+    const { runs } = asked.body as ApiResponse<'GET /api/task/runs'>
+    return runs[0]?.state === 'done'
+  })
+  const asked = await call('GET', '/api/task/runs?root=project&path=Nightly.task')
+  const { runs } = asked.body as ApiResponse<'GET /api/task/runs'>
+  expect(runs[0].steps[0].output).toBe('look at the deploy')
+})
+
+/* Answering a run that is not standing at a question is not a quiet no-op: it means the
+   page is showing something that has since moved. */
+it('names an answer nothing was waiting for as the error it is', async () => {
+  const { call } = await server()
+  const answered = await call('POST', '/api/task/approve', {
+    root: 'project',
+    path: 'Nightly.task',
+    approved: true,
+  })
+  expect(answered.status).toBe(400)
+  expect((answered.body as { error: string }).error).toContain('nothing is waiting')
+})
+
+/* The registry joined with the profile's connections: the whole list whether connected or
+   not, since connecting is done from the page it feeds. */
+it('answers every integration there is, and who this profile is each of them as', async () => {
+  const { call } = await server()
+  const asked = await call('GET', '/api/integrations')
+  expect(asked.status).toBe(200)
+  const { integrations } = asked.body as ApiResponse<'GET /api/integrations'>
+  expect(integrations).toEqual([
+    {
+      id: 'github',
+      label: 'GitHub',
+      what: expect.any(String) as unknown as string,
+      connect: 'device',
+      connectedAs: null,
+    },
+  ])
+})

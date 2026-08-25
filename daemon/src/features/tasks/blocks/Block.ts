@@ -28,6 +28,19 @@ export interface GithubReach {
   branch: string | null
 }
 
+/**
+ * Every service a step or a watch can reach, by the id it is connected under. A second
+ * provider is a line here and a folder of its own — not another field on the two contracts,
+ * which is what a `github` beside a `slack` beside a `linear` would become.
+ */
+export interface Reaches {
+  github: GithubReach
+}
+
+export type Provider = keyof Reaches
+
+export type Reach = <K extends Provider>(provider: K) => Promise<Reaches[K] | null>
+
 export interface StepCtx {
   /** The checkout the task lives in — every step's working directory. */
   cwd: string
@@ -47,7 +60,14 @@ export interface StepCtx {
   brief: string | null
   /** The run's folder, for the one file that belongs to the run rather than to a step. */
   scratch: string
-  github: GithubReach | null
+  /** Whichever service this step needs, as this profile is connected to it. */
+  reach: Reach
+  /** Raised when the run is stopped. A block that starts a process hands this to it, so
+   *  stopping reaches the work and not just the row that describes it. */
+  signal: AbortSignal
+  /** Puts a notification in front of whoever has the app open. It leaves as soon as it is
+   *  said and nothing waits on it — a page nobody is looking at is not a failed step. */
+  notify(title: string, body: string): void
 }
 
 export interface StepResult {
@@ -56,6 +76,9 @@ export interface StepResult {
   next?: string[]
   /** A deliberate halt and its reason: the step is 'stopped', the run still finishes. */
   stop?: string
+  /** What the step is waiting on somebody to answer. The run pauses here and keeps its
+   *  place; answering it sends the walk back in. */
+  hold?: string
 }
 
 type NodeOf<K extends TaskKind> = Extract<TaskNode, { kind: K }>

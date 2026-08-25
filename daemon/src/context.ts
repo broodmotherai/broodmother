@@ -54,7 +54,7 @@ import {
   repos as githubRepos,
 } from '@daemon/utils/github'
 import { GitHubService } from '@daemon/services/GitHubService'
-import type { GithubReach } from '@daemon/features/tasks/blocks/Block'
+import type { GithubReach, Provider } from '@daemon/features/tasks/blocks/Block'
 import { Git } from '@daemon/utils/git'
 import { SyncLoop } from '@daemon/services/SyncLoop'
 import { GitService } from '@daemon/services/GitService'
@@ -66,7 +66,7 @@ import {
   broodmotherHome,
   listProfiles,
   profileDir,
-  readAccount,
+  readConnection,
 } from '@daemon/utils/profiles'
 import { BranchService } from '@daemon/services/BranchService'
 import { ProfileService } from '@daemon/services/ProfileService'
@@ -194,7 +194,11 @@ export class AppContext {
         return name ? this.reopenRepo(name) : this.useProject(this.requireProject.path)
       },
     })
-    this.runStore = new RunStore(path.join(home, 'tasks.db'))
+    // Every write to a run is a nudge to whoever has the tasks page open: it carries nothing
+    // and the page asks again, which is one answer rather than two to disagree.
+    this.runStore = new RunStore(path.join(home, 'tasks.db'), () =>
+      this.broadcast({ type: 'task' }),
+    )
     this.chatStore = new ChatStore(path.join(home, 'chats.db'))
     this.ledgerStore = new LedgerStore(path.join(home, 'ledger.db'))
     // The root the shell was opened from, then the project, then the home — which is only
@@ -227,7 +231,11 @@ export class AppContext {
       persona: (name) =>
         this.projectOpen ? readPersona(this.projectOpen.path, name) : Promise.resolve(null),
       brief: (site) => brief(this.briefState(site.path, site.root)),
-      github: (site) => this.reach(site.path),
+      // Every service a step or a watch can ask for. GitHub is the one that answers today;
+      // a second is another arm here and a folder of its own.
+      reach: (site: TaskSite, provider: Provider) =>
+        provider === 'github' ? this.reach(site.path) : Promise.resolve(null),
+      tell: (message) => this.broadcast(message),
     })
     // A conversation belongs to the project it was held in, and speaks with the key the
     // profile holds for whichever provider serves the model it was asked for.
@@ -393,7 +401,7 @@ export class AppContext {
   private async reach(checkout: string): Promise<GithubReach | null> {
     const profile = this.profiles.active
     if (!profile) return null
-    const token = (await readAccount(profile).catch(() => null))?.token
+    const token = (await readConnection(profile, 'github').catch(() => null))?.token
     if (!token) return null
     this.githubService ??= { token, service: new GitHubService(token) }
     if (this.githubService.token !== token)
@@ -691,6 +699,9 @@ export class AppContext {
   start(url: string): void {
     this.url = url
     this.sync.start()
+    // What the last server left mid-walk is settled before this one keeps any time of its
+    // own, so nothing is both listed as running and running nowhere.
+    this.tasks.recover()
     this.tasks.start()
     this.mother.start()
   }

@@ -34,7 +34,7 @@ export function RemoteField({
   const [failed, setFailed] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  const connected = Boolean(app.profile?.github)
+  const connected = Boolean(app.profile?.connections.github)
 
   useEffect(() => {
     if (!connected) return setRepos(null)
