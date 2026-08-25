@@ -1,5 +1,6 @@
 import type { Backlink } from '@daemon/types/api/docs'
 import { basename } from '@daemon/utils/path'
+import { resolveTarget, stripExtension } from '@daemon/utils/markdown/links'
 import type { DocPath, Tree } from '@daemon/services/Tree'
 
 export interface DocLink {
@@ -12,10 +13,6 @@ export interface DocLink {
 
 const WIKI = /\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g
 const MD = /\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g
-
-function stripExtension(p: string): string {
-  return p.replace(/\.md$/i, '')
-}
 
 // `decodeURIComponent` throws on a half-written escape, and a `%` is an ordinary thing to
 // type in a link. Escapes are a convenience here, so one that does not decode is a literal.
@@ -43,22 +40,6 @@ export function extractLinks(markdown: string): DocLink[] {
     }
   }
   return links
-}
-
-/** Obsidian resolution: exact path, then filename, then filename without extension. */
-export function resolveTarget(
-  target: string,
-  documents: readonly DocPath[],
-): DocPath | null {
-  const candidates = [...documents].sort(
-    (a, b) => a.length - b.length || a.localeCompare(b),
-  )
-  const exact = candidates.find((p) => p === target || p === `${target}.md`)
-  if (exact) return exact
-  const byName = candidates.find((p) => basename(p) === target)
-  if (byName) return byName
-  const bare = stripExtension(target)
-  return candidates.find((p) => stripExtension(basename(p)) === bare) ?? null
 }
 
 export class LinkIndex {

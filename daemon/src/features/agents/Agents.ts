@@ -135,6 +135,7 @@ export class Agents {
       brief: this.deps.terminalBrief,
       persona: personaBody,
       name: agent.name,
+      by: `agent/${agent.name}`,
       attachments: attachmentsAbs,
       progress,
     })

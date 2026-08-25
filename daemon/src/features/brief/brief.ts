@@ -83,6 +83,18 @@ const SYNC: Record<BriefSync, string> = {
   conflicted: 'conflicted — a pull left conflicts for someone to resolve',
 }
 
+/** The two rules the port is for, and the only two worth spending the brief's room on.
+ *
+ *  They are for the rooms with tools and not for a terminal: a terminal agent has the disk,
+ *  writes the file itself, and can read back what it wrote. A chat cannot — its messages go
+ *  nowhere anything can open — which is exactly what makes the first rule true rather than
+ *  merely good advice. */
+const RECORDING = `\`entity_list\` and \`entity_record\` are the records. Two rules about them, and they are
+not style: a claim that only exists in a message is not a record, because nothing can read a
+message back — if it is worth the project knowing, \`entity_record\` it and the answer is the
+path it wrote. And say which record you got something from, by that path: an assertion with
+no record behind it is you, and an assertion with one is the project.`
+
 const HERE = `## Here
 
 Never commit or push unless you were asked to: the project may be syncing on a timer, and a
@@ -233,6 +245,17 @@ A task is the one document with a machine behind it, and these are the machine.
   GET    /api/diagrams                        every diagram, and how much is drawn on it
   GET    /api/personas                        the voices a task's agent step can wear
 
+A record is the one document the app will not let you write carelessly, and these are why.
+
+  GET    /api/entities                        every record, newest first, with its sources
+  GET    /api/entities/catalogue              the kinds there are and the keys each needs
+  POST   /api/entities      {kind, name, fields, from, origin?, body, by?}
+                                              writes one, or answers with the record that
+                                              already says it — the same twice is one record
+  POST   /api/entity/link   {path, relation, target}
+                                              a source added to one already written; refused
+                                              where it would close a loop
+
 And for state, once what you were told above has gone stale under you.
 
   GET /api/config     what is open: project, profile, scope, checkouts, per-project git
@@ -247,7 +270,7 @@ ${
     surface === 'terminal'
       ? `  curl -s '${api}/api/links?path=notes/sync.md'`
       : `  api  GET  /api/links  {"path": "notes/sync.md"}`
-  }`
+  }${surface === 'terminal' ? '' : `\n\n${RECORDING}`}`
 }
 
 function section(title: string, rows: [string, string][]): string {

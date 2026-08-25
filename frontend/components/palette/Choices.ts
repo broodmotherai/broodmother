@@ -45,6 +45,7 @@ function commands(ctx: FlowCtx): Choice[] {
     command('Tasks', 'clock', () => done(() => ctx.tasks())),
     command('Agents', 'users', () => done(() => ctx.agents())),
     command('Chat', 'message-square', () => done(() => ctx.chat())),
+    command('Entities', 'library', () => done(() => ctx.entities())),
     command('Settings', 'settings', () => done(() => ctx.settings())),
   ]
 }

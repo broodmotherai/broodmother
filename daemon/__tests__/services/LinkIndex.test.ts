@@ -1,11 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest'
 import { cleanup, tempDir } from '@daemon/test'
-import {
-  LinkIndex,
-  extractLinks,
-  resolveTarget,
-  rewriteLinks,
-} from '@daemon/services/LinkIndex'
+import { LinkIndex, extractLinks, rewriteLinks } from '@daemon/services/LinkIndex'
 import { Tree } from '@daemon/services/Tree'
 
 afterAll(cleanup)
@@ -51,16 +46,6 @@ describe('extractLinks', () => {
   it('takes an escape that does not decode literally', () => {
     expect(extractLinks('[x](Growth/100%.md)')[0]!.target).toBe('Growth/100%.md')
     expect(extractLinks('[x](Growth/50%zz.md)')[0]!.target).toBe('Growth/50%zz.md')
-  })
-})
-
-describe('resolveTarget', () => {
-  it('prefers an exact path, then a filename, then a filename without extension', () => {
-    expect(resolveTarget('Handbook/Risks.md', documents)).toBe('Handbook/Risks.md')
-    expect(resolveTarget('Handbook/Risks', documents)).toBe('Handbook/Risks.md')
-    expect(resolveTarget('Roadmap.md', documents)).toBe('Business/Roadmap.md')
-    expect(resolveTarget('Overview', documents)).toBe('Handbook/Overview/Overview.md')
-    expect(resolveTarget('Nothing', documents)).toBeNull()
   })
 })
 

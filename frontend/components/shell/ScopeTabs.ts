@@ -26,7 +26,7 @@ const EMPTY: Tab[] = []
 /** The app's own chrome: pages about the app rather than places in any tree. Nothing here is
  *  opened in a tab or run in a shell, and a scope change while one is up changes what the page
  *  is about rather than where you are. */
-export const APP_PAGES = ['/settings', '/tasks', '/agents', '/chat']
+export const APP_PAGES = ['/settings', '/tasks', '/agents', '/chat', '/entities']
 
 const isRoot = (value: string): value is DocRoot =>
   value === 'project' || /^repo:.+$/.test(value)

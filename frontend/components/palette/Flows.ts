@@ -22,6 +22,8 @@ export interface FlowCtx {
   agents(): void
   /** The chat page: this project's conversations with a model. */
   chat(): void
+  /** The entities page: what this project has written down, and what each came from. */
+  entities(): void
   toggleTerminal(): void
   projects(): void
   repos(): void

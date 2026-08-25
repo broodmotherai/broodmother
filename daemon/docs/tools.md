@@ -24,7 +24,7 @@ is a deliberate difference from an agent that runs anywhere on your disk — see
 
 ## Chat Tools
 
-Eight, and the whole of what the chat page can reach. Every path is scoped to the open
+Ten, and the whole of what the chat page can reach. Every path is scoped to the open
 checkout — `project`, or `repo:<name>` — and normalised through `@broodmother/path`, so
 nothing addresses its way out of the folder.
 
@@ -37,13 +37,22 @@ nothing addresses its way out of the folder.
 | `write_doc`    | A document, whole — new or overwritten.                                    |
 | `move_doc`     | A rename, which is also how a document changes folder.                     |
 | `delete_doc`   | Off disk. "There is no undo but git."                                      |
+| `entity_list`  | What the project has already recorded. Read before proposing anything.     |
+| `entity_record`| A record written down, answering with the path it wrote.                   |
 | `api`          | The daemon's own HTTP API, from the inside.                                |
 
 The caps are the point of the tool being a tool: the model is handed an answer that fits in
 a context window rather than a folder.
 
-`api` is the interesting one — it lets the model reach the same 61 routes the browser has, so
+`api` is the interesting one — it lets the model reach the same 66 routes the browser has, so
 anything the app can do it can ask for, without a tool per verb.
+
+The two entity tools are the exception to that argument, and typed for a different reason. A
+record has to be *written*: there is no tool here that takes free-form content and files it,
+so what comes back from `entity_record` is what it just wrote and the path it wrote it under.
+That is what makes "cite the record" something the app holds an agent to rather than
+something the prompt asks for. Reading one back is `read_doc` — a record is an ordinary
+markdown document, and a second tool for the same file would teach the model otherwise.
 
 ## Agent Tools
 

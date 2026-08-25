@@ -6,7 +6,7 @@
 
 ## Overview
 
-The daemon serves 61 HTTP routes under `/api` and four websockets. There are no slash
+The daemon serves 66 HTTP routes under `/api` and four websockets. There are no slash
 commands and no CLI: the app is a browser, and this is the whole of what it can ask for.
 
 Routes are typed end to end. `lib/types/api/routes.ts` maps a route token — the literal
@@ -85,6 +85,10 @@ turns one into a status code. The body is `{ error: string }`.
 | `GET` | `/api/task/runs` | What it has done |
 | `GET` | `/api/task/log` | One run's log |
 | `GET` | `/api/diagrams` | The `.canvas` files the open checkouts hold |
+| `GET` | `/api/entities` | Every record the project holds, newest first |
+| `POST` | `/api/entities` | Write one — refused without provenance, and the same one twice is one |
+| `GET` | `/api/entities/catalogue` | The kinds there are, and the relations |
+| `POST` | `/api/entity/link` | Say a record already written came from one more thing |
 | `GET` | `/api/data` | Task scratch |
 | `DELETE` | `/api/data` | Clear it |
 | `PUT` | `/api/model-keys` | Store a provider key on the profile |

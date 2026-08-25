@@ -17,6 +17,12 @@ import type {
 } from './agents'
 import type { GetDiagrams } from './canvas'
 import type { GetActivity } from './activity'
+import type {
+  GetEntities,
+  GetEntitiesCatalogue,
+  PostEntities,
+  PostEntityLink,
+} from './entities'
 import type { GetPersonas } from './personas'
 import type { DeleteTerminal } from './terminal'
 import type {
@@ -109,6 +115,10 @@ interface ApiRoutes {
   'DELETE /api/agent': DeleteAgent
   'POST /api/agent/clear': PostAgentClear
   'POST /api/agent/model': PostAgentModel
+  'GET /api/entities': GetEntities
+  'POST /api/entities': PostEntities
+  'GET /api/entities/catalogue': GetEntitiesCatalogue
+  'POST /api/entity/link': PostEntityLink
   'GET /api/diagrams': GetDiagrams
   'GET /api/activity': GetActivity
   'GET /api/personas': GetPersonas

@@ -322,6 +322,7 @@ export function Shell({ children }: { children: ReactNode }) {
     tasks: () => router.push('/tasks'),
     agents: () => router.push('/agents'),
     chat: () => router.push('/chat'),
+    entities: () => router.push('/entities'),
     projects: () => setPicker(true),
     repos: () => setWhereMenu(true),
     createRepo: () => setCreating(true),
@@ -427,6 +428,18 @@ export function Shell({ children }: { children: ReactNode }) {
             >
               <Icon name="message-square" />
               <span className="name">Chat</span>
+            </button>
+            {/* And last, what the conversations left behind: a record is the one thing said
+                here that outlives the saying of it. */}
+            <button
+              type="button"
+              className="row explorer-tab"
+              aria-label="Entities"
+              aria-pressed={pathname === '/entities'}
+              onClick={ctx.entities}
+            >
+              <Icon name="library" />
+              <span className="name">Entities</span>
             </button>
           </>
         }

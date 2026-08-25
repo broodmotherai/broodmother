@@ -26,6 +26,8 @@ const ALLOWED = new Set([
   'GET /api/task/runs',
   'GET /api/task/log',
   'GET /api/diagrams',
+  'GET /api/entities',
+  'GET /api/entities/catalogue',
   'GET /api/personas',
   'GET /api/activity',
   'GET /api/diff',
@@ -41,6 +43,8 @@ const ALLOWED = new Set([
   'POST /api/sync/now',
   'POST /api/sync/clear-conflict',
   'POST /api/git/check',
+  'POST /api/entities',
+  'POST /api/entity/link',
   'POST /api/task/run',
   'POST /api/task/stop',
 ])

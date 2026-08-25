@@ -7,6 +7,7 @@ import { chat } from './chat'
 import { agents } from './agents'
 import { diff } from './diff'
 import { docs } from './docs'
+import { entities } from './entities'
 import { git } from './git'
 import { github } from './github'
 import { profiles } from './profiles'
@@ -22,6 +23,7 @@ const TABLES = [
   agents,
   diff,
   docs,
+  entities,
   git,
   github,
   profiles,
@@ -37,6 +39,7 @@ type Registered =
   | keyof typeof agents
   | keyof typeof diff
   | keyof typeof docs
+  | keyof typeof entities
   | keyof typeof git
   | keyof typeof github
   | keyof typeof profiles

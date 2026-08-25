@@ -40,6 +40,7 @@ async function toolbox() {
   const tools = chatTools({
     tree: (root: DocRoot) => new Tree(checkout),
     call: apiCall(() => handle.url),
+    by: 'chat/17',
   })
   return { tools, checkout, handle }
 }
@@ -210,4 +211,68 @@ it('titles a step by what the tool was asked to do', () => {
     .toBe('search project for “sync”')
   expect(titleOf('api', { method: 'POST', route: '/api/sync/now' })) //
     .toBe('POST /api/sync/now')
+})
+
+it('records something, and hands back the path to cite rather than a message', async () => {
+  const { tools, checkout } = await toolbox()
+  expect(await use(tools, 'entity_list', {})).toBe('nothing has been recorded yet')
+
+  const wrote = await use(tools, 'entity_record', {
+    kind: 'finding',
+    name: 'Risks is empty',
+    fields: { claim: 'nobody has filled it in', evidence: 'the page says "nothing yet"' },
+    from: [{ relation: 'cites', target: 'Risks' }],
+    body: 'The handbook has a page for risks and nothing on it.',
+  })
+  const at = 'entities/finding/risks-is-empty.md'
+  expect(wrote).toBe(`recorded as ${at} — cite it by that path`)
+
+  // What it wrote is an ordinary document, so reading it back is `read_doc`.
+  expect(await use(tools, 'read_doc', { root: 'project', path: at })).toContain(
+    'by: chat/17',
+  )
+  expect(await readFile(path.join(checkout, at), 'utf8')).toContain('  - cites [[Risks]]')
+
+  const listed = await use(tools, 'entity_list', {})
+  expect(listed).toContain('finding  Risks is empty')
+  expect(listed).toContain('from: cites Risks')
+  expect(await use(tools, 'entity_list', { kind: 'decision' })).toBe(
+    'no decision has been recorded',
+  )
+})
+
+it('writes nothing the second time, and says which record already says it', async () => {
+  const { tools } = await toolbox()
+  const record = () =>
+    use(tools, 'entity_record', {
+      kind: 'question',
+      name: 'Who owns the handbook',
+      fields: { asks: 'who' },
+      from: [],
+      origin: true,
+      body: '',
+    })
+  expect(await record()).toMatch(/^recorded as /)
+  expect(await record()).toMatch(/^already recorded as .* unchanged/)
+})
+
+it('refuses a record with nothing behind it, as text the model can act on', async () => {
+  const { tools } = await toolbox()
+  const answer = await use(tools, 'entity_record', {
+    kind: 'finding',
+    name: 'Unsourced',
+    fields: { claim: 'a', evidence: 'b' },
+    from: [{ relation: 'cites', target: 'nowhere' }],
+    body: '',
+  })
+  expect(answer).toContain('"error"')
+  expect(answer).toContain('nowhere')
+})
+
+it('names an entity step by what was asked of it', () => {
+  expect(titleOf('entity_record', { kind: 'finding', name: 'Risks is empty' })).toBe(
+    'record finding \u201cRisks is empty\u201d',
+  )
+  expect(titleOf('entity_list', {})).toBe('list records')
+  expect(titleOf('entity_list', { kind: 'term' })).toBe('list term records')
 })

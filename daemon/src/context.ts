@@ -38,6 +38,7 @@ import { ChatStore } from '@daemon/features/chat/db'
 import { chatStream } from '@daemon/features/chat/model'
 import { chatTools } from '@daemon/features/chat/tools'
 import { Agents } from '@daemon/features/agents/Agents'
+import { Entities } from '@daemon/features/entities/Entities'
 import { crontabScheduler } from '@daemon/features/tasks/scheduler'
 import { TriggerStore } from '@daemon/features/tasks/state'
 import {
@@ -131,6 +132,7 @@ export class AppContext {
   readonly activityService: ActivityService
   readonly chats: Chats
   readonly agents: Agents
+  readonly entities: Entities
   readonly branches: BranchService
   readonly profiles: ProfileService
   readonly workspace: WorkspaceService
@@ -236,7 +238,9 @@ export class AppContext {
         if (agent) return this.agents.turn(agent, note)
         return {
           system: brief(this.briefState(this.here(), this.scope, 'chat')),
-          tools: chatTools(reach()),
+          // What a record written this turn says wrote it. The route has no caller to ask,
+          // so this is the one place that knows — and everywhere else it goes unsaid.
+          tools: chatTools({ ...reach(), by: `chat/${chat}` }),
           maxRounds: MAX_ROUNDS,
         }
       },
@@ -264,6 +268,13 @@ export class AppContext {
       checkout: () => this.here(),
       env: () => this.agentEnv(),
       tools: reach(),
+    })
+    // Records are the project's, the way wikilinks and sync are: a repo is a code repository
+    // and what is written down about it is written down next door.
+    this.entities = new Entities({
+      project: () => this.projectOpen?.tree ?? null,
+      links: () => this.projectOpen?.links ?? null,
+      writeDoc: (path, markdown) => this.writeDoc('project', path, markdown),
     })
   }
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { KINDS, RELATIONS, REQUIRED } from '@daemon/types/entity/schema'
 import { brief, type BriefState } from '@daemon/features/brief/brief'
 import { DEFAULT_SOUL } from '@daemon/features/brief/soul'
 import { SHAPES, SHAPE_SEED } from '@daemon/types/canvas/schema'
@@ -149,12 +150,12 @@ describe('brief', () => {
     expect(brief(STATE)).not.toContain('## Skills')
   })
 
-  /* The two documents that are not prose. An agent told nothing about them writes a task
-     out of its own head, and the file it writes is one nothing here can open. */
-  it('carries the shape of a task and of a diagram', () => {
+  /* The three documents that are more than prose. An agent told nothing about them writes a
+     task out of its own head, and the file it writes is one nothing here can open. */
+  it('carries the shape of a task, a diagram and a record', () => {
     const text = brief(STATE)
 
-    expect(text).toContain('## Tasks and diagrams')
+    expect(text).toContain('## Tasks, diagrams and records')
     for (const kind of [
       'trigger.manual',
       'trigger.interval',
@@ -180,6 +181,21 @@ describe('brief', () => {
     expect(text).toContain('[JSON Canvas](https://jsoncanvas.org)')
     expect(text).toContain('{"nodes": [], "edges": []}')
     expect(text).toContain('cannot come back on itself')
+    // A record is identified by what it says rather than where it sits, and every one of
+    // them says where it came from.
+    expect(text).toContain('entity: finding')
+    expect(text).toContain('  - derives-from [[notes/sync]]')
+    expect(text).toContain('  - origin')
+  })
+
+  /* The catalogue an agent is given and the catalogue the app enforces are one list. A brief
+     that retyped it would be a brief that could send a record to a kind nobody defined. */
+  it('draws the record catalogues from the schema rather than from prose', () => {
+    const text = brief(STATE)
+
+    for (const kind of KINDS)
+      expect(text).toContain(`${kind}  ${REQUIRED[kind].join(', ')}`)
+    for (const relation of RELATIONS) expect(text).toContain(relation)
   })
 
   /* A board written off the grid, or at a size nothing else is, reads as a board nobody

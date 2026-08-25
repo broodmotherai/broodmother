@@ -3,9 +3,23 @@ import { defaultGitSettings } from '@broodmother/types/git'
 import { fires, triggerLabel } from '@broodmother/types/task/schema'
 import { parseTask } from '@broodmother/types/task/codec'
 import { parseCanvas } from '@broodmother/types/canvas/codec'
+import { canonicalOf, parseEntity, serializeEntity } from '@broodmother/types/entity/codec'
+import {
+  KINDS,
+  KIND_NOTE,
+  RELATIONS,
+  RELATION_NOTE,
+  REQUIRED,
+  entityPath,
+  flatName,
+  isEntity,
+  type Entity,
+} from '@broodmother/types/entity/schema'
+import { resolveTarget } from '@broodmother/markdown/links'
 import { runOrder } from '@broodmother/types/task/graph'
 import type { Persona } from '@broodmother/types/api/personas'
 import type { AgentSummary } from '@broodmother/types/api/agents'
+import type { EntitySummary } from '@broodmother/types/api/entities'
 import type { ApiRequest, ApiResponse, ApiRoute } from '@broodmother/types/api/routes'
 import type { TaskRun } from '@broodmother/types/api/tasks'
 import {
@@ -358,6 +372,73 @@ export function createMockClient(
     const repo = repoOf(root)
     if (repo) repoBranch[repo] = name
     else branch = name
+  }
+
+  /**
+   * The records the project holds, read the way the daemon reads them: every `.md` whose
+   * frontmatter says `entity:`, parsed, and a broken one kept as a row rather than dropped.
+   *
+   * The digest is stood in for. The daemon hashes with `node:crypto`, which is the one thing
+   * the browser's half of this app cannot import, so what is written here is a cheap hash of
+   * the same canonical text — self-consistent, which is all `edited` needs: a record this
+   * mock wrote reads clean, and one seeded with a `sha` that does not match reads edited.
+   */
+  const stand = (entity: Entity) => {
+    let hash = 0x811c9dc5
+    for (const code of canonicalOf(entity)) {
+      hash ^= code.codePointAt(0) ?? 0
+      hash = Math.imul(hash, 0x01000193) >>> 0
+    }
+    return hash.toString(16).padStart(8, '0')
+  }
+  const recorded = (): { path: DocPath; entity: Entity | null; broken?: string }[] =>
+    Object.entries(docs)
+      .filter(([path, markdown]) => path.endsWith('.md') && isEntity(markdown))
+      .map(([path, markdown]) => {
+        try {
+          return { path, entity: parseEntity(markdown) }
+        } catch (cause) {
+          const broken = cause instanceof Error ? cause.message : String(cause)
+          return { path, entity: null, broken }
+        }
+      })
+  const summarize = (found: {
+    path: DocPath
+    entity: Entity | null
+    broken?: string
+  }): EntitySummary => {
+    const paths = Object.keys(docs)
+    if (!found.entity)
+      return {
+        path: found.path,
+        name: basename(found.path).replace(/\.md$/, ''),
+        kind: null,
+        made: '',
+        by: '',
+        origin: false,
+        from: [],
+        edited: false,
+        broken: found.broken,
+      }
+    const entity = found.entity
+    return {
+      path: found.path,
+      name: entity.name,
+      kind: entity.kind,
+      made: entity.made,
+      by: entity.by,
+      origin: entity.origin,
+      from: entity.from.map((one) => ({ ...one, path: resolveTarget(one.target, paths) })),
+      edited: entity.sha !== '' && entity.sha !== stand(entity),
+    }
+  }
+  /** A clock a test can predict: records made in the order they were asked for. */
+  let made = 0
+  const stamp = () => `2026-01-01T00:00:${String(made++).padStart(2, '0')}Z`
+  const writeEntity = (path: DocPath, entity: Entity) => {
+    const created = !(path in docs)
+    docs[path] = serializeEntity(entity)
+    emit({ type: 'tree', root: 'project', event: { type: created ? 'created' : 'changed', path } })
   }
 
   const handlers: {
@@ -734,6 +815,69 @@ export function createMockClient(
             }),
         )
         return { diagrams }
+      },
+      'GET /api/entities': async () => {
+        const entities = recorded()
+          .map(summarize)
+          .sort((a, b) => b.made.localeCompare(a.made) || a.path.localeCompare(b.path))
+        return { entities }
+      },
+      /* Served from the same constants the daemon serves it from, so a page drawing the rail
+         against this mock is drawing the catalogue the app actually has. */
+      'GET /api/entities/catalogue': async () => ({
+        kinds: KINDS.map((kind) => ({
+          kind,
+          note: KIND_NOTE[kind],
+          required: [...REQUIRED[kind]],
+        })),
+        relations: RELATIONS.map((relation) => ({
+          relation,
+          note: RELATION_NOTE[relation],
+        })),
+      }),
+      /* The refusals worth standing in for are the ones a page can provoke: a source nothing
+         answers to, and the same record twice. The daemon's cycle walk is not one of them —
+         nothing here draws an ancestry. */
+      'POST /api/entities': async (input) => {
+        const draft: Entity = {
+          kind: input.kind,
+          name: flatName(input.name),
+          made: stamp(),
+          by: input.by ?? '',
+          sha: '',
+          origin: input.origin === true,
+          from: input.from,
+          fields: input.fields,
+          body: input.body.replace(/\s+$/, ''),
+        }
+        const already = recorded().find(
+          (one) => one.entity !== null && canonicalOf(one.entity) === canonicalOf(draft),
+        )
+        if (already) return { entity: summarize(already), created: false }
+        for (const source of draft.from)
+          if (!resolveTarget(source.target, Object.keys(docs)))
+            throw new Error(`nothing in the project answers to [[${source.target}]]`)
+        const entity: Entity = { ...draft, sha: stand(draft) }
+        const wanted = entityPath(entity.kind, entity.name)
+        let path = wanted
+        for (let n = 2; path in docs; n++) path = `${wanted.slice(0, -3)}-${String(n)}.md`
+        writeEntity(path, entity)
+        return { entity: summarize({ path, entity }), created: true }
+      },
+      'POST /api/entity/link': async ({ path, relation, target }) => {
+        const markdown = docs[path]
+        if (markdown === undefined) throw new Error(`there is no ${path}`)
+        const held = parseEntity(markdown)
+        if (held.origin)
+          throw new Error(`${path} says it is where a line of work began`)
+        if (held.from.some((one) => one.target === target))
+          throw new Error(`${path} already says it comes from [[${target}]]`)
+        if (!resolveTarget(target, Object.keys(docs)))
+          throw new Error(`nothing in the project answers to [[${target}]]`)
+        const added: Entity = { ...held, from: [...held.from, { relation, target }] }
+        const entity: Entity = { ...added, sha: stand(added) }
+        writeEntity(path, entity)
+        return { entity: summarize({ path, entity }) }
       },
       'GET /api/task/log': async () => ({ runs: [...taskRuns].reverse() }),
       'GET /api/personas': async () => ({ personas: [...(seed.personas ?? [])] }),
