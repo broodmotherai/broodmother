@@ -48,12 +48,14 @@ async function ctxAt(
     inputPath: path.join(scratch, 'n1.in.md'),
     outputPath: path.join(scratch, 'n1.out.md'),
     verdictPath: path.join(scratch, 'n1.verdict.json'),
+    signal: new AbortController().signal,
+    notify: () => {},
     routes: [],
     env: { PATH: `${bin}:${process.env.PATH}`, MUSE_ARGS: path.join(dir, 'args') },
     persona: null,
     brief: null,
     scratch,
-    github: null,
+    reach: async () => null,
     ...over,
   }
   return { dir, ctx }

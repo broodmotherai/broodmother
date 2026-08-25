@@ -23,7 +23,7 @@ const unconnected: Profile = {
   sshKeyPath: null,
   agentCommands: {},
   soul: null,
-  github: null,
+  connections: {},
   models: [],
 }
 

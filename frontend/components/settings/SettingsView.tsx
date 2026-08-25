@@ -8,6 +8,7 @@ import { Row } from '@/components/core/Row'
 import { ProfilePanel } from './ProfilePanel'
 import { SoulPanel } from './SoulPanel'
 import { AgentsPanel } from './AgentsPanel'
+import { IntegrationsPanel } from './IntegrationsPanel'
 import { GitPanel } from './GitPanel'
 import { ProjectPanel } from './ProjectPanel'
 import { ReposPanel } from './ReposPanel'
@@ -59,6 +60,15 @@ const SECTIONS: Section[] = [
     // the profile is.
     open: (app) => Boolean(app.profile),
     panel: AgentsPanel,
+  },
+  {
+    id: 'integrations',
+    label: 'Integrations',
+    icon: 'globe',
+    group: 'Workflow',
+    // Who you are signed in to belongs to the profile, the way the keys above it do.
+    open: (app) => Boolean(app.profile),
+    panel: IntegrationsPanel,
   },
   {
     id: 'git',

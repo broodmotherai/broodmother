@@ -1,4 +1,4 @@
-import { fires } from '@daemon/types/task/schema'
+import { fires, WEEKDAYS, type Weekday } from '@daemon/types/task/schema'
 import type { DocRef } from '@daemon/services/Tree'
 import { scheduleLines, type Crontab, type ScheduledTask } from './crontab'
 
@@ -61,13 +61,19 @@ export function timerScheduler(
             alive.add(key)
             if (previous === null) continue
             const due = timeToday(node.at, beat)
-            if (due > previous && due <= beat) await fire(ref)
+            if (due > previous && due <= beat && onDay(node.days, due)) await fire(ref)
           }
         }
       }
       for (const key of armed.keys()) if (!alive.has(key)) armed.delete(key)
     },
   }
+}
+
+/** Whether a due moment falls on a day the trigger keeps to. No days is every day, which is
+ *  what a trigger written before days existed means. */
+function onDay(days: Weekday[] | undefined, due: number): boolean {
+  return !days?.length || days.includes(WEEKDAYS[new Date(due).getDay()])
 }
 
 function timeToday(at: string, now: number): number {

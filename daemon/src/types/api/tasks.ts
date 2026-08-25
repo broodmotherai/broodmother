@@ -11,6 +11,8 @@ export type TaskStepState =
   | 'stopped'
   /** The node is switched off: it passed its input straight on and did no work. */
   | 'off'
+  /** Waiting on a person: the step asked for approval and the run is standing at it. */
+  | 'held'
 
 export interface TaskStep {
   node: string
@@ -21,6 +23,8 @@ export interface TaskStep {
   error?: string
   /** Why a stopped step stopped, in the step's own words. */
   halted?: string
+  /** What a held step is waiting to be told, for the page to put the question to somebody. */
+  asked?: string
 }
 
 export interface TaskRun {
@@ -28,16 +32,38 @@ export interface TaskRun {
   ref: DocRef
   startedAt: number
   finishedAt?: number
-  state: 'running' | 'done' | 'error'
+  /** Paused is standing at a held step, waiting on a person; it is the one unfinished state
+   *  a restarted server can pick up again, because it was written at a step boundary. */
+  state: 'running' | 'paused' | 'done' | 'error'
   error?: string
   steps: TaskStep[]
   /** The run's folder of hand-off files — what each step read and wrote. */
   scratch?: string
+  /** The edges a gate held, a verdict passed over or a stop ended, as `from>to`. The walk's
+   *  own bookkeeping, saved so a run that pauses can be picked up knowing what it had
+   *  already ruled out. */
+  pruned?: string[]
 }
 
-/** Starts a run and answers with it already underway; the steps land as they finish. */
+/** Starts a run and answers with it already underway; the steps land as they finish. What
+ *  is typed alongside opens the run, as though a trigger had seen it. */
 export interface PostTaskRun {
+  request: DocRef & { input?: string }
+  response: { run: TaskRun }
+}
+
+/** Stops the run that is walking. */
+export interface PostTaskStop {
   request: DocRef
+  response: { run: TaskRun }
+}
+
+/** Answers the step a run is standing at. Approving passes what fed it straight on; denying
+ *  ends the branch beyond it, with the note as the reason. */
+export interface PostTaskApprove {
+  /** Which run, where the page knows — a task can have more than one standing at a question.
+   *  Unset answers the one that has waited longest. */
+  request: DocRef & { approved: boolean; note?: string; run?: string }
   response: { run: TaskRun }
 }
 

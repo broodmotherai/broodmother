@@ -14,7 +14,17 @@ function node(kind: TaskNode['kind'], config: object = {}): TaskNode {
 }
 
 function tools(cwd: string): TriggerTools {
-  return { cwd }
+  return { cwd, reach: async () => null }
+}
+
+/** GitHub as a watch reaches it: the service under test, and the two answers a node that
+ *  names neither repository nor branch means. */
+function reaching(
+  github: GitHubService,
+  slug: string | null = 'you/handbook',
+  branch: string | null = 'main',
+): TriggerTools['reach'] {
+  return (async () => ({ service: github, slug, branch })) as TriggerTools['reach']
 }
 
 it('has no check for the triggers that are not events', () => {
@@ -112,8 +122,7 @@ it('hands a fired issue on as something to read and something to answer', async 
     { checkedAt: 0 },
     {
       cwd: '/nowhere',
-      github: watch.github,
-      slug: async () => 'you/handbook',
+      reach: reaching(watch.github, 'you/handbook'),
       now: () => 6 * 60_000,
     },
   )
@@ -124,6 +133,7 @@ it('hands a fired issue on as something to read and something to answer', async 
   expect(seen.firings[0]?.payload).toContain('what it says')
   // And addressable, because an action step three along has to know which issue this was.
   expect(seen.firings[0]?.about).toEqual({
+    provider: 'github',
     repo: 'you/handbook',
     number: 7,
     url: 'https://github.com/you/handbook/issues/7',
@@ -141,8 +151,7 @@ it('leaves GitHub alone between looks', async () => {
   const check = eventCheck(node('trigger.github.issue', { minutes: 10 }))!
   const at = (now: number): TriggerTools => ({
     cwd: '/nowhere',
-    github: watch.github,
-    slug: async () => 'you/handbook',
+    reach: reaching(watch.github, 'you/handbook'),
     now: () => now,
   })
 
@@ -163,9 +172,9 @@ it('leaves GitHub alone between looks', async () => {
 it('says so when there is no connection and when there is no repository', async () => {
   const check = eventCheck(node('trigger.github.issue'))!
 
-  await expect(check(null, { cwd: '/nowhere' })).rejects.toThrow(/no GitHub connection/)
+  await expect(check(null, tools('/nowhere'))).rejects.toThrow(/no GitHub connection/)
   await expect(
-    check(null, { cwd: '/nowhere', github: watching([]).github, slug: async () => null }),
+    check(null, { cwd: '/nowhere', reach: reaching(watching([]).github, null) }),
   ).rejects.toThrow(/no repository to watch/)
 })
 
@@ -175,11 +184,12 @@ it('watches what is addressed to you without asking about a repository at all', 
 
   const seen = await check(
     { checkedAt: 0 },
-    { cwd: '/nowhere', github: watch.github, slug: async () => null, now: () => 6 * 60_000 },
+    { cwd: '/nowhere', reach: reaching(watch.github, null), now: () => 6 * 60_000 },
   )
 
   expect(seen.firings).toHaveLength(1)
   expect(seen.firings[0]?.about).toEqual({
+    provider: 'github',
     repo: 'you/handbook',
     url: 'https://github.com/you/handbook/issues/7',
   })
@@ -197,11 +207,9 @@ it('takes the branch a check watch was given, and the checkout own where it was 
       return { items: [], cursor: {} }
     },
   } as unknown as GitHubService
-  const tools = {
+  const tools: TriggerTools = {
     cwd: '/nowhere',
-    github,
-    slug: async () => 'you/handbook',
-    branch: async () => 'trunk',
+    reach: reaching(github, 'you/handbook', 'trunk'),
     now: () => 1,
   }
 

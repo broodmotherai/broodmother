@@ -115,7 +115,7 @@ const seedProfile: Profile = {
   sshKeyPath: null,
   agentCommands: {},
   soul: null,
-  github: null,
+  connections: {},
   // Connected by default: a chat page that cannot chat is the exception, and a test about
   // that state seeds a profile holding nothing.
   models: ['anthropic'],
@@ -553,7 +553,7 @@ export function createMockClient(
         const profile: Profile = {
           name,
           path: `${home}/${name}/profile.json`,
-          github: null,
+          connections: {},
           models: [],
           ...identity,
         }
@@ -590,14 +590,18 @@ export function createMockClient(
           githubAsked = true
           return { pending: true, profile: current }
         }
-        const connected = { ...current, github: 'you' }
+        const connected = {
+          ...current,
+          connections: { ...current.connections, github: 'you' },
+        }
         profiles.splice(profiles.indexOf(current), 1, connected)
         return { pending: false, profile: connected }
       },
       'DELETE /api/github': async () => {
         const current = profileOf()
         if (!current) throw new Error('no profile yet')
-        const gone = { ...current, github: null }
+        const { github: _gone, ...connections } = current.connections
+        const gone = { ...current, connections }
         profiles.splice(profiles.indexOf(current), 1, gone)
         return { profile: gone }
       },
@@ -712,9 +716,10 @@ export function createMockClient(
         if (!(path in files)) throw new Error(`no such document: ${path}`)
         return { markdown: files[path] }
       },
-      /* A run here finishes the moment it starts: what is under test at this end is the
-         asking and the painting, not the walking. */
-      'POST /api/task/run': async ({ root, path }) => {
+      /* A run here finishes the moment it starts, with the one exception the page has a
+         gesture for: a step that waits on a person leaves the run standing at it, because
+         what is under test at this end is the asking and the painting, not the walking. */
+      'POST /api/task/run': async ({ root, path, input }) => {
         const files = filesIn(root)
         if (!(path in files)) throw new Error(`no such task: ${path}`)
         const task = parseTask(files[path])
@@ -727,25 +732,64 @@ export function createMockClient(
           startedAt: 0,
           finishedAt: 0,
           state: 'done',
-          steps: order.flat().flatMap((id) => {
-            const node = byId.get(id)
-            if (!node) return []
-            // A node switched off did no work and passed what fed it straight on.
-            return [
-              node.off
-                ? { node: id, name: node.name, kind: node.kind, state: 'off' as const }
-                : {
-                    node: id,
-                    name: node.name,
-                    kind: node.kind,
-                    state: 'done' as const,
-                    output: `ran ${node.name}`,
-                  },
-            ]
-          }),
+          steps: [],
+        }
+        // Everything past a step that waits is left waiting with it, the way the engine
+        // leaves a run standing rather than walking on without an answer.
+        let held = false
+        for (const id of order.flat()) {
+          const node = byId.get(id)
+          if (!node) continue
+          const step = { node: id, name: node.name, kind: node.kind }
+          if (held) run.steps.push({ ...step, state: 'waiting' })
+          // A node switched off did no work and passed what fed it straight on.
+          else if (node.off) run.steps.push({ ...step, state: 'off' })
+          else if (node.kind === 'agent.approve') {
+            held = true
+            run.state = 'paused'
+            run.finishedAt = undefined
+            run.steps.push({ ...step, state: 'held', asked: node.question || node.name })
+          } else
+            run.steps.push({
+              ...step,
+              state: 'done',
+              // What was typed opens the run, the way a trigger's payload does.
+              output:
+                node.kind === 'trigger.manual' && input ? input : `ran ${node.name}`,
+            })
         }
         taskRuns.push(run)
         return { run }
+      },
+      /* Approving passes the held step; denying stops it and ends what it fed. Either way
+         the run finishes here — the mock has no walk to send back in. */
+      'POST /api/task/approve': async ({ root, path, approved, note, run: id }) => {
+        const at = taskRuns.findIndex(
+          (one) =>
+            one.ref.root === root &&
+            one.ref.path === path &&
+            one.state === 'paused' &&
+            (id === undefined || one.id === id),
+        )
+        if (at < 0) throw new Error('nothing is waiting to be approved')
+        const run = taskRuns[at]
+        taskRuns[at] = {
+          ...run,
+          state: 'done',
+          finishedAt: 0,
+          steps: run.steps.map((step) => {
+            if (step.state === 'held')
+              return approved
+                ? { ...step, state: 'done' as const }
+                : { ...step, state: 'stopped' as const, halted: note || 'not approved' }
+            if (step.state === 'waiting')
+              return approved
+                ? { ...step, state: 'done' as const, output: `ran ${step.name}` }
+                : { ...step, state: 'skipped' as const }
+            return step
+          }),
+        }
+        return { run: taskRuns[at] }
       },
       'POST /api/task/stop': async ({ root, path }) => {
         const idx = taskRuns.findLastIndex(
@@ -911,6 +955,17 @@ export function createMockClient(
       },
       'GET /api/task/log': async () => ({ runs: [...taskRuns].reverse() }),
       'GET /api/personas': async () => ({ personas: [...(seed.personas ?? [])] }),
+      'GET /api/integrations': async () => ({
+        integrations: [
+          {
+            id: 'github',
+            label: 'GitHub',
+            what: 'Watch issues, pull requests, mentions and checks. Comment, and open pull requests.',
+            connect: 'device' as const,
+            connectedAs: profileOf()?.connections.github ?? null,
+          },
+        ],
+      }),
       'GET /api/chats': async () => ({
         chats: [...chats]
           .reverse()

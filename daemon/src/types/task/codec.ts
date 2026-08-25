@@ -14,9 +14,14 @@ import type {
   MuseNode,
   NoteNode,
   ShellNode,
+  ApproveNode,
+  HttpMethod,
+  HttpNode,
+  Weekday,
   Task,
   TaskNode,
 } from './schema'
+import { HTTP_METHODS, WEEKDAYS } from './schema'
 import { isSlug } from '../github'
 
 export class TaskError extends AppError {}
@@ -68,6 +73,29 @@ function github(raw: Record<string, unknown>, id: string): { repo?: string } {
   return { repo }
 }
 
+/** How many more times a step may be tried after it fails. Zero is written as nothing:
+ *  a step that is not retried is the plain case and says so by staying silent. */
+function tries(raw: Record<string, unknown>, id: string): { retries?: number } {
+  if (raw.retries === undefined) return {}
+  const retries = finite(raw.retries, `${id} retries`)
+  if (!Number.isInteger(retries) || retries < 0) fail(`${id} retries is not a count`)
+  return retries === 0 ? {} : { retries }
+}
+
+/** The days a time trigger keeps to. An unknown one is refused by name rather than dropped:
+ *  a trigger silently firing every day because a day was misspelled is the worse answer. */
+function onDays(raw: Record<string, unknown>, id: string): { days?: Weekday[] } {
+  if (raw.days === undefined) return {}
+  if (!Array.isArray(raw.days)) fail(`${id} days is not a list`)
+  const days = raw.days.map((day, at) => {
+    const named = text(day, `${id} day ${at}`)
+    if (!(WEEKDAYS as readonly string[]).includes(named))
+      fail(`${id} has unknown day ${JSON.stringify(named)}`)
+    return named as Weekday
+  })
+  return days.length === 0 ? {} : { days }
+}
+
 /** How long a watch leaves GitHub alone between looks. */
 function watched(raw: Record<string, unknown>, id: string): { minutes?: number } {
   return raw.minutes === undefined ? {} : { minutes: span(raw.minutes, id) }
@@ -100,7 +128,7 @@ function node(value: unknown, index: number): TaskNode {
     case 'trigger.time': {
       const at = text(raw.at, `${id} at`)
       if (!TIME.test(at)) fail(`${id} at must be HH:MM`)
-      return { kind: raw.kind, ...base, at }
+      return { kind: raw.kind, ...base, at, ...onDays(raw, id) }
     }
     case 'trigger.file':
       return { kind: raw.kind, ...base, path: text(raw.path, `${id} path`) }
@@ -155,7 +183,7 @@ function node(value: unknown, index: number): TaskNode {
       }
       if (raw.persona !== undefined) claude.persona = text(raw.persona, `${id} persona`)
       if (raw.minutes !== undefined) claude.minutes = span(raw.minutes, id)
-      return claude
+      return { ...claude, ...tries(raw, id) }
     }
     case 'agent.muse': {
       const muse: MuseNode = {
@@ -165,7 +193,7 @@ function node(value: unknown, index: number): TaskNode {
       }
       if (raw.persona !== undefined) muse.persona = text(raw.persona, `${id} persona`)
       if (raw.minutes !== undefined) muse.minutes = span(raw.minutes, id)
-      return muse
+      return { ...muse, ...tries(raw, id) }
     }
     case 'agent.shell': {
       const shell: ShellNode = {
@@ -174,7 +202,27 @@ function node(value: unknown, index: number): TaskNode {
         command: text(raw.command, `${id} command`),
       }
       if (raw.minutes !== undefined) shell.minutes = span(raw.minutes, id)
-      return shell
+      return { ...shell, ...tries(raw, id) }
+    }
+    case 'agent.approve': {
+      const approve: ApproveNode = { kind: raw.kind, ...base }
+      if (raw.question !== undefined)
+        approve.question = text(raw.question, `${id} question`)
+      return approve
+    }
+    case 'agent.notify':
+      return { kind: raw.kind, ...base }
+    case 'agent.http': {
+      const http: HttpNode = { kind: raw.kind, ...base, url: text(raw.url, `${id} url`) }
+      if (raw.method !== undefined) {
+        const method = text(raw.method, `${id} method`).toUpperCase()
+        if (!(HTTP_METHODS as readonly string[]).includes(method))
+          fail(`${id} has unknown method ${JSON.stringify(method)}`)
+        http.method = method as HttpMethod
+      }
+      if (raw.header !== undefined) http.header = text(raw.header, `${id} header`)
+      if (raw.minutes !== undefined) http.minutes = span(raw.minutes, id)
+      return http
     }
     case 'agent.gate': {
       const pattern = text(raw.pattern, `${id} pattern`)
@@ -234,6 +282,9 @@ export function parseTask(source: string): Task {
 const where = (repo: string | undefined) => (repo === undefined ? {} : { repo })
 const every = (minutes: number | undefined) => (minutes === undefined ? {} : { minutes })
 
+/** The tries a step is allowed after a failure, written only where it was asked for. */
+const again = (retries: number | undefined) => (retries === undefined ? {} : { retries })
+
 /** Canonical two-space JSON in schema field order, so a load–save round trip is
  *  byte-identical and tasks diff cleanly in git. */
 export function serializeTask(task: Task): string {
@@ -254,7 +305,11 @@ export function serializeTask(task: Task): string {
         case 'trigger.interval':
           return { ...head, minutes: one.minutes }
         case 'trigger.time':
-          return { ...head, at: one.at }
+          return {
+            ...head,
+            at: one.at,
+            ...(one.days === undefined ? {} : { days: one.days }),
+          }
         case 'trigger.file':
           return { ...head, path: one.path }
         case 'trigger.github.issue':
@@ -295,6 +350,7 @@ export function serializeTask(task: Task): string {
             prompt: one.prompt,
             ...(one.persona === undefined ? {} : { persona: one.persona }),
             ...(one.minutes === undefined ? {} : { minutes: one.minutes }),
+            ...again(one.retries),
           }
         case 'agent.muse':
           return {
@@ -302,11 +358,28 @@ export function serializeTask(task: Task): string {
             prompt: one.prompt,
             ...(one.persona === undefined ? {} : { persona: one.persona }),
             ...(one.minutes === undefined ? {} : { minutes: one.minutes }),
+            ...again(one.retries),
           }
         case 'agent.shell':
           return {
             ...head,
             command: one.command,
+            ...(one.minutes === undefined ? {} : { minutes: one.minutes }),
+            ...again(one.retries),
+          }
+        case 'agent.approve':
+          return {
+            ...head,
+            ...(one.question === undefined ? {} : { question: one.question }),
+          }
+        case 'agent.notify':
+          return head
+        case 'agent.http':
+          return {
+            ...head,
+            url: one.url,
+            ...(one.method === undefined ? {} : { method: one.method }),
+            ...(one.header === undefined ? {} : { header: one.header }),
             ...(one.minutes === undefined ? {} : { minutes: one.minutes }),
           }
         case 'agent.gate':

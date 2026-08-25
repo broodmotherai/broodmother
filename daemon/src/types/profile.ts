@@ -17,14 +17,15 @@ export interface Profile {
    *  a profile says about an agent: everything else an agent needs is said in the line. */
   agentCommands: AgentCommands
   soul: string | null // markdown appended to the system prompt of claude shells opened here
-  /** The GitHub login this profile is connected as. Never the token: that is the server's,
-   *  and a secret that reaches the browser is a secret in a screenshot. */
-  github: string | null
+  /** The services this profile is connected to, by provider id, and who it is each of them
+   *  as — `github` to a login, and whatever comes after it. Never the tokens: those are the
+   *  server's, and a secret that reaches the browser is a secret in a screenshot. */
+  connections: Record<string, string>
   /** The model providers this profile holds a credential for, by id — `anthropic`, and
    *  whatever comes after it. Never the credentials, for the same reason. */
   models: string[]
 }
 
-// The half a person edits. The GitHub connection and the model keys are not in it — they are
-// made and broken by their own routes, not by typing.
-export type Identity = Omit<Profile, 'name' | 'path' | 'github' | 'models'>
+// The half a person edits. The connections and the model keys are not in it — they are made
+// and broken by their own routes, not by typing.
+export type Identity = Omit<Profile, 'name' | 'path' | 'connections' | 'models'>

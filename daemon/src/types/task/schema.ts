@@ -37,10 +37,17 @@ export interface IntervalTrigger extends NodeBase {
   minutes: number
 }
 
+/** The days a time trigger may fire on, as cron writes them. */
+export const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
+
+export type Weekday = (typeof WEEKDAYS)[number]
+
 export interface TimeTrigger extends NodeBase {
   kind: 'trigger.time'
   /** Local time of day, HH:MM. */
   at: string
+  /** The days it fires on. Unset is every day, which is what one written before this said. */
+  days?: Weekday[]
 }
 
 export interface FileTrigger extends NodeBase {
@@ -56,6 +63,8 @@ export interface ClaudeNode extends NodeBase {
   persona?: string
   /** How long the errand may take, in minutes. Unset is 5 — a step, not a day. */
   minutes?: number
+  /** How many more times to try after a failure. Unset is none. */
+  retries?: number
 }
 
 export interface MuseNode extends NodeBase {
@@ -65,6 +74,8 @@ export interface MuseNode extends NodeBase {
   persona?: string
   /** How long the errand may take, in minutes. Unset is 5 — a step, not a day. */
   minutes?: number
+  /** How many more times to try after a failure. Unset is none. */
+  retries?: number
 }
 
 export interface ShellNode extends NodeBase {
@@ -72,7 +83,52 @@ export interface ShellNode extends NodeBase {
   /** Run by `sh -c` in the checkout, upstream output on stdin, stdout onward. */
   command: string
   minutes?: number
+  /** How many more times to try after a failure. Unset is none. */
+  retries?: number
 }
+
+/**
+ * Waits for a person. The run stops here wearing the question and keeps its place; approving
+ * passes what fed it straight on, and denying ends the branch the way a held gate does.
+ *
+ * What it is for is standing in front of the steps that reach outside — a comment, a pull
+ * request, an email — where being nearly right is not good enough.
+ */
+export interface ApproveNode extends NodeBase {
+  kind: 'agent.approve'
+  /** What to ask, where the node's name is not the whole question. */
+  question?: string
+}
+
+/**
+ * Puts a notification on the desktop and hands what fed it straight on, so it sits in the
+ * middle of a chain rather than at the end of one. What it says is the node's name and
+ * whatever reached it — a step whose whole job is telling you needs nothing configured.
+ */
+export interface NotifyNode extends NodeBase {
+  kind: 'agent.notify'
+}
+
+/**
+ * Sends the step's input to a URL and hands the response onward. The escape hatch: a Discord
+ * webhook, a Zapier hook, something internal — everything that has an address and no folder
+ * of its own here.
+ */
+export interface HttpNode extends NodeBase {
+  kind: 'agent.http'
+  url: string
+  /** Unset is POST: the step has something to say, and saying it is what this is for. */
+  method?: HttpMethod
+  /** One header, written as it goes on the wire — `Authorization: Bearer …`. */
+  header?: string
+  minutes?: number
+}
+
+/** The verbs a step may use. A closed list because a typo in a method is a request that
+ *  fails at the far end for a reason nothing here would explain. */
+export const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const
+
+export type HttpMethod = (typeof HTTP_METHODS)[number]
 
 export interface GateNode extends NodeBase {
   kind: 'agent.gate'
@@ -158,6 +214,9 @@ export type TaskNode =
   | ClaudeNode
   | MuseNode
   | ShellNode
+  | ApproveNode
+  | NotifyNode
+  | HttpNode
   | GithubCommentNode
   | GithubPullNode
   | GateNode
@@ -203,7 +262,7 @@ export function triggerLabel(node: TaskNode): string | null {
     case 'trigger.interval':
       return `every ${node.minutes} minute${node.minutes === 1 ? '' : 's'}`
     case 'trigger.time':
-      return `at ${node.at}`
+      return `at ${node.at}${onDays(node.days)}`
     case 'trigger.file':
       return `when ${node.path} changes`
     case 'trigger.github.issue':
@@ -219,6 +278,13 @@ export function triggerLabel(node: TaskNode): string | null {
     default:
       return null
   }
+}
+
+/** The days a time trigger keeps to, where it keeps to any — read as part of the sentence
+ *  the trigger is, since one that fires twice a week is not one that fires daily. */
+function onDays(days: Weekday[] | undefined): string {
+  if (!days || days.length === 0) return ''
+  return ` on ${days.join(', ')}`
 }
 
 /** The search a watch narrows itself with, where it has one — read as part of the sentence
@@ -250,6 +316,9 @@ export const TASK_KINDS: TaskKind[] = [
   'agent.claude',
   'agent.muse',
   'agent.shell',
+  'agent.approve',
+  'agent.notify',
+  'agent.http',
   'agent.github.comment',
   'agent.github.pull',
   'agent.gate',
@@ -288,6 +357,9 @@ export const KIND_LABEL: Record<TaskKind, string> = {
   'agent.claude': 'Claude Code',
   'agent.muse': 'Muse Code',
   'agent.shell': 'Command',
+  'agent.approve': 'Wait for approval',
+  'agent.notify': 'Notify me',
+  'agent.http': 'Call a URL',
   'trigger.github.issue': 'When an issue changes',
   'trigger.github.pull': 'When a pull request changes',
   'trigger.github.mention': 'When you are mentioned',
@@ -307,6 +379,9 @@ export const KIND_SEED: Record<TaskKind, Partial<TaskNode>> = {
   'agent.claude': { prompt: '' },
   'agent.muse': { prompt: '' },
   'agent.shell': { command: '' },
+  'agent.approve': {},
+  'agent.notify': {},
+  'agent.http': { url: '' },
   'trigger.github.issue': {},
   'trigger.github.pull': {},
   'trigger.github.mention': {},

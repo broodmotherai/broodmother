@@ -107,3 +107,27 @@ it('forgets a task that goes away, so its return starts fresh', async () => {
   // Five and a half minutes since first sight, but it was re-armed when it came back.
   expect(h.fired).toHaveLength(0)
 })
+
+/* The other clock has to agree with cron's: a trigger that keeps to two days is silent on
+   the other five under both, or a laptop and a box in the corner run different tasks. */
+it('fires a time trigger only on the days it keeps to', async () => {
+  // A Monday, twenty seconds before four.
+  const start = new Date(2026, 0, 5, 3, 59, 40).getTime()
+  const weekly: TaskNode = {
+    id: 'standup',
+    kind: 'trigger.time',
+    name: 'standup',
+    x: 0,
+    y: 0,
+    at: '04:00',
+    days: ['mon', 'wed'],
+  }
+  const h = harness([weekly], start)
+  await h.beat(0)
+  await h.beat(30_000) // Monday's crossing
+  expect(h.fired).toHaveLength(1)
+  await h.beat(24 * 60 * 60_000) // Tuesday's — not a day it keeps to
+  expect(h.fired).toHaveLength(1)
+  await h.beat(24 * 60 * 60_000) // Wednesday's
+  expect(h.fired).toHaveLength(2)
+})

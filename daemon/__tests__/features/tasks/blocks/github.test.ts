@@ -7,7 +7,7 @@ import type {
 import { cleanup, tempDir } from '@daemon/test'
 import { commentBlock, pullBlock } from '@daemon/features/tasks/blocks/github'
 import type { GithubReach, StepCtx } from '@daemon/features/tasks/blocks/Block'
-import { writeGithubTarget } from '@daemon/features/tasks/scratch'
+import { writeSubject } from '@daemon/features/tasks/scratch'
 import type { GitHubService } from '@daemon/services/GitHubService'
 
 afterAll(cleanup)
@@ -43,12 +43,14 @@ async function ctxAt(over: Partial<StepCtx> = {}): Promise<StepCtx> {
     inputPath: path.join(scratch, 'n1.in.md'),
     outputPath: path.join(scratch, 'n1.out.md'),
     verdictPath: path.join(scratch, 'n1.verdict.json'),
+    signal: new AbortController().signal,
+    notify: () => {},
     routes: [],
     env: {},
     persona: null,
     brief: null,
     scratch,
-    github: null,
+    reach: async () => null,
     ...over,
   }
 }
@@ -75,8 +77,9 @@ const pull = (over: Partial<GithubPullNode> = {}): GithubPullNode => ({
    every time, so the comment is what the step before it wrote — never a field on the node. */
 it('says what the step before it wrote, on the issue the run is about', async () => {
   const github = reach()
-  const ctx = await ctxAt({ github: github.reach })
-  await writeGithubTarget(ctx.scratch, {
+  const ctx = await ctxAt({ reach: (async () => github.reach) as StepCtx['reach'] })
+  await writeSubject(ctx.scratch, {
+    provider: 'github',
     repo: 'you/handbook',
     number: 7,
     url: 'https://github.com/you/handbook/issues/7',
@@ -94,8 +97,9 @@ it('says what the step before it wrote, on the issue the run is about', async ()
 
 it('prefers what the node was told over what the run was about', async () => {
   const github = reach()
-  const ctx = await ctxAt({ github: github.reach })
-  await writeGithubTarget(ctx.scratch, {
+  const ctx = await ctxAt({ reach: (async () => github.reach) as StepCtx['reach'] })
+  await writeSubject(ctx.scratch, {
+    provider: 'github',
     repo: 'you/handbook',
     number: 7,
     url: 'https://github.com/you/handbook/issues/7',
@@ -107,7 +111,7 @@ it('prefers what the node was told over what the run was about', async () => {
 
 it('stops rather than guessing which issue it meant', async () => {
   const github = reach()
-  const ctx = await ctxAt({ github: github.reach })
+  const ctx = await ctxAt({ reach: (async () => github.reach) as StepCtx['reach'] })
 
   await expect(commentBlock.run(comment(), ctx)).rejects.toThrow(/which issue/)
   expect(github.said.comment).toBeUndefined()
@@ -115,7 +119,7 @@ it('stops rather than guessing which issue it meant', async () => {
 
 it('stops where the step before it said nothing at all', async () => {
   const github = reach()
-  const ctx = await ctxAt({ github: github.reach, input: '  \n ' })
+  const ctx = await ctxAt({ reach: (async () => github.reach) as StepCtx['reach'], input: '  \n ' })
 
   await expect(commentBlock.run(comment({ number: 7 }), ctx)).rejects.toThrow(/nothing to say/)
 })
@@ -133,7 +137,7 @@ it('needs a connection, and says which one is missing', async () => {
 it('opens a pull request titled by the first line of what it was handed', async () => {
   const github = reach()
   const ctx = await ctxAt({
-    github: github.reach,
+    reach: (async () => github.reach) as StepCtx['reach'],
     input: '# Tidy the handbook\n\nEvery page got a second read.\n',
   })
 
@@ -153,7 +157,7 @@ it('opens a pull request titled by the first line of what it was handed', async 
 
 it('takes the base, head, title and draft it was given', async () => {
   const github = reach()
-  const ctx = await ctxAt({ github: github.reach, input: 'what changed' })
+  const ctx = await ctxAt({ reach: (async () => github.reach) as StepCtx['reach'], input: 'what changed' })
 
   await pullBlock.run(
     pull({ base: 'trunk', head: 'work', title: 'the notes', draft: true }),
@@ -170,14 +174,32 @@ it('takes the base, head, title and draft it was given', async () => {
 
 it('refuses to open a branch against itself', async () => {
   const github = reach({ branch: 'main' })
-  const ctx = await ctxAt({ github: github.reach })
+  const ctx = await ctxAt({ reach: (async () => github.reach) as StepCtx['reach'] })
 
   await expect(pullBlock.run(pull(), ctx)).rejects.toThrow(/nothing to open/)
 })
 
 it('stops where the checkout has no GitHub remote and the node names none', async () => {
   const github = reach({ slug: null })
-  const ctx = await ctxAt({ github: github.reach, input: 'a title' })
+  const ctx = await ctxAt({ reach: (async () => github.reach) as StepCtx['reach'], input: 'a title' })
 
   await expect(pullBlock.run(pull(), ctx)).rejects.toThrow(/which repository/)
+})
+
+/* The tag is what makes one `about.json` serve every provider: a subject somebody else's
+   watch wrote is not this step's to act on, whatever shape it happens to have. */
+it('will not act on a subject another provider wrote', async () => {
+  const github = reach({ slug: null })
+  const ctx = await ctxAt({ reach: (async () => github.reach) as StepCtx['reach'] })
+  await writeSubject(ctx.scratch, {
+    provider: 'slack',
+    repo: 'you/handbook',
+    number: 7,
+    url: 'https://example.com/thread',
+  } as unknown as Parameters<typeof writeSubject>[1])
+
+  await expect(commentBlock.run(comment(), ctx)).rejects.toThrow(
+    'nothing says which repository',
+  )
+  expect(github.said.comment).toBeUndefined()
 })

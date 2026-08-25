@@ -28,7 +28,7 @@ async function connected(seed: Parameters<typeof createMockClient>[0] = {}) {
         sshKeyPath: null,
         agentCommands: {},
         soul: null,
-        github: 'you',
+        connections: { github: 'you' },
         models: [],
       },
     ],

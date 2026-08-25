@@ -4,8 +4,9 @@ import { DEFAULT_SOUL } from '@daemon/features/brief/soul'
 import {
   createProfile,
   findProfile,
+  readConnection,
   readModelKeys,
-  writeAccount,
+  writeConnection,
   writeIdentity,
   writeModelKey,
 } from '@daemon/utils/profiles'
@@ -111,17 +112,60 @@ it('keeps a model key in the profile file and hands back only which provider it 
 it('leaves the rest of the profile alone when a key is written or forgotten', async () => {
   const home = await tempDir()
   const made = await createProfile({ name: 'ada', ...IDENTITY }, home)
-  const connected = await writeAccount(made, { login: 'ada', token: 'gho_x' })
+  const connected = await writeConnection(made, 'github', { login: 'ada', token: 'gho_x' })
   const keyed = await writeModelKey(connected, 'anthropic', { type: 'key', key: 'sk-1' })
 
   await writeIdentity(keyed, { ...IDENTITY, color: '#ffffff' })
   const after = await findProfile('ada', home)
-  expect(after?.github).toBe('ada')
+  expect(after?.connections.github).toBe('ada')
   expect(after?.models).toEqual(['anthropic'])
   expect(after?.color).toBe('#ffffff')
 
   const forgotten = await writeModelKey(after!, 'anthropic', null)
   expect(forgotten.models).toEqual([])
   expect(await readModelKeys(forgotten)).toEqual({})
-  expect((await findProfile('ada', home))?.github).toBe('ada')
+  expect((await findProfile('ada', home))?.connections.github).toBe('ada')
+})
+
+/* One shape for every service, so a second is an entry rather than another key beside
+   `github`: connecting to one is not signing out of another. */
+it('holds a connection per provider, and hands back only who each is as', async () => {
+  const home = await tempDir()
+  const made = await createProfile({ name: 'ada', ...IDENTITY }, home)
+  expect(made.connections).toEqual({})
+
+  const connected = await writeConnection(made, 'github', { login: 'ada', token: 'gho_x' })
+  expect(connected.connections).toEqual({ github: 'ada' })
+  expect(await readConnection(connected, 'github')).toEqual({
+    login: 'ada',
+    token: 'gho_x',
+  })
+
+  const listed = await findProfile('ada', home)
+  expect(listed?.connections).toEqual({ github: 'ada' })
+  expect(JSON.stringify(listed)).not.toContain('gho_x')
+
+  const gone = await writeConnection(listed!, 'github', null)
+  expect(gone.connections).toEqual({})
+  expect(await readConnection(gone, 'github')).toBeNull()
+})
+
+/* A profile file written before connections were a record still reads, and the first write
+   carries it over. The old key goes on any write at all — left behind, it would let a
+   disconnect be undone by the fallback that reads it. */
+it('migrates a profile that still says github at the root', async () => {
+  const home = await tempDir()
+  const made = await createProfile({ name: 'ada', ...IDENTITY }, home)
+  const raw = JSON.parse(await readFile(made.path, 'utf8')) as Record<string, unknown>
+  delete raw.connections
+  await writeFile(made.path, JSON.stringify({ ...raw, github: { login: 'ada', token: 'gho_old' } }))
+
+  expect((await findProfile('ada', home))?.connections).toEqual({ github: 'ada' })
+  expect(await readConnection(made, 'github')).toEqual({ login: 'ada', token: 'gho_old' })
+
+  const gone = await writeConnection(made, 'github', null)
+  expect(gone.connections).toEqual({})
+  const after = JSON.parse(await readFile(made.path, 'utf8')) as Record<string, unknown>
+  expect(after.github).toBeUndefined()
+  expect((await findProfile('ada', home))?.connections).toEqual({})
 })

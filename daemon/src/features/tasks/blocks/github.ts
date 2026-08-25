@@ -10,20 +10,28 @@
  */
 
 import { TaskError } from '@daemon/types/task/codec'
-import { readGithubTarget } from '../scratch'
+import { readSubject } from '../scratch'
 import { defineBlock, type GithubReach, type StepCtx, type StepResult } from './Block'
 
-function reachOf(ctx: StepCtx): GithubReach {
-  if (!ctx.github)
+async function reachOf(ctx: StepCtx): Promise<GithubReach> {
+  const reach = await ctx.reach('github')
+  if (!reach)
     throw new TaskError('no GitHub connection — connect GitHub in Settings first')
-  return ctx.github
+  return reach
+}
+
+/** What the run is about, where that is something on GitHub. A subject another provider
+ *  wrote is not this step's to act on, so it reads as nothing rather than as a repository. */
+async function subjectOf(ctx: StepCtx) {
+  const about = await readSubject(ctx.scratch).catch(() => null)
+  return about?.provider === 'github' ? about : null
 }
 
 export const commentBlock = defineBlock({
   kind: 'agent.github.comment',
   async run(node, ctx): Promise<StepResult> {
-    const reach = reachOf(ctx)
-    const about = await readGithubTarget(ctx.scratch).catch(() => null)
+    const reach = await reachOf(ctx)
+    const about = await subjectOf(ctx)
     const repo = node.repo ?? about?.repo ?? reach.slug
     if (!repo)
       throw new TaskError(
@@ -44,7 +52,7 @@ export const commentBlock = defineBlock({
 export const pullBlock = defineBlock({
   kind: 'agent.github.pull',
   async run(node, ctx): Promise<StepResult> {
-    const reach = reachOf(ctx)
+    const reach = await reachOf(ctx)
     const repo = node.repo ?? reach.slug
     if (!repo)
       throw new TaskError(

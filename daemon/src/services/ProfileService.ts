@@ -20,10 +20,10 @@ import {
   keyFile,
   listProfiles,
   profileDir,
-  readAccount,
+  readConnection,
   readModelKeys,
   readPublicKey,
-  writeAccount,
+  writeConnection,
   writeIdentity,
   writeModelKey,
   type ModelKey,
@@ -143,7 +143,10 @@ export class ProfileService {
     if (!answer.token) return { pending: true, profile }
 
     const login = await githubLogin(answer.token)
-    this.profile = await writeAccount(profile, { login, token: answer.token })
+    this.profile = await writeConnection(profile, 'github', {
+      login,
+      token: answer.token,
+    })
     this.hostToken = answer.token
     await this.deps.reopen(this.deps.config().projectPath)
     return { pending: false, profile: this.profile }
@@ -152,7 +155,7 @@ export class ProfileService {
   /** The token goes and nothing else does. What was pushed with it stays pushed, and the
    *  projects it reached are still there — this is a credential, not a relationship. */
   async disconnectGithub(): Promise<Profile> {
-    this.profile = await writeAccount(this.require, null)
+    this.profile = await writeConnection(this.require, 'github', null)
     this.hostToken = null
     await this.deps.reopen(this.deps.config().projectPath)
     return this.profile
@@ -197,7 +200,9 @@ export class ProfileService {
   }
 
   private async reload(): Promise<void> {
-    this.hostToken = this.profile ? ((await readAccount(this.profile))?.token ?? null) : null
+    this.hostToken = this.profile
+      ? ((await readConnection(this.profile, 'github'))?.token ?? null)
+      : null
     this.modelKeys = this.profile ? await readModelKeys(this.profile) : {}
     await this.deps.followActivity()
   }
@@ -205,7 +210,7 @@ export class ProfileService {
   /** Throws rather than returning empty: a picker with nothing in it and no reason why is
    *  worse than being told the connection is gone. */
   private async requireToken(): Promise<string> {
-    const account = await readAccount(this.require)
+    const account = await readConnection(this.require, 'github')
     if (!account) throw new GithubError(`${this.require.name} is not connected to GitHub`)
     return account.token
   }
