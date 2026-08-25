@@ -418,6 +418,48 @@ describe('file routes', () => {
     const { call } = await server()
     expect((await call('GET', '/api/file?root=project&path=missing.png')).status).toBe(404)
   })
+
+  it('serves a page, so one can be looked at rather than read', async () => {
+    const { root, handle } = await server()
+    await writeFile(path.join(root, 'Report.html'), '<h1>hi</h1>')
+
+    const response = await fetch(`${handle.url}/api/file?root=project&path=Report.html`)
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toContain('text/html')
+    expect(await response.text()).toBe('<h1>hi</h1>')
+  })
+
+  /** A report is written next to the stylesheet that makes it readable, and the page asks
+   *  for that by a name relative to itself — which only resolves under the path form. */
+  it('serves what sits beside a page, addressed the way the page asks for it', async () => {
+    const { root, handle } = await server()
+    await mkdir(path.join(root, 'out'), { recursive: true })
+    await writeFile(path.join(root, 'out', 'Report.html'), '<link href="style.css">')
+    await writeFile(path.join(root, 'out', 'style.css'), 'h1 { color: red }')
+
+    const page = await fetch(`${handle.url}/api/file/project/out/Report.html`)
+    expect(page.status).toBe(200)
+    expect(page.headers.get('content-type')).toContain('text/html')
+
+    // The address the browser builds for `href="style.css"` seen from the page above.
+    const sheet = await fetch(`${handle.url}/api/file/project/out/style.css`)
+    expect(sheet.status).toBe(200)
+    expect(sheet.headers.get('content-type')).toContain('text/css')
+    expect(await sheet.text()).toBe('h1 { color: red }')
+  })
+
+  it('refuses through the path form everything it refuses through the query', async () => {
+    const { handle } = await server()
+    const status = async (url: string) => (await fetch(`${handle.url}${url}`)).status
+    expect(await status('/api/file/project/index.md')).toBe(400)
+    expect(await status('/api/file/nowhere/index.html')).toBe(400)
+    expect(await status('/api/file/project/missing.html')).toBe(404)
+    // Encoded, because a plain `../` never reaches the server: the client folds it into the
+    // URL before sending. This is the form that arrives as typed, and it is the one to
+    // refuse.
+    expect(await status('/api/file/project/..%2Fescape.html')).toBe(400)
+    expect(await status('/api/file/project/nested%2F..%2F..%2Fescape.html')).toBe(400)
+  })
 })
 
 describe('config routes', () => {

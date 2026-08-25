@@ -16,6 +16,7 @@ export type IconName =
   | 'alarm-clock'
   | 'project'
   | 'package'
+  | 'chevron-left'
   | 'library'
   | 'chevron-right'
   | 'play'
@@ -143,6 +144,7 @@ const GLYPHS: Record<IconName, ReactNode> = {
       <path d="m7.5 4.27 9 5.15" />
     </>
   ),
+  'chevron-left': <path d="m15 18-6-6 6-6" />,
   /* Books stood on a shelf. Records needed a glyph nothing else here wears: `package` is a
      repo in the tree and on the task page, and a row that borrowed it would read as one. */
   library: (

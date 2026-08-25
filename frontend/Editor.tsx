@@ -1,10 +1,13 @@
 'use client'
 
+import { isBrowserPath } from '@broodmother/browser'
+import type { DocRoot } from '@broodmother/types/doc'
+import { BrowserView } from '@/components/browser/BrowserView'
 import { type EditMode, Editor as MarkdownEditor } from '@/components/editor/Editor'
 import { render } from '@/src/markdown/Render'
 import { useEffect, useMemo, useState } from 'react'
 
-export type Mode = EditMode | 'reading'
+export type Mode = EditMode | 'reading' | 'preview'
 
 const isMarkdown = (path: string) => /\.(md|markdown|mdx)$/i.test(path)
 
@@ -13,31 +16,49 @@ export function Editor({
   markdown,
   onChange,
   path,
+  root,
+  revision = 0,
 }: {
   markdown: string
   onChange: (markdown: string) => void
   /** The repo path, which is what decides the language and whether preview applies. */
   path: string
+  /** Which tree the document is in. Only a document that has one can be shown as a page —
+   *  the browser fetches it by address rather than being handed it from here. */
+  root?: DocRoot
+  /** Bumped when the watcher says the file changed, which is what makes the page reload. */
+  revision?: number
 }) {
   const [mode, setMode] = useState<Mode>('live')
 
-  // Reading mode renders markdown. There is nothing to render for a source file, so ⌘E
-  // does nothing there rather than showing you a page of escaped code.
+  // What ⌘E swaps to, if anything. Markdown renders and a page is looked at; a source file
+  // has no second way of being shown, so ⌘E does nothing rather than escaping the code.
+  const other: Mode | null = isMarkdown(path)
+    ? 'reading'
+    : root && isBrowserPath(path)
+      ? 'preview'
+      : null
+
   useEffect(() => {
-    if (!isMarkdown(path)) return setMode('live')
+    if (!other) return setMode('live')
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'e' || !(event.metaKey || event.ctrlKey)) return
       event.preventDefault()
-      setMode((was) => (was === 'reading' ? 'live' : 'reading'))
+      setMode((was) => (was === other ? 'live' : other))
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [path])
+  }, [path, other])
 
   const html = useMemo(
     () => (mode === 'reading' ? render(markdown) : ''),
     [mode, markdown],
   )
+
+  // Nothing is passed through: the browser fetches the file itself, which is what keeps the
+  // frame off this app's origin.
+  if (mode === 'preview' && root)
+    return <BrowserView root={root} path={path} revision={revision} />
 
   if (mode === 'reading')
     return (
@@ -52,7 +73,8 @@ export function Editor({
       <MarkdownEditor
         markdown={markdown}
         onChange={onChange}
-        mode={mode}
+        // A page with no tree to fetch it from cannot be shown as one, so it is edited.
+        mode={mode === 'preview' ? 'live' : mode}
         path={path}
       />
     </div>

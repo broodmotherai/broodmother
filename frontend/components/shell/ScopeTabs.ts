@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { BLANK } from '@broodmother/browser'
 import type { DocPath, DocRef, DocRoot } from '@broodmother/types/doc'
 import type { RootEvent } from '@/State'
 import { docTab, type Tab } from './TabStrip'
@@ -17,7 +18,8 @@ const adopted = (text: string) =>
     .replaceAll('/doc/vault/', '/doc/project/')
     .replaceAll('/coworkers', '/agents')
 
-/** The count out of a `terminal:4`, so the next one made is not a name already taken. */
+/** The count out of a `terminal:4`, so the next pane made is not handed a name already
+ *  taken. One count covers both kinds: all it has to guarantee is that no id repeats. */
 const numberOf = (id: string) => Number(id.split(':')[1]) || 0
 
 // One array, so a scope with nothing open does not get a new one every render.
@@ -54,18 +56,19 @@ function after(path: DocPath, from: DocPath, to: DocPath): DocPath | null {
 
 export interface ScopeTabs {
   tabs: Tab[]
-  /** Every scope's terminal tabs, the current one's included. A shell keeps running while
-   *  you work somewhere else, so the panes that hold them stay mounted in the background —
-   *  the strip above only ever shows `tabs`, but these are what the panes render from. */
-  terminals: Tab[]
+  /** Every scope's panes, the current scope's included. A shell keeps running and a page
+   *  keeps its history while you work somewhere else, so what holds them stays mounted in
+   *  the background; the strip only ever shows `tabs`, but these are what render. */
+  panes: Tab[]
   /** The branches of this scope — the project's, or the repo you are in — that have a
    *  terminal tab open in them, whichever branch you are on now. Where the work is: a
    *  shell left running on a branch is the reason to go back to it. */
   liveBranches: string[]
-  /** A terminal if one is up, otherwise whatever the route names. */
+  /** A pane if one is up, otherwise whatever the route names. */
   activeId: string | null
-  /** Set only while a terminal tab is up, which is when the document pane is hidden. */
-  terminalTab: string | null
+  /** Which pane is up, and null while a document is. Set is exactly when the document pane
+   *  is hidden. */
+  paneTab: string | null
   /** Show a route, and mean it: a click that also moves the scope has already said where
    *  it wants to be, so the move honours it rather than restoring where you were. */
   show(route: string): void
@@ -73,6 +76,10 @@ export interface ScopeTabs {
   close(tab: Tab): void
   closeMany(going: Tab[]): void
   newTerminal(shell: TerminalKind, root: DocRoot): void
+  newBrowser(root: DocRoot): void
+  /** A browser tab's title and address are the page's, and neither is known until the guest
+   *  has been somewhere. Both arrive from the pane. */
+  amend(id: string, change: { url?: string; title?: string }): void
 }
 
 /** The open tabs and the route, filed under the scope they belong to: a file open in two
@@ -91,11 +98,11 @@ export function useScopeTabs({
   event: RootEvent | null
   navigate: (route: string) => void
 }): ScopeTabs {
-  const nextTerminal = useRef(1)
+  const nextPane = useRef(1)
   /** Whether the strip written down by whoever was here last has been read back yet. */
   const hydrated = useRef(false)
   const [byScope, setByScope] = useState<Record<string, Tab[]>>({})
-  const [terminalTab, setTerminalTab] = useState<string | null>(null)
+  const [paneTab, setPaneTab] = useState<string | null>(null)
 
   const tabs = byScope[scopeKey] ?? EMPTY
   const setTabs = useCallback(
@@ -149,7 +156,7 @@ export function useScopeTabs({
       })
       if (scopeKey.startsWith('#') || !pendingMove.current) return
     } else {
-      setTerminalTab(null)
+      setPaneTab(null)
       // Leaving a real place for a key still resolving: where to land is not known yet,
       // so the move waits rather than stopping somewhere on the way.
       if (scopeKey.startsWith('#')) {
@@ -198,7 +205,7 @@ export function useScopeTabs({
   }, [scopeKey, pathname])
 
   /**
-   * The terminals, read back the same way. A shell outlives the page it was opened from —
+   * The panes, read back the same way. A shell outlives the page it was opened from —
    * the backend is what is running it — so what a reload loses is not the shell but the tab
    * that knew its name, and that is the thing written down here.
    *
@@ -213,11 +220,11 @@ export function useScopeTabs({
         Tab[]
       >
       const restored = Object.entries(stored).filter(([, open]) => open.length > 0)
-      // Past every id that came back, so the next terminal made cannot be handed the name
-      // of one that is already running.
+      // Past every id that came back, so the next pane made cannot be handed the name of
+      // one that is already open.
       for (const [, open] of restored)
         for (const tab of open)
-          nextTerminal.current = Math.max(nextTerminal.current, numberOf(tab.id) + 1)
+          nextPane.current = Math.max(nextPane.current, numberOf(tab.id) + 1)
       if (restored.length)
         setByScope((all) => ({ ...Object.fromEntries(restored), ...all }))
     } catch {
@@ -232,13 +239,13 @@ export function useScopeTabs({
     if (!hydrated.current) return
     const keep = Object.entries(byScope)
       .filter(([key]) => !key.startsWith('#'))
-      .map(([key, open]) => [key, open.filter((tab) => tab.kind === 'terminal')] as const)
+      .map(([key, open]) => [key, open.filter((tab) => tab.kind !== 'doc')] as const)
       .filter(([, open]) => open.length > 0)
     localStorage.setItem(TABS_KEY, JSON.stringify(Object.fromEntries(keep)))
   }, [byScope])
 
   const doc = currentDoc(pathname)
-  const activeId = terminalTab ?? (doc ? docTab(doc).id : null)
+  const activeId = paneTab ?? (doc ? docTab(doc).id : null)
 
   // Opening a document is how a tab appears — from the tree, the palette, a link, or a reload
   // onto a URL that was already open.
@@ -246,7 +253,7 @@ export function useScopeTabs({
     if (!doc) return
     const tab = docTab(doc)
     setTabs((open) => (open.some((one) => one.id === tab.id) ? open : [...open, tab]))
-    setTerminalTab(null)
+    setPaneTab(null)
   }, [doc?.root, doc?.path])
 
   // A renamed document is the same document. Without this the route goes on naming a file
@@ -290,12 +297,14 @@ export function useScopeTabs({
 
   function show(route: string) {
     asked.current = route
-    setTerminalTab(null)
+    setPaneTab(null)
     navigate(route)
   }
 
   function pick(tab: Tab) {
-    if (tab.kind === 'terminal') return setTerminalTab(tab.id)
+    // Anything that is not a place in a tree takes the whole pane and has no route of its
+    // own, so picking one is not a navigation.
+    if (tab.kind !== 'doc') return setPaneTab(tab.id)
     show(docRoute(tab.ref))
   }
 
@@ -334,14 +343,37 @@ export function useScopeTabs({
   }
 
   function newTerminal(shell: TerminalKind, root: DocRoot) {
-    const id = `terminal:${nextTerminal.current++}`
+    const id = `terminal:${nextPane.current++}`
     setTabs((open) => [...open, { id, kind: 'terminal', shell, root }])
-    setTerminalTab(id)
+    setPaneTab(id)
   }
 
-  const terminals = Object.values(byScope)
+  /** On the blank page: a browser tab is made because you have somewhere to go, and the bar
+   *  is where you say where. */
+  function newBrowser(root: DocRoot) {
+    const id = `browser:${nextPane.current++}`
+    setTabs((open) => [...open, { id, kind: 'browser', url: BLANK, root }])
+    setPaneTab(id)
+  }
+
+  /** Across every scope: a page goes on loading while you are somewhere else, and its tab is
+   *  filed under the scope it was opened in. */
+  function amend(id: string, change: { url?: string; title?: string }) {
+    setByScope((all) =>
+      Object.fromEntries(
+        Object.entries(all).map(([key, open]) => [
+          key,
+          open.map((tab) =>
+            tab.id === id && tab.kind === 'browser' ? { ...tab, ...change } : tab,
+          ),
+        ]),
+      ),
+    )
+  }
+
+  const panes = Object.values(byScope)
     .flat()
-    .filter((tab) => tab.kind === 'terminal')
+    .filter((tab) => tab.kind !== 'doc')
 
   // Every key of this project and scope is this key up to its branch, so the branches
   // holding a shell are the tails of the keys that hold one. Keys still resolving are not
@@ -359,14 +391,16 @@ export function useScopeTabs({
 
   return {
     tabs,
-    terminals,
+    panes,
     liveBranches,
     activeId,
-    terminalTab,
+    paneTab,
     show,
     pick,
     close,
     closeMany,
     newTerminal,
+    newBrowser,
+    amend,
   }
 }

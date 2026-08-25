@@ -52,3 +52,14 @@ export interface GetFile {
   request: DocRef
   response: ArrayBuffer
 }
+
+/**
+ * The same bytes, with the path in the URL rather than in a query. A page on screen resolves
+ * its own `href` and `src` against the directory it appears to be in, and under a query it
+ * appears to be in the site root — so a report and the stylesheet beside it are served from
+ * here instead, where being next to each other survives the trip.
+ */
+export interface GetFileAt {
+  request: DocRef
+  response: ArrayBuffer
+}
