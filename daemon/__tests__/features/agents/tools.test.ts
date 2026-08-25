@@ -25,7 +25,10 @@ echo 'this is not json'
 echo '{"type":"result","subtype":"success","is_error":false,"result":"Wrote the one-pager to '"$FAKE_OUT"'."}'
 `
 
-async function hands(env: Record<string, string> = {}, opts: { claude?: string } = {}) {
+async function hands(
+  env: Record<string, string> = {},
+  opts: { claude?: string; message?: (to: string, message: string) => string } = {},
+) {
   const dir = await tempDir()
   const checkout = path.join(dir, 'local')
   await mkdir(checkout, { recursive: true })
@@ -36,6 +39,7 @@ async function hands(env: Record<string, string> = {}, opts: { claude?: string }
   const notes: [string, string][] = []
   const errands: { paths: string[]; note: string }[] = []
   const tools = agentTools({
+    message: opts.message ?? (() => 'delivered'),
     tree: () => new Tree(checkout),
     call: () => Promise.reject(new Error('not here')),
     checkout: () => checkout,
@@ -65,7 +69,15 @@ async function hands(env: Record<string, string> = {}, opts: { claude?: string }
 it('has the chat tools and hands besides', async () => {
   const { tools } = await hands()
   expect(Object.keys(tools)).toEqual(
-    expect.arrayContaining(['read_doc', 'write_doc', 'api', 'claude_code', 'shell', 'list_attachments']),
+    expect.arrayContaining([
+      'read_doc',
+      'write_doc',
+      'api',
+      'claude_code',
+      'shell',
+      'list_attachments',
+      'agent_message',
+    ]),
   )
 })
 
@@ -154,4 +166,23 @@ it('titles a hand by what it was handed', () => {
   )
   expect(titleOf('shell', { command: 'git status' })).toBe('$ git status')
   expect(titleOf('list_attachments', {})).toBe('list attachments')
+})
+
+/* Saying something to a colleague answers with what became of it rather than with their reply:
+   their turn runs on its own, and waiting for it would be this one blocked for as long as
+   somebody else's whole afternoon. */
+it('hands a message to a colleague and says it went', async () => {
+  const said: [string, string][] = []
+  const { run } = await hands(
+    {},
+    {
+      message: (to, message) => {
+        said.push([to, message])
+        return `delivered to ${to} — their answer will come back to you here`
+      },
+    },
+  )
+  expect(await run('agent_message', { to: 'Priya', message: 'how is the export' })) //
+    .toBe('delivered to Priya — their answer will come back to you here')
+  expect(said).toEqual([['Priya', 'how is the export']])
 })

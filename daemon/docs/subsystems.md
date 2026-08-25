@@ -126,6 +126,28 @@ ordinary state of a small project, and a line that would close a loop is refused
 asked — who do I escalate to — has no answer inside a cycle. Removing an agent brings its
 reports up under its own lead, which is what an org does when somebody leaves.
 
+Agents talk to each other through `features/agents/messages.ts`. Who there is to talk to is in
+the system prompt rather than behind a tool — `Agents.team` builds the roster per turn out of
+the chart and the personas, and `brief.ts` writes it out — and `agent_message` is the one
+tool. A message is delivered
+by `Chats.deliver`, which is the socket's own reply path with nobody having asked for it
+through a socket: the same bookkeeping that already survives a browser closing mid-answer.
+Whoever has the thread open is in `Chats.watching` and watches it arrive. It returns the reply once it
+settles, which is how the answer finds its way back into the sender's thread as a message from
+the recipient, stored under `from` so the page draws it as theirs.
+
+Replies on one thread run one at a time, held in `Chats.tail` as a promise per chat. The socket
+still refuses a second send outright — somebody who pressed send twice meant it once — while a
+delivery waits its turn, because an agent handed work while it is working should get it when it
+is free. The queue is in memory: a message that did not survive a restart is a message that was
+never said.
+
+**The hop budget is load-bearing.** Every delivery carries a count one higher than the message
+that prompted it, held on the reply in flight (`Chats.hopsIn`), and `MAX_HOPS` is 4. Two agents
+with a message tool and no counter will answer each other politely until the key runs out, and
+each round is a full turn with a real model. It reads like a check that could be dropped. It is
+the only thing standing there.
+
 ## Brief
 
 `src/brief/{core,making,soul}.ts`
@@ -145,19 +167,23 @@ lets it be edited on the profile's page like any other field.
 ### Who is told about the others
 
 Only one room is: an agent's own turn. `agents/brief.ts` writes `## Who else is here` between
-who it is and how it talks — where it stands on the chart by name, hand down to a report,
-escalate to a lead, and the rule the chart is worth stating for: work you did not do belongs
-to whoever did it, so never redo it and never report it as yours. It is nothing at all for an
-agent alone in a project, and where nobody reports to anybody it says so, since several agents
-with no lead is the ordinary state of a small project rather than a gap.
+who it is and how it talks — everyone else in the project as a row, with what their persona is
+for and who they report to; where it stands on the chart by name, hand down to a report,
+escalate to a lead; the rule the chart is worth stating for, that work you did not do belongs
+to whoever did it, so never redo it and never report it as yours; and what `agent_message`
+is for. It is nothing at all for an agent alone in a project, and where nobody reports to
+anybody it says so, since several agents with no lead is the ordinary state of a small project
+rather than a gap.
+
+The roster is a list of names because a name is what `agent_message` takes, and a name a model
+has not read is a name it will invent.
 
 The Claude Code errand gets one sentence of the same rule, in `runClaude`'s `## Whose errand
 this is` — the errand is the thing that actually walks into somebody else's work, and
 `noteErrand` files every path it touches under the agent that sent it, so a stray edit
 relabels a file as well as changing it. The terminal and the page's chat are told nothing:
 neither can reach another agent, and `who_did`'s own description already carries the
-finding-out. Those two arms are where a rule about the others goes — including the paragraph
-about reaching one, when the tools that would do the reaching exist.
+finding-out. Those two arms are where a rule about the others goes.
 
 ## Tasks
 

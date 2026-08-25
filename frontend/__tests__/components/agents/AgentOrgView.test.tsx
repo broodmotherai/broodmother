@@ -108,7 +108,9 @@ it('stands a placed face where it was put and keeps it there', async () => {
     }),
   )
   await screen.findByRole('group', { name: 'Sam' })
-  expect(faceAt('Sam')).toEqual({ x: 256, y: 144 })
+  // Within a hair rather than on the pixel: the graph is already floating by the time the
+  // face is on screen, and a frame that landed between the two is not a face out of place.
+  expect(off('Sam', { x: 256, y: 144 })).toBeLessThan(1)
   await frames()
   expect(off('Sam', { x: 256, y: 144 })).toBeLessThan(24)
 })

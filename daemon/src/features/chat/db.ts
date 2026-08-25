@@ -26,6 +26,9 @@ const MIGRATIONS: ((db: DatabaseSync) => void)[] = [
   // agent until somebody drags one.
   (db) => addColumn(db, 'agents', 'x', 'INTEGER'),
   (db) => addColumn(db, 'agents', 'y', 'INTEGER'),
+  // Who said it, where that is another agent rather than the person: an agent id. Null on
+  // everything the person typed, which is most of what is in here.
+  (db) => addColumn(db, 'messages', 'from_agent', 'TEXT'),
 ]
 
 /**
@@ -104,7 +107,8 @@ export class ChatStore {
         role TEXT NOT NULL,
         text TEXT NOT NULL,
         created_at INTEGER NOT NULL,
-        steps TEXT
+        steps TEXT,
+        from_agent TEXT
       );
       CREATE INDEX IF NOT EXISTS messages_by_chat ON messages (chat, id);
       CREATE TABLE IF NOT EXISTS agents (
@@ -176,19 +180,31 @@ export class ChatStore {
    * Something said. The conversation is touched so the rail keeps its order, and the first
    * thing you say names it — which is what every chat app does, and it means there is no name
    * to be asked for before there is a conversation to give it to.
+   *
+   * `from` is another agent's id, where one agent said this to another.
    */
   addMessage(
     chat: string,
     role: ChatMessage['role'],
     text: string,
     at = Date.now(),
+    from?: string,
   ): ChatMessage {
     const inserted = this.db
-      .prepare(`INSERT INTO messages (chat, role, text, created_at) VALUES (?, ?, ?, ?)`)
-      .run(rowIdOf(chat), role, text, at)
+      .prepare(
+        `INSERT INTO messages (chat, role, text, created_at, from_agent) VALUES (?, ?, ?, ?, ?)`,
+      )
+      .run(rowIdOf(chat), role, text, at, from ?? null)
     this.db.prepare(`UPDATE chats SET updated_at = ? WHERE id = ?`).run(at, rowIdOf(chat))
     if (role === 'user') this.nameFrom(chat, text)
-    return { id: messageId(inserted.lastInsertRowid as number), role, text, at }
+    const message: ChatMessage = {
+      id: messageId(inserted.lastInsertRowid as number),
+      role,
+      text,
+      at,
+    }
+    if (from) message.from = from
+    return message
   }
 
   /** The reply as it stands, rewritten as it grows — what was said and what was done to say
@@ -425,5 +441,7 @@ function toMessage(row: Record<string, unknown>): ChatMessage {
   // drawing an empty list of steps would leave a gap where the answer should start.
   const steps = row.steps as string | null
   if (steps) message.steps = JSON.parse(steps) as ChatStep[]
+  const from = row.from_agent as string | null
+  if (from) message.from = from
   return message
 }

@@ -216,3 +216,48 @@ it('takes initials from a name', () => {
   expect(initialsOf('Jean-Luc Picard Esq')).toBe('JP')
   expect(initialsOf('  ')).toBe('?')
 })
+
+/* A colleague's message in an agent's thread is theirs, not yours: their face and their name
+   over it, on their side of the column — otherwise a request one agent made of another reads
+   as one you made, and you would go looking for when you asked. */
+it('draws a message from another agent as theirs', async () => {
+  await show(
+    createMockClient({
+      agents: [
+        PRIYA,
+        {
+          name: 'Sam Okafor',
+          persona: 'research/aggregator',
+          color: '#f97316',
+          messages: [
+            { role: 'user', text: 'morning' },
+            { role: 'user', text: 'From Priya Rao: how is the export?', from: 'agent-1' },
+            { role: 'assistant', text: 'nearly there' },
+          ],
+        },
+      ],
+      personas: [{ name: 'research/aggregator', description: 'pulls things together' }],
+    }),
+  )
+  await userEvent.click(
+    within(screen.getByRole('complementary', { name: 'Agents' })).getByRole('button', {
+      name: 'Sam Okafor',
+    }),
+  )
+
+  const said = await screen.findByText('From Priya Rao: how is the export?')
+  const row = said.closest('.chat-message')
+  expect(row?.getAttribute('data-who')).toBe('true')
+  expect(within(row as HTMLElement).getByText('Priya Rao')).toBeTruthy()
+  expect(within(row as HTMLElement).getByRole('img', { name: 'Priya Rao' })).toBeTruthy()
+
+  // What the person typed keeps no face at all, which is what tells the two apart: a `user`
+  // row with a face is somebody else's, and one without is yours.
+  const mine = screen.getByText('morning').closest('.chat-message')
+  expect(mine?.getAttribute('data-who')).toBeNull()
+  expect(mine?.getAttribute('data-role')).toBe('user')
+
+  // And Sam's own answer wears Sam's face, so the thread reads as two people talking.
+  const theirs = screen.getByText('nearly there').closest('.chat-message')
+  expect(within(theirs as HTMLElement).getByText('Sam Okafor')).toBeTruthy()
+})

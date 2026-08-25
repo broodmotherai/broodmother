@@ -369,3 +369,133 @@ it('clears a conversation, and the reply arriving in it goes with the rest', asy
   expect(service.chat(chat.id).messages).toEqual([])
   expect(socket.of('done')).toHaveLength(0)
 })
+
+/* The second door: a message with no socket on the end of it. The reply bookkeeping was built
+   for a socket that went away mid-answer, so a reply that never had one is the same path — and
+   what it settled as comes back to whoever delivered it. */
+it('answers a message delivered with no socket, and hands back what it said', async () => {
+  const { stream, release } = replying(['on it', ' — done'])
+  const { service } = await chats(stream)
+  const chat = service.create(MODEL)
+
+  const answered = service.deliver(chat.id, {
+    text: 'From Priya: how is the export',
+    model: MODEL,
+    from: 'agent-1',
+    hops: 1,
+  })
+  await until(() => service.working(chat.id))
+  expect(service.hopsIn(chat.id)).toBe(1)
+  release()
+
+  expect((await answered)?.text).toBe('on it — done')
+  expect(service.chat(chat.id).messages).toEqual([
+    expect.objectContaining({ role: 'user', text: 'From Priya: how is the export', from: 'agent-1' }),
+    expect.objectContaining({ role: 'assistant', text: 'on it — done' }),
+  ])
+})
+
+/* Somebody with the thread open watches a colleague's message arrive the way they watch their
+   own: the message itself, then the answer written out a piece at a time. Nobody typed it, so
+   the page has not drawn it already and it has to be sent. */
+it('draws a delivery for whoever has the thread open', async () => {
+  const { stream, release } = replying(['on it', ' — done'])
+  const { service } = await chats(stream)
+  const chat = service.create(MODEL)
+  const socket = new FakeSocket()
+  service.accept(socket.as(), { chat: chat.id })
+
+  const answered = service.deliver(chat.id, {
+    text: 'From Priya: how is the export',
+    model: MODEL,
+    from: 'agent-1',
+    hops: 1,
+  })
+  await until(() => service.working(chat.id))
+  release()
+  await answered
+
+  expect(socket.of('said')[0]?.message).toMatchObject({
+    role: 'user',
+    text: 'From Priya: how is the export',
+    from: 'agent-1',
+  })
+  expect(socket.text).toBe('on it — done')
+  expect(socket.of('done')[0]?.message.text).toBe('on it — done')
+})
+
+/* A socket that arrived after the delivery did is not written into midway — it asks for the
+   conversation back and is told what it missed, the way a reload always was. */
+it('leaves a delivery to a thread nobody is watching on disk', async () => {
+  const { stream, release } = replying(['on it', ' — done'])
+  const { service } = await chats(stream)
+  const chat = service.create(MODEL)
+
+  const answered = service.deliver(chat.id, { text: 'hi', model: MODEL, from: 'agent-1', hops: 1 })
+  await until(() => service.working(chat.id))
+  release()
+  await answered
+
+  const socket = new FakeSocket()
+  service.accept(socket.as(), { chat: chat.id })
+  expect(socket.of('said')).toEqual([])
+  expect(socket.of('ready')[0]?.streaming).toBe(false)
+  expect(service.chat(chat.id).messages.at(-1)?.text).toBe('on it — done')
+})
+
+/* An agent handed work while it is working should get it when it is free, so a delivery waits
+   its turn rather than being turned away — and they are answered in the order they arrived. */
+it('puts a delivery to a busy thread at the back of the line', async () => {
+  const said: string[] = []
+  const stream: ChatStream = async function* ({ messages }) {
+    const asked = messages.filter((one) => one.role === 'user').at(-1)?.text ?? ''
+    said.push(asked)
+    yield { type: 'text', text: `heard ${asked}` }
+  }
+  const { service } = await chats(stream)
+  const chat = service.create(MODEL)
+
+  const one = service.deliver(chat.id, { text: 'first', model: MODEL, from: 'agent-1', hops: 1 })
+  const two = service.deliver(chat.id, { text: 'second', model: MODEL, from: 'agent-1', hops: 1 })
+  expect((await one)?.text).toBe('heard first')
+  expect((await two)?.text).toBe('heard second')
+  expect(said).toEqual(['first', 'second'])
+})
+
+/* A turn that says something, hands it over and then goes quiet still said it — the trailing
+   row is taken out again, and what comes back is the last thing that was really said. */
+it('hands back the last thing said where the turn ended on an empty row', async () => {
+  const stream: ChatStream = async function* () {
+    yield { type: 'text', text: 'on it' }
+    yield { type: 'break' }
+  }
+  const { service } = await chats(stream)
+  const chat = service.create(MODEL)
+
+  const answered = await service.deliver(chat.id, {
+    text: 'have a look',
+    model: MODEL,
+    from: 'agent-1',
+    hops: 1,
+  })
+  expect(answered?.text).toBe('on it')
+  expect(service.chat(chat.id).messages.map((one) => one.text)).toEqual(['have a look', 'on it'])
+})
+
+/* A person typing into a thread that is already answering is told so rather than queued: they
+   pressed send twice and meant it once. */
+it('still refuses a second send from the page while a reply is on its way', async () => {
+  const { stream, release } = replying(['half ', 'and half'])
+  const { service } = await chats(stream)
+  const chat = service.create(MODEL)
+  const socket = new FakeSocket()
+  service.accept(socket.as(), { chat: chat.id })
+
+  socket.say({ type: 'send', text: 'first', model: MODEL })
+  await until(() => socket.of('delta').length === 1)
+  socket.say({ type: 'send', text: 'again', model: MODEL })
+  expect(socket.of('error').map((one) => one.message)).toEqual(['a reply is already on its way'])
+
+  release()
+  await until(() => socket.of('done').length === 1)
+})

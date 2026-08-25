@@ -73,6 +73,10 @@ export interface ChatMessage {
   at: number
   /** Absent on anything you said, and on an answer that only talked. */
   steps?: ChatStep[]
+  /** The agent who said it, where one agent said this to another — an agent id. Absent on
+   *  everything the person typed, which is what makes its presence worth drawing: a message
+   *  in your thread that you did not write. */
+  from?: string
 }
 
 export interface ChatSummary {

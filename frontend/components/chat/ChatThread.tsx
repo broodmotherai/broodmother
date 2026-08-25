@@ -16,11 +16,16 @@ export function ChatThread({
   reply,
   error,
   who,
+  people,
 }: {
   messages: ChatMessage[]
   reply: { text: string; steps: ChatStep[] } | null
   error: string | null
   who?: Who
+  /** Everyone who might have said something here that neither you nor the thread's own agent
+   *  said, by agent id: a colleague messaging them. Their face rather than yours goes over it,
+   *  so a request from somewhere else is never mistaken for one you made. */
+  people?: Record<string, Who>
 }) {
   const foot = useRef<HTMLDivElement>(null)
 
@@ -38,8 +43,9 @@ export function ChatThread({
             text={message.text}
             steps={message.steps}
             at={message.at}
-            who={who}
-            lead={messages[index - 1]?.role !== message.role}
+            who={faceOf(message, who, people)}
+            theirs={Boolean(message.from)}
+            lead={speaker(messages[index - 1]) !== speaker(message)}
           />
         ))}
         {reply !== null && (
@@ -49,7 +55,7 @@ export function ChatThread({
             steps={reply.steps}
             pending
             who={who}
-            lead={messages[messages.length - 1]?.role !== 'assistant'}
+            lead={speaker(messages[messages.length - 1]) !== 'assistant'}
           />
         )}
         {error && (
@@ -63,6 +69,24 @@ export function ChatThread({
   )
 }
 
+/** Whose face goes over a message: the colleague who sent it, the thread's own agent where
+ *  they are the one answering, and nobody at all over what the person typed. */
+function faceOf(
+  message: ChatMessage,
+  who?: Who,
+  people?: Record<string, Who>,
+): Who | undefined {
+  if (message.from) return people?.[message.from]
+  return message.role === 'assistant' ? who : undefined
+}
+
+/** Whose run of messages this is one of. Two things somebody said one after another are a run
+ *  however the store filed them, and a colleague's message breaks the person's run even though
+ *  the store calls both of them `user`. */
+function speaker(message?: ChatMessage): string | undefined {
+  return message && (message.from ?? message.role)
+}
+
 function Said({
   role,
   text,
@@ -70,6 +94,7 @@ function Said({
   at,
   pending = false,
   who,
+  theirs = false,
   lead = true,
 }: {
   role: ChatMessage['role']
@@ -78,9 +103,12 @@ function Said({
   at?: number
   pending?: boolean
   who?: Who
+  /** Said by somebody who is not the person, where there is no longer a name to put to them —
+   *  an agent let go after they said it. Drawn as theirs, just without a face. */
+  theirs?: boolean
   lead?: boolean
 }) {
-  const faced = who && role === 'assistant'
+  const faced = Boolean(who) || theirs
   return (
     <div
       className="chat-message"
@@ -88,7 +116,7 @@ function Said({
       data-who={faced ? 'true' : undefined}
       data-lead={faced && lead ? 'true' : undefined}
     >
-      {faced && lead && (
+      {who && lead && (
         <div className="agent-said-by">
           <Avatar name={who.name} color={who.color} />
           <span className="agent-said-name">{who.name}</span>

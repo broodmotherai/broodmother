@@ -191,7 +191,7 @@ export function createMockClient(
       working?: boolean
       lead?: string
       place?: { x: number; y: number }
-      messages?: Pick<ChatMessage, 'role' | 'text'>[]
+      messages?: Pick<ChatMessage, 'role' | 'text' | 'from'>[]
     }[]
 
     /** What the ledger already holds, newest first — the acts this client did not watch
