@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { imageTypeOf } from '@daemon/utils/media'
 import { normalize } from '@daemon/utils/path'
-import { BadRequest, parse, query, root } from './request'
+import { actor, BadRequest, parse, query, root } from './request'
 import type { RouteTable } from './route'
 import { docBody, folderBody, moveBody } from './schemas'
 
@@ -33,7 +33,7 @@ export const docs = {
 
   'PUT /api/doc': async (c, ctx) => {
     const { root: of, path, markdown } = await parse(c, docBody)
-    await ctx.writeDoc(of, path, markdown)
+    await ctx.writeDoc(of, path, markdown, actor(c))
     return c.json({ ok: true } as const)
   },
 
@@ -59,6 +59,15 @@ export const docs = {
     const linksRewritten =
       body.root === 'project' ? await ctx.open.links.rewriteForMove(from, to) : 0
     if (body.root === 'project') ctx.sync.noteEdit()
+    // Filed against where it landed, saying where it came from: a path is how the ledger is
+    // asked, and after a move the only path anybody has is the new one.
+    ctx.recordAct({
+      root: body.root,
+      path: to,
+      action: 'move',
+      actor: actor(c),
+      note: from,
+    })
     ctx.broadcast({ type: 'tree', root: body.root, event: { type: 'moved', from, to } })
     return c.json({ to, linksRewritten })
   },
@@ -73,6 +82,7 @@ export const docs = {
       ctx.open.links.forget(removed)
       ctx.sync.noteEdit()
     }
+    ctx.recordAct({ root: of, path: removed, action: 'delete', actor: actor(c) })
     ctx.broadcast({ type: 'tree', root: of, event: { type: 'removed', path: removed } })
     return c.json({ ok: true } as const)
   },

@@ -16,11 +16,23 @@ const VERDICT: Record<AccessCheck['state'], string> = {
   other: 'failed',
 }
 
-const SWITCHES: { key: 'autoCommit' | 'pull' | 'push'; label: string; hint: string }[] = [
+const SWITCHES: {
+  key: 'autoCommit' | 'trailers' | 'pull' | 'push'
+  label: string
+  hint: string
+}[] = [
   {
     key: 'autoCommit',
     label: 'Commit automatically',
     hint: 'Off leaves committing to you. The loop still moves the commits you make.',
+  },
+  {
+    key: 'trailers',
+    label: 'Say who did the work',
+    hint:
+      'Adds Changed-by and Co-authored-by lines naming the agent whose work is in the ' +
+      'commit. These go out to your remote, and the co-author address is made up — GitHub ' +
+      'will show the agent as a contributor with no account behind it.',
   },
   {
     key: 'pull',

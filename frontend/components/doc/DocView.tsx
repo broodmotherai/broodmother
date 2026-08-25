@@ -12,6 +12,7 @@ import { TaskView } from '@/components/task/TaskView'
 import { CanvasView } from '../canvas/CanvasView'
 import { NotebookView } from '@/components/notebook/NotebookView'
 import { ImageView } from './ImageView'
+import { LedgerLine } from './LedgerLine'
 
 const saveDebounceMs = 500
 
@@ -105,6 +106,7 @@ export function DocView({ root, path }: DocRef) {
         <div className="doc-body">
           <ImageView root={root} path={path} revision={revision} />
         </div>
+        <LedgerLine root={root} path={path} />
       </article>
     )
 
@@ -131,6 +133,7 @@ export function DocView({ root, path }: DocRef) {
         <div className="doc-body">
           <NotebookView root={root} path={path} markdown={markdown} onChange={onChange} />
         </div>
+        <LedgerLine root={root} path={path} />
       </article>
     )
 
@@ -141,6 +144,7 @@ export function DocView({ root, path }: DocRef) {
       <div className="doc-body">
         <Editor markdown={markdown} onChange={onChange} path={path} />
       </div>
+      <LedgerLine root={root} path={path} />
     </article>
   )
 }

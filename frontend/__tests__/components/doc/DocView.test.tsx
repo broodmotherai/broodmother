@@ -6,6 +6,12 @@ import { createMockClient, type MockClient } from '@/src/services/Mock'
 import { AppProvider, useApp } from '@/State'
 import { DocView } from '@/components/doc/DocView'
 
+// The line under a document clicks through to a thread, which is the router's business.
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => '/doc',
+}))
+
 /** The real editor is Monaco; what this file is about is which markdown reaches it. */
 vi.mock('@/Editor', () => ({
   Editor: ({

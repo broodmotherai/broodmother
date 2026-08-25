@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import type { AgentSummary, NewAgent } from '@broodmother/types/api/agents'
 import { useApp } from '@/State'
 import { AgentRail } from './AgentRail'
@@ -36,6 +37,10 @@ export function AgentsView() {
     return answer.agents
   }, [app.client])
 
+  // Whose thread was asked for, where somebody arrived by clicking one — the line under a
+  // document, saying who last changed it. Only honoured if that agent is still here.
+  const asked = useSearchParams().get('agent')
+
   // Who there is, asked again when the project changes under the page. The first of them is
   // opened on: a rail beside an empty pane is a page asking you to click the only thing on it.
   useEffect(() => {
@@ -43,12 +48,14 @@ export function AgentsView() {
     setAgents([])
     setOpen(null)
     void list().then((found) => {
-      if (alive && found) setOpen(found[0]?.id ?? null)
+      if (!alive || !found) return
+      const wanted = found.find((one) => one.id === asked)
+      setOpen(wanted?.id ?? found[0]?.id ?? null)
     })
     return () => {
       alive = false
     }
-  }, [list, project])
+  }, [list, project, asked])
 
   const hire = async (input: NewAgent): Promise<string | null> => {
     try {

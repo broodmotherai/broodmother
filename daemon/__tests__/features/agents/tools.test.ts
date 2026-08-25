@@ -3,7 +3,7 @@ import path from 'node:path'
 import { afterAll, expect, it } from 'vitest'
 import type { ToolSet } from 'ai'
 import { Tree } from '@daemon/services/Tree'
-import { cleanup, tempDir } from '@daemon/test'
+import { cleanup, git, initRepo, tempDir } from '@daemon/test'
 import { agentTools } from '@daemon/features/agents/tools'
 import { titleOf } from '@daemon/features/chat/tools'
 
@@ -34,6 +34,7 @@ async function hands(env: Record<string, string> = {}, opts: { claude?: string }
   await writeFile(claude, FAKE_CLAUDE)
   await chmod(claude, 0o755)
   const notes: [string, string][] = []
+  const errands: { paths: string[]; note: string }[] = []
   const tools = agentTools({
     tree: () => new Tree(checkout),
     call: () => Promise.reject(new Error('not here')),
@@ -49,6 +50,7 @@ async function hands(env: Record<string, string> = {}, opts: { claude?: string }
     name: 'Priya',
     attachments,
     progress: (id, note) => notes.push([id, note]),
+    noteErrand: (paths, note) => errands.push({ paths, note }),
     claude: opts.claude ?? claude,
   })
   const run = (name: string, input: unknown, toolCallId = 'call-1') =>
@@ -56,7 +58,7 @@ async function hands(env: Record<string, string> = {}, opts: { claude?: string }
       input,
       { toolCallId, messages: [], abortSignal: undefined },
     )
-  return { tools, run, dir, checkout, attachments, notes }
+  return { tools, run, dir, checkout, attachments, notes, errands }
 }
 
 /* The hands are the chat's tools and three more. */
@@ -109,6 +111,28 @@ it('runs a shell command in the checkout and reports failure in words', async ()
   expect(await run('shell', { command: 'echo nope >&2; exit 3' })).toBe(
     'command failed (exit 3): nope',
   )
+})
+
+/* An errand works on the real disk rather than through the app's door, so the checkout
+   either side of it is the only thing that can say what it did — coarsely, and under the
+   errand's own words. */
+it('files what an errand left different, under the errand', async () => {
+  const { run, checkout, errands } = await hands()
+  await initRepo(checkout)
+  await writeFile(path.join(checkout, 'kept.md'), 'kept\n')
+  await git(checkout, 'add', '-A')
+  await git(checkout, 'commit', '-m', 'first')
+
+  await run('shell', { command: 'echo drafted > draft.md' })
+  expect(errands).toEqual([{ paths: ['draft.md'], note: 'echo drafted > draft.md' }])
+})
+
+/* A command that read the checkout and left it alone is not work anybody did to a file. */
+it('files nothing for an errand that changed nothing', async () => {
+  const { run, checkout, errands } = await hands()
+  await initRepo(checkout)
+  await run('shell', { command: 'ls' })
+  expect(errands).toEqual([])
 })
 
 it('lists what is in the attachments folder', async () => {

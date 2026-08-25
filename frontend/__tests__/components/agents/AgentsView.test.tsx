@@ -6,9 +6,12 @@ import { AppProvider } from '@/State'
 import { AgentsView } from '@/components/agents/AgentsView'
 import { initialsOf } from '@/components/chat/Avatar'
 
+/** What the address bar says, which is how the line under a document asks for a thread. */
+let asked = new URLSearchParams()
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
   usePathname: () => '/agents',
+  useSearchParams: () => asked,
 }))
 
 const PRIYA = {
@@ -43,6 +46,23 @@ async function show(
 }
 
 const settle = () => act(async () => await Promise.resolve())
+
+/* The other end of the line under a document: clicking who last changed it lands here, on
+   their thread rather than on whoever happens to be first in the rail. */
+it('opens the thread the address asked for', async () => {
+  asked = new URLSearchParams('agent=agent-2')
+  const client = createMockClient({
+    agents: [{ name: 'Rafa Ortiz', persona: 'research/aggregator' }, PRIYA],
+    personas: [{ name: 'research/aggregator', description: 'pulls things together' }],
+  })
+  render(
+    <AppProvider client={client}>
+      <AgentsView />
+    </AppProvider>,
+  )
+  await screen.findByRole('region', { name: 'Conversation with Priya Rao' })
+  asked = new URLSearchParams()
+})
 
 /* The page is the people: each with a face in their colour, and one thread to open. */
 it('lists the agents and opens the thread held with one', async () => {

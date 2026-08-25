@@ -3,6 +3,7 @@ import type { z } from 'zod'
 import { AppError } from '@daemon/types/error'
 import type { DocRoot } from '@daemon/services/Tree'
 import type { DiffBasis } from '@daemon/utils/git'
+import { ACTOR_HEADER, parseActor, type Actor } from '@daemon/types/ledger'
 import { rootSchema } from './schemas'
 
 export class BadRequest extends AppError {}
@@ -28,6 +29,13 @@ export function root(c: Context): DocRoot {
   const result = rootSchema.safeParse(c.req.query('root'))
   if (!result.success) throw new BadRequest('root must be "project" or "repo:<name>"')
   return result.data
+}
+
+/** Who says they are doing this, for the ledger. The header is a claim and is read as one:
+ *  an absent one is a person, which is what the editor's save is, and one that will not parse
+ *  is nobody rather than a guess. */
+export function actor(c: Context): Actor {
+  return parseActor(c.req.header(ACTOR_HEADER))
 }
 
 /** Which two points a comparison is between. Unsaid is the branches as they stand, which is

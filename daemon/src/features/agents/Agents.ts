@@ -5,6 +5,7 @@ import type { Chat } from '@daemon/types/api/chat'
 import { CHAT_MODELS } from '@daemon/types/api/chat'
 import type { Agent, AgentSummary, NewAgent } from '@daemon/types/api/agents'
 import type { Persona } from '@daemon/types/api/personas'
+import type { Actor } from '@daemon/types/ledger'
 import type { Tree } from '@daemon/services/Tree'
 import { ChatError } from '../chat/error'
 import type { Chats, Turn } from '@daemon/features/chat/Chats'
@@ -33,7 +34,14 @@ export interface AgentsDeps {
   /** The checkout the hands work in, asked per call — the scoped one, where a shell opens. */
   checkout: () => string
   env: () => Record<string, string>
-  tools: Omit<AgentToolDeps, 'checkout' | 'env' | 'brief' | 'persona' | 'name' | 'attachments' | 'progress'>
+  /** The app's own front door, opened for whoever is taking the turn — asked per turn
+   *  rather than held, because what it carries is the agent's name. */
+  tools: (
+    by: Actor,
+  ) => Omit<
+    AgentToolDeps,
+    'checkout' | 'env' | 'brief' | 'persona' | 'name' | 'attachments' | 'progress'
+  >
 }
 
 /**
@@ -129,7 +137,14 @@ export class Agents {
       attachments: agent.attachments,
     })
     const tools: ToolSet = agentTools({
-      ...this.deps.tools,
+      ...this.deps.tools({
+        kind: 'agent',
+        id: agent.id,
+        name: agent.name,
+        persona: agent.persona,
+        model: agent.model,
+        context: agent.chat,
+      }),
       checkout: this.deps.checkout,
       env: this.deps.env,
       brief: this.deps.terminalBrief,

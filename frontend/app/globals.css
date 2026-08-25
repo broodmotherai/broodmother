@@ -1407,6 +1407,42 @@ body[data-resizing='column'] {
   color: var(--muted);
 }
 
+/* Who last changed what you are reading, along the foot of the pane. Quiet on purpose: it is
+   there to be glanced at before you change somebody else's work, not to be read. */
+.doc-line {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  padding: 0.35rem 1.75rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-line-quiet {
+  color: var(--muted);
+}
+
+.doc-line-who {
+  color: var(--ink);
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+}
+
+button.doc-line-who {
+  cursor: pointer;
+}
+
+button.doc-line-who:hover {
+  text-decoration: underline;
+}
+
 /* A project with nothing open: the mark over the name over the two keys, in the middle of
    the pane. It is a sign, not a surface — nothing to select, nothing to drag off. */
 .home {

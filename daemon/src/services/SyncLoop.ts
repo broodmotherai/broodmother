@@ -2,6 +2,8 @@ import type { GitAuthor, GitSettings } from '@daemon/types/git'
 import type { Git } from '@daemon/utils/git'
 import type { DocPath } from '@daemon/types/doc'
 import type { SyncStatus } from '@daemon/types/sync'
+import type { LedgerEntry } from '@daemon/types/ledger'
+import { trailersFor } from '@daemon/features/ledger/trailers'
 
 export type { SyncState, SyncStatus } from '@daemon/types/sync'
 
@@ -36,6 +38,10 @@ export interface SyncDeps {
   settings: () => GitSettings
   /** Null until a profile exists: a commit needs someone to commit as. */
   author: () => GitAuthor | null
+  /** The newest act the ledger holds for each path about to be committed, for the trailers
+   *  — asked only where the setting is on, and answering with nothing is a commit worded
+   *  exactly as it was before this existed. */
+  acts?: (paths: readonly DocPath[]) => LedgerEntry[]
   onStatus: (status: SyncStatus) => void
   now?: () => number
 }
@@ -181,7 +187,10 @@ export class SyncLoop {
         else if (!author) return this.set(OFF('no profile set up'))
         else {
           await git.stageAll()
-          const committed = await git.commit(commitMessage(before.changed), author)
+          const committed = await git.commit(
+            this.message(before.changed, settings),
+            author,
+          )
           if (!committed.ok)
             return this.set({
               state: 'error',
@@ -244,6 +253,19 @@ export class SyncLoop {
       return 'no remote — commits stay in this project'
     if (!settings.push) return 'push is off — commits stay in this project'
     return undefined
+  }
+
+  /**
+   * What the commit says. The subject is what it always was; the trailers are what the
+   * ledger says about the paths in this commit, newest act per path, and only where the
+   * project has asked for them. With the setting off — or with a ledger that watched none
+   * of it — the message is byte-identical to what it was before any of this existed.
+   */
+  private message(paths: readonly DocPath[], settings: GitSettings): string {
+    const subject = commitMessage(paths)
+    if (!settings.trailers) return subject
+    const said = trailersFor(this.deps.acts?.(paths) ?? [])
+    return said.length ? `${subject}\n\n${said.join('\n')}` : subject
   }
 
   private latch(conflicted: DocPath[], message: string): SyncStatus {

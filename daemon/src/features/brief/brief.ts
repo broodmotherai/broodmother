@@ -204,6 +204,8 @@ ${head}
   POST   /api/doc/move      {root, from, to}  moves a document and rewrites every wikilink
                                               pointing at it, which mv leaves broken
   GET    /api/links         ?path=            a document's backlinks and outbound links
+  GET    /api/ledger        ?root=&path=      who did what to a document, newest first,
+                                              and what git says where it does not know
   POST   /api/branches      {root, name}      cuts a branch off the one the root is on,
                                               into a checkout of its own
   POST   /api/branches/open {root, name}      opens a branch, making its checkout if new
