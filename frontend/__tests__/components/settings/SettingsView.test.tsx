@@ -129,6 +129,21 @@ it('saves the sync settings for the open project', async () => {
   expect(settings).toMatchObject({ enabled: true, push: false, idleMs: 30_000 })
 })
 
+/* The one switch here that changes what leaves the machine: off until somebody turns it on,
+   and it says what it will put in a commit before they do. */
+it('offers to say who did the work, off, and saves it on', async () => {
+  const client = await show()
+  await open('Project')
+  const trailers = screen.getByRole('checkbox', { name: 'Say who did the work' })
+  expect(trailers).not.toBeChecked()
+
+  await userEvent.click(trailers)
+  await userEvent.click(screen.getByRole('button', { name: 'Save Sync Settings' }))
+
+  const { settings } = await client.request('GET /api/git', null)
+  expect(settings).toMatchObject({ trailers: true })
+})
+
 it('says what the switches add up to, rather than leaving it to be worked out', async () => {
   await show()
   await open('Project')

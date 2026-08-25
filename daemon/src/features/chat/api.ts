@@ -1,3 +1,4 @@
+import { ACTOR_HEADER, type Actor } from '@daemon/types/ledger'
 import { ChatError } from './error'
 
 /**
@@ -16,6 +17,7 @@ const ALLOWED = new Set([
   'GET /api/tree',
   'GET /api/doc',
   'GET /api/links',
+  'GET /api/ledger',
   'GET /api/config',
   'GET /api/projects',
   'GET /api/repos',
@@ -92,8 +94,12 @@ export type ApiCall = (
  * Where the parameters go is decided here rather than asked of the model: GET and DELETE take
  * a query string, POST and PUT take a body. The brief says as much in prose, and a rule
  * enforced is a class of failure that cannot happen.
+ *
+ * Whoever the door is opened for rides along in a header, so a document written through it
+ * is filed in the ledger as theirs. It is a claim rather than a credential — everything on
+ * loopback is — and an absent one is a person typing, which is what the editor is.
  */
-export function apiCall(url: () => string): ApiCall {
+export function apiCall(url: () => string, actor?: Actor): ApiCall {
   return async (method, route, params = {}) => {
     if (!ALLOWED.has(`${method} ${route}`))
       throw new ChatError(
@@ -111,7 +117,10 @@ export function apiCall(url: () => string): ApiCall {
 
     const response = await fetch(target, {
       method,
-      headers: body ? { 'content-type': 'application/json' } : undefined,
+      headers: {
+        ...(body ? { 'content-type': 'application/json' } : {}),
+        ...(actor ? { [ACTOR_HEADER]: JSON.stringify(actor) } : {}),
+      },
       body: body ? JSON.stringify(body) : undefined,
     })
     const answer = await response.text()

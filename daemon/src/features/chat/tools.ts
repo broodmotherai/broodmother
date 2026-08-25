@@ -3,6 +3,7 @@ import { z } from 'zod'
 import type { DocPath, DocRoot, Tree, TreeEntry } from '@daemon/services/Tree'
 import type { ApiResponse } from '@daemon/types/api/routes'
 import type { EntitySummary } from '@daemon/types/api/entities'
+import { sayAct, sayCommit } from '@daemon/features/ledger/say'
 import { KINDS, REQUIRED, RELATIONS } from '@daemon/types/entity/schema'
 import type { ApiCall } from './api'
 
@@ -192,6 +193,28 @@ export function chatTools(deps: ToolDeps): ToolSet {
         }),
     }),
 
+    who_did: tool({
+      description:
+        'Who did this — the last few things the app saw done to one document, newest ' +
+        'first, and whose each was. Reach for it before changing anything somebody else ' +
+        'may have made: work you did not do belongs to whoever did it, and this is how ' +
+        'you find out who that is. It answers with what the app watched happen; where it ' +
+        'watched nothing it says so and offers what git knows instead, which is a ' +
+        'different and vaguer thing.',
+      inputSchema: z.object({ root, path: z.string() }),
+      execute: ({ root: of, path }) =>
+        answer(async () => {
+          const { acts, git } = JSON.parse(
+            await deps.call('GET', '/api/ledger', { root: of, path }),
+          ) as ApiResponse<'GET /api/ledger'>
+          if (acts.length) return acts.map((one) => sayAct(one)).join('\n')
+          return [
+            `the ledger has nothing for ${path} — the app did not watch this one change`,
+            git ? sayCommit(git) : 'and git has no commit touching it either',
+          ].join('\n')
+        }),
+    }),
+
     entity_list: tool({
       description:
         'The records this project has already written down, newest first. Read this before ' +
@@ -334,6 +357,8 @@ export function titleOf(name: string, input: unknown): string {
       return `move ${said.from ?? ''} → ${said.to ?? ''}`
     case 'delete_doc':
       return `delete ${where}`
+    case 'who_did':
+      return `who did ${where}`
     case 'entity_list':
       return said.kind ? `list ${said.kind} records` : 'list records'
     case 'entity_record':

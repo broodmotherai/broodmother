@@ -4,6 +4,7 @@ import { execa } from 'execa'
 import { tool, type ToolSet } from 'ai'
 import { z } from 'zod'
 import { ambient } from '@daemon/services/Terminals'
+import { changedBetween, marksOf } from '@daemon/features/ledger/errand'
 import { chatTools, type ToolDeps } from '../chat/tools'
 
 /** How long an errand handed to Claude Code may take before it is a stuck one. Longer than a
@@ -35,6 +36,10 @@ export interface AgentToolDeps extends ToolDeps {
   /** A word on how an errand is going, filed by the tool call it belongs to, for the step
    *  on screen to wear while the hands are busy. */
   progress?: (toolCallId: string, note: string) => void
+  /** What an errand left different, for the ledger: the paths the checkout says changed
+   *  either side of it, and the errand in its own first line. Coarse on purpose — it says
+   *  which errand a file was part of, never which line was whose. */
+  noteErrand?: (paths: string[], note: string) => void
   /** How Claude Code is invoked. A test hands in a script; the app has `claude` on PATH. */
   claude?: string
 }
@@ -69,7 +74,9 @@ export function agentTools(deps: AgentToolDeps): ToolSet {
           .describe(`how long it may take; unsaid is ${String(CLAUDE_MINUTES)}`),
       }),
       execute: ({ task, minutes }, { toolCallId, abortSignal }) =>
-        runClaude(deps, { task, minutes, toolCallId, signal: abortSignal }),
+        watching(deps, trimNote(task), () =>
+          runClaude(deps, { task, minutes, toolCallId, signal: abortSignal }),
+        ),
     }),
 
     shell: tool({
@@ -87,26 +94,27 @@ export function agentTools(deps: AgentToolDeps): ToolSet {
           .optional()
           .describe(`how long it may take; unsaid is ${String(SHELL_MINUTES)}`),
       }),
-      execute: async ({ command, minutes }, { abortSignal }) => {
-        const result = await execa('/bin/sh', ['-c', command], {
-          cwd: deps.checkout(),
-          env: { ...ambient(), ...deps.env() },
-          extendEnv: false,
-          input: '',
-          timeout: (minutes ?? SHELL_MINUTES) * 60_000,
-          cancelSignal: abortSignal,
-          reject: false,
-          stripFinalNewline: false,
-        })
-        const out = [result.stdout, result.stderr].filter(Boolean).join('\n')
-        if (result.failed || result.exitCode !== 0)
-          return cut(
-            `command failed (exit ${String(result.exitCode ?? '?')}): ${
-              out.trim() || result.shortMessage || 'no output'
-            }`,
-          )
-        return cut(out || '(no output)')
-      },
+      execute: ({ command, minutes }, { abortSignal }) =>
+        watching(deps, trimNote(command), async () => {
+          const result = await execa('/bin/sh', ['-c', command], {
+            cwd: deps.checkout(),
+            env: { ...ambient(), ...deps.env() },
+            extendEnv: false,
+            input: '',
+            timeout: (minutes ?? SHELL_MINUTES) * 60_000,
+            cancelSignal: abortSignal,
+            reject: false,
+            stripFinalNewline: false,
+          })
+          const out = [result.stdout, result.stderr].filter(Boolean).join('\n')
+          if (result.failed || result.exitCode !== 0)
+            return cut(
+              `command failed (exit ${String(result.exitCode ?? '?')}): ${
+                out.trim() || result.shortMessage || 'no output'
+              }`,
+            )
+          return cut(out || '(no output)')
+        }),
     }),
 
     list_attachments: tool({
@@ -120,6 +128,30 @@ export function agentTools(deps: AgentToolDeps): ToolSet {
           : `nothing yet in ${deps.attachments}`
       },
     }),
+  }
+}
+
+/**
+ * An errand run with the checkout watched either side of it. What it changed is filed as one
+ * act per path, all naming the same errand: the hands work on the real disk, so this is the
+ * only place the app can find out what they did, and the boundary is all it knows.
+ *
+ * Nothing is filed where nothing differs, and a failed errand is watched like any other — a
+ * command that fell over halfway still changed what it changed.
+ */
+async function watching(
+  deps: AgentToolDeps,
+  note: string,
+  errand: () => Promise<string>,
+): Promise<string> {
+  if (!deps.noteErrand) return errand()
+  const checkout = deps.checkout()
+  const before = await marksOf(checkout)
+  try {
+    return await errand()
+  } finally {
+    const changed = changedBetween(before, await marksOf(checkout))
+    if (changed.length) deps.noteErrand(changed, note)
   }
 }
 

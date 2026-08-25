@@ -14,15 +14,7 @@ import { FileIcon, Icon, displayName } from '@/components/core/Icons'
 import { ROW } from '@/components/core/Row'
 import Caret from '@/components/core/Icon'
 import { cx } from '@/Cx'
-
-export function ago(at: number, now: number): string {
-  const minutes = Math.floor(Math.max(0, now - at) / 60_000)
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  return `${Math.floor(hours / 24)}d ago`
-}
+import { ago } from '@/Time'
 
 /**
  * What fires a task, as its row says it: every wired trigger read as a sentence — and where

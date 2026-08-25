@@ -19,6 +19,7 @@ import { resolveTarget } from '@broodmother/markdown/links'
 import { runOrder } from '@broodmother/types/task/graph'
 import type { Persona } from '@broodmother/types/api/personas'
 import type { AgentInOrg } from '@broodmother/types/api/agents'
+import type { LedgerEntry } from '@broodmother/types/ledger'
 import type { EntitySummary } from '@broodmother/types/api/entities'
 import type { ApiRequest, ApiResponse, ApiRoute } from '@broodmother/types/api/routes'
 import type { TaskRun } from '@broodmother/types/api/tasks'
@@ -193,6 +194,10 @@ export function createMockClient(
       messages?: Pick<ChatMessage, 'role' | 'text'>[]
     }[]
 
+    /** What the ledger already holds, newest first — the acts this client did not watch
+     *  happen, so a document can arrive already belonging to somebody. */
+    acts?: LedgerEntry[]
+
     /** Routes that never answer, for asking what the app does while it is waiting. */
     stall?: ApiRoute[]
 
@@ -283,6 +288,18 @@ export function createMockClient(
   let opened = ''
   const said: ChatClientMessage[] = []
   let numbered = 0
+  /** Who did what, newest first — the app keeps this in SQLite; here it is an array, and a
+   *  write through this client files a row the way the app's write path does. */
+  const ledger: LedgerEntry[] = [...(seed.acts ?? [])]
+  const file = (act: Omit<LedgerEntry, 'at' | 'project' | 'actor'>) => {
+    ledger.unshift({
+      at: Date.now(),
+      project: config.projectPath ?? '',
+      // Nobody claimed it, which is what a save from the editor is.
+      actor: { kind: 'person' },
+      ...act,
+    })
+  }
   const chats: Chat[] = (seed.chats ?? []).map((chat, index) => ({
     id: `chat-${String(++numbered)}`,
     title: chat.title ?? chat.messages[0]?.text ?? 'New chat',
@@ -992,6 +1009,7 @@ export function createMockClient(
         const files = filesIn(root)
         const created = !(path in files)
         files[path] = markdown
+        file({ root, path, action: 'write', created })
         emit({
           type: 'tree',
           root,
@@ -1008,6 +1026,7 @@ export function createMockClient(
         const files = filesIn(root)
         files[to] = files[from]
         delete files[from]
+        file({ root, path: to, action: 'move', note: from })
         emit({ type: 'tree', root, event: { type: 'moved', from, to } })
         return { to, linksRewritten: 3 }
       },
@@ -1019,9 +1038,19 @@ export function createMockClient(
       },
       'DELETE /api/doc': async ({ root, path }) => {
         delete filesIn(root)[path]
+        file({ root, path, action: 'delete' })
         emit({ type: 'tree', root, event: { type: 'removed', path } })
         return { ok: true }
       },
+      /* Whatever the mock has watched happen, newest first — a write through this client
+         files a row the way the app's own write path does, so the line under a document
+         moves when the document does. Git is never asked: nothing here is a repository. */
+      'GET /api/ledger': async ({ root, path, limit }) => ({
+        acts: ledger
+          .filter((one) => one.root === root && one.path === path)
+          .slice(0, limit ?? 5),
+        git: null,
+      }),
       'GET /api/links': async ({ path }) => ({
         backlinks: [{ from: 'README.md', to: path, context: 'see [[' + path + ']]' }],
         outbound: [],

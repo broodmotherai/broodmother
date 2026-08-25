@@ -7,6 +7,7 @@ interface Asked {
   method: string
   url: string
   body: string
+  actor: string | undefined
 }
 
 let app: Server | null = null
@@ -28,6 +29,7 @@ async function listening(): Promise<{ url: string; asked: () => Asked | null }> 
         method: request.method ?? '',
         url: request.url ?? '',
         body: Buffer.concat(chunks).toString(),
+        actor: request.headers['x-broodmother-actor'] as string | undefined,
       }
       response.writeHead(200, { 'content-type': 'application/json' })
       response.end(JSON.stringify({ ok: true }))
@@ -101,6 +103,19 @@ it('refuses a route dressed up as an allowed one', async () => {
   await expect(call('GET', 'http://elsewhere/api/doc')).rejects.toThrow(/not a route/)
   await expect(call('GET', '/api/doc?root=project')).rejects.toThrow(/not a route/)
   expect(app.asked()).toBeNull()
+})
+
+/* Who the door was opened for travels with what goes through it, so a document written by a
+   tool is filed as that agent's rather than as somebody typing. */
+it('carries whoever the door was opened for, and nobody when it was opened for nobody', async () => {
+  const app = await listening()
+  const priya = { kind: 'agent', id: 'agent-1', name: 'Priya' } as const
+
+  await apiCall(() => app.url, priya)('PUT', '/api/doc', { root: 'project', path: 'a.md' })
+  expect(app.asked()?.actor).toBe(JSON.stringify(priya))
+
+  await apiCall(() => app.url)('PUT', '/api/doc', { root: 'project', path: 'a.md' })
+  expect(app.asked()?.actor).toBeUndefined()
 })
 
 it('says so when the app is not listening yet', async () => {

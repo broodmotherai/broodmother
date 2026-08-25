@@ -15,6 +15,7 @@
 
 import { NoProjectError } from '@daemon/types/error'
 import type { LinkIndex } from '@daemon/services/LinkIndex'
+import { PERSON, type Actor } from '@daemon/types/ledger'
 import { resolveTarget } from '@daemon/utils/markdown/links'
 import type { DocPath, Tree } from '@daemon/services/Tree'
 import { basename } from '@daemon/utils/path'
@@ -53,8 +54,9 @@ export interface EntitiesDeps {
    *  index that already resolves them is the index that answers an ancestry. */
   links: () => LinkIndex | null
   /** A document written the way the app writes one: the index updated, the sync timer
-   *  nudged, the sidebar told. Never `tree.write`, which does none of it. */
-  writeDoc: (path: string, markdown: string) => Promise<DocPath>
+   *  nudged, the sidebar told, the ledger given whoever wrote it. Never `tree.write`, which
+   *  does none of it. */
+  writeDoc: (path: string, markdown: string, by: Actor) => Promise<DocPath>
   /** The clock, so a test can hold it still. */
   now?: () => Date
 }
@@ -108,7 +110,10 @@ export class Entities {
    * and answering "already written" with a path to a document that no longer says that
    * would be the stalest possible answer, given confidently.
    */
-  async record(input: NewEntity): Promise<{ entity: EntitySummary; created: boolean }> {
+  async record(
+    input: NewEntity,
+    by: Actor = PERSON,
+  ): Promise<{ entity: EntitySummary; created: boolean }> {
     const tree = this.requireProject()
     const draft = this.draft(input)
     const digest = digestOf(draft)
@@ -132,7 +137,7 @@ export class Entities {
     // `link` is the only way an edge lands on a record something already derives from, and
     // that is where the walk lives.
     const entity: Entity = { ...draft, sha: digest }
-    const written = await this.deps.writeDoc(path, serializeEntity(entity))
+    const written = await this.deps.writeDoc(path, serializeEntity(entity), by)
     return { entity: summarize({ path: written, entity }, documents), created: true }
   }
 
@@ -149,6 +154,7 @@ export class Entities {
     path: string,
     relation: Relation,
     target: string,
+    by: Actor = PERSON,
   ): Promise<{ entity: EntitySummary }> {
     const tree = this.requireProject()
     const markdown = await tree.read(path).catch(() => null)
@@ -173,7 +179,7 @@ export class Entities {
 
     const added: Entity = { ...entity, from: [...entity.from, { relation, target }] }
     const next: Entity = { ...added, sha: digestOf(added) }
-    const written = await this.deps.writeDoc(path, serializeEntity(next))
+    const written = await this.deps.writeDoc(path, serializeEntity(next), by)
     return { entity: summarize({ path: written, entity: next }, [...documents, written]) }
   }
 

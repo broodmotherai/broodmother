@@ -3,6 +3,7 @@ import { execa } from 'execa'
 import type { DocPath } from '@daemon/services/Tree'
 import type {
   AccessCheck,
+  CommitTouch,
   DiffChange,
   DiffFile,
   GitAuthor,
@@ -286,6 +287,21 @@ export class Git {
     ])
     if (result.exitCode !== 0) return {}
     return parseChanges(String(result.stdout))
+  }
+
+  /** The last commit to touch one path, or null where git has nothing to say about it — an
+   *  uncommitted file, a folder that is no repository, a path nobody has ever committed. */
+  async lastCommit(file: string): Promise<CommitTouch | null> {
+    const result = await this.run([
+      'log',
+      '-1',
+      '--format=%H%x00%an%x00%aI%x00%s',
+      '--',
+      file,
+    ])
+    if (result.exitCode !== 0) return null
+    const [sha, author, at, subject] = String(result.stdout).trim().split('\0')
+    return sha ? { sha, author: author ?? '', at: at ?? '', subject: subject ?? '' } : null
   }
 
   async status(): Promise<GitStatus> {

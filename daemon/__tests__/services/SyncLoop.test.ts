@@ -2,6 +2,7 @@ import { writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
 import type { GitSettings } from '@daemon/types/git'
+import type { LedgerEntry } from '@daemon/types/ledger'
 import { bareRemote, cleanup, cloneOf, git, tempDir } from '@daemon/test'
 import { defaultGitSettings } from '@daemon/utils/config'
 import { Git } from '@daemon/utils/git'
@@ -11,7 +12,7 @@ afterAll(cleanup)
 
 async function harness(
   overrides: Partial<GitSettings> = {},
-  options: { dir?: string; remote?: string | null } = {},
+  options: { dir?: string; remote?: string | null; acts?: LedgerEntry[] } = {},
 ) {
   const remote = options.remote === undefined ? await bareRemote() : options.remote
   let dir = options.dir
@@ -31,6 +32,7 @@ async function harness(
     git: () => new Git(dir!),
     settings: () => settings,
     author: () => ({ name: 'Test', email: 'test@localhost' }),
+    acts: () => options.acts ?? [],
     onStatus: (status) => statuses.push(status),
     now: () => clock,
   })
@@ -48,6 +50,7 @@ async function harness(
     settings,
     advance: (ms: number) => (clock += ms),
     log: async () => (await git(dir!, 'log', '--oneline')).stdout,
+    body: async () => (await git(dir!, 'log', '-1', '--format=%B')).stdout,
     remoteLog: async () => (await git(remote!, 'log', '--oneline')).stdout,
   }
 }
@@ -72,6 +75,60 @@ describe('commitMessage', () => {
     [['a.md', 'b.md'], 'docs: update 2 files'],
   ])('%j -> %s', (paths, expected) => {
     expect(commitMessage(paths)).toBe(expected)
+  })
+})
+
+/* What a commit says about whose work is in it. Gated, because this is the one thing in the
+   ledger that goes outward: it changes what gets pushed to somebody's remote. */
+describe('trailers', () => {
+  const priya: LedgerEntry = {
+    at: 1000,
+    project: '/p/handbook',
+    root: 'project',
+    path: 'note.md',
+    action: 'write',
+    actor: {
+      kind: 'agent',
+      id: 'agent-1',
+      name: 'Priya',
+      persona: 'research/suggestion-researcher',
+      model: 'claude-opus-5',
+      context: 'chat-4',
+    },
+  }
+
+  const committing = async (
+    settings: Partial<GitSettings>,
+    acts: LedgerEntry[] = [priya],
+  ) => {
+    const h = await harness(settings, { acts })
+    await writeFile(path.join(h.dir, 'note.md'), 'body\n')
+    h.loop.noteEdit()
+    h.advance(60_000)
+    await h.loop.tick()
+    return h
+  }
+
+  it('says who did the work, under the subject it always had', async () => {
+    const h = await committing({ trailers: true })
+    expect(await h.body()).toBe(
+      'docs: update note\n\n' +
+        'Changed-by: Priya (agent, persona research/suggestion-researcher, claude-opus-5)\n' +
+        'Co-authored-by: Priya <priya@agents.broodmother.local>\n',
+    )
+  })
+
+  /* The gate itself: with the setting off, a commit is byte-identical to what it was before
+     any of this existed, whatever the ledger holds. */
+  it('commits exactly as it did before, with the setting off', async () => {
+    const off = await committing({ trailers: false })
+    expect(await off.body()).toBe('docs: update note\n')
+  })
+
+  /* And with it on over work the app never watched: nothing to say is said as nothing. */
+  it('adds nothing where the ledger watched none of it', async () => {
+    const quiet = await committing({ trailers: true }, [])
+    expect(await quiet.body()).toBe('docs: update note\n')
   })
 })
 

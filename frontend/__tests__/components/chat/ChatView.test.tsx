@@ -6,9 +6,12 @@ import { createMockClient, type MockClient } from '@/src/services/Mock'
 import { AppProvider } from '@/State'
 import { ChatView } from '@/components/chat/ChatView'
 
+/** What the address bar says, which is how the line under a document asks for a chat. */
+let asked = new URLSearchParams()
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
   usePathname: () => '/chat',
+  useSearchParams: () => asked,
 }))
 
 /** A profile holding no model keys, which is what every profile starts as. */
@@ -63,6 +66,23 @@ it('opens on the newest conversation and draws what was said in it', async () =>
 
 /* What you say is drawn the moment you say it: the answer is what is being waited for, and
    the question is not in doubt. */
+/* The other end of the line under a document: it was this conversation that changed it, and
+   clicking it lands on that one rather than on whichever is newest. */
+it('opens the conversation the address asked for', async () => {
+  asked = new URLSearchParams('chat=chat-1')
+  await show(
+    createMockClient({
+      chats: [
+        { title: 'the older one', messages: [{ role: 'user', text: 'the older one' }] },
+        ...HELD,
+      ],
+    }),
+  )
+  const conversation = await screen.findByRole('region', { name: 'Conversation' })
+  await within(conversation).findByText('the older one')
+  asked = new URLSearchParams()
+})
+
 it('says what is typed and follows the answer in as it arrives', async () => {
   const client = await show()
   await settle()

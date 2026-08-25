@@ -35,7 +35,10 @@ async function team(project?: string) {
     terminalBrief: () => '',
     checkout: () => root,
     env: () => ({}),
-    tools: { tree: () => new Tree(root), call: () => Promise.reject(new Error('not here')) },
+    tools: () => ({
+      tree: () => new Tree(root),
+      call: () => Promise.reject(new Error('not here')),
+    }),
   })
   const hire = (name: string) =>
     agents.create({ name, persona: PERSONA, model: DEFAULT_CHAT_MODEL, color: '#c084fc' })

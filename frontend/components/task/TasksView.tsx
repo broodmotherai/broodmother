@@ -7,7 +7,8 @@ import { basename } from '@broodmother/path'
 import { repoOf, type DocRoot } from '@broodmother/types/doc'
 import { useApp } from '@/State'
 import { docRoute } from '@/components/shell/ScopeTabs'
-import { ago, TaskTree } from './TaskTree'
+import { TaskTree } from './TaskTree'
+import { ago } from '@/Time'
 
 const POLL_MS = 2000
 

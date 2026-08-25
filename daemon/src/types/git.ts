@@ -12,6 +12,10 @@ export interface GitSettings {
   pull: boolean // rebase before push
   push: boolean // push after commit
   idleMs: number // idle period before sync run
+  /** Commits say who did the work, in trailers the ledger answers for. Off until somebody
+   *  turns it on: it changes what gets pushed to a remote, and a synthetic co-author
+   *  address going out to somebody's GitHub is theirs to decide. */
+  trailers: boolean
 }
 
 /** What a project syncs as before anyone says otherwise. Sync is off until it is asked for;
@@ -22,6 +26,7 @@ export const defaultGitSettings = (): GitSettings => ({
   pull: true,
   push: true,
   idleMs: 10_000,
+  trailers: false,
 })
 
 export interface GitAuthor {
@@ -48,6 +53,17 @@ export interface AccessCheck {
   remoteUrl: string | null
   /** What it means, and what to do about it where there is something to do. */
   message: string
+}
+
+/** The last commit to touch a path, which is all git can say about who wrote something and
+ *  is a different question from the ledger's: a commit is when the work was filed, by whoever
+ *  was configured as the author, and says nothing about which agent did it. */
+export interface CommitTouch {
+  sha: string
+  author: string
+  /** ISO 8601, as git writes it. */
+  at: string
+  subject: string
 }
 
 /** What became of a path between the two branches. */

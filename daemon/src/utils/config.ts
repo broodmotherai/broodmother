@@ -51,6 +51,10 @@ export const gitSettingsSchema = z.object({
   pull: z.boolean(),
   push: z.boolean(),
   idleMs: z.number().int().min(1000),
+  // Defaulted rather than required: a settings file written before trailers existed is a
+  // settings file that still parses, and one that did not would cost every project its sync
+  // settings on the first read.
+  trailers: z.boolean().default(false),
 })
 
 export const configSchema = z.object({

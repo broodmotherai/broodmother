@@ -32,6 +32,8 @@ import { scanDiagrams } from '@daemon/utils/diagrams'
 import type { DiagramSummary } from '@daemon/types/api/canvas'
 import { Crontab, systemCrontab, type CrontabIO } from '@daemon/features/tasks/crontab'
 import { RunStore } from '@daemon/features/tasks/db'
+import { LedgerStore, type NewEntry } from '@daemon/features/ledger/db'
+import { PERSON, type Actor, type LedgerEntry } from '@daemon/types/ledger'
 import { apiCall } from '@daemon/features/chat/api'
 import { Chats } from '@daemon/features/chat/Chats'
 import { ChatStore } from '@daemon/features/chat/db'
@@ -138,6 +140,7 @@ export class AppContext {
   readonly workspace: WorkspaceService
   private readonly runStore: RunStore
   private readonly chatStore: ChatStore
+  private readonly ledgerStore: LedgerStore
 
   private constructor(
     readonly store: ConfigStore,
@@ -189,6 +192,7 @@ export class AppContext {
     })
     this.runStore = new RunStore(path.join(home, 'tasks.db'))
     this.chatStore = new ChatStore(path.join(home, 'chats.db'))
+    this.ledgerStore = new LedgerStore(path.join(home, 'ledger.db'))
     // The root the shell was opened from, then the project, then the home — which is only
     // where you stand on first run, when there is nothing to stand in yet.
     this.terminals = new Terminals((root) => this.session(root))
@@ -202,6 +206,9 @@ export class AppContext {
       git: () => this.projectOpen?.git ?? null,
       settings: () => this.gitSettings,
       author: () => this.profiles.active?.gitAuthor ?? null,
+      // The newest act per path, which is what the commit is carrying: an act older than
+      // the last commit belongs to that one, and a path nobody claimed says nothing.
+      acts: (paths) => paths.flatMap((path) => this.actsFor('project', path, 1)),
       onStatus: (status) => this.broadcast({ type: 'sync', status }),
     })
     // Tasks run wherever a task file can live: the project, and every open repo.
@@ -221,10 +228,11 @@ export class AppContext {
     // A conversation belongs to the project it was held in, and speaks with the key the
     // profile holds for whichever provider serves the model it was asked for.
     const stream = chatStream({ credential: (provider) => this.profiles.keys[provider] })
-    // Its own front door, allowlisted — so what a tool does is what the route does.
-    const reach = () => ({
+    // Its own front door, allowlisted — so what a tool does is what the route does. Whoever
+    // the door is opened for travels with it, so the ledger can say whose write it was.
+    const reach = (by: Actor) => ({
       tree: (root: DocRoot) => this.rootOf(root).tree,
-      call: apiCall(() => this.url),
+      call: apiCall(() => this.url, by),
     })
     this.chats = new Chats({
       store: this.chatStore,
@@ -240,7 +248,10 @@ export class AppContext {
           system: brief(this.briefState(this.here(), this.scope, 'chat')),
           // What a record written this turn says wrote it. The route has no caller to ask,
           // so this is the one place that knows — and everywhere else it goes unsaid.
-          tools: chatTools({ ...reach(), by: `chat/${chat}` }),
+          tools: chatTools({
+            ...reach({ kind: 'chat', id: chat.id, model: chat.model }),
+            by: `chat/${chat.id}`,
+          }),
           maxRounds: MAX_ROUNDS,
         }
       },
@@ -267,14 +278,29 @@ export class AppContext {
       terminalBrief: () => brief(this.briefState(this.here(), this.scope)),
       checkout: () => this.here(),
       env: () => this.agentEnv(),
-      tools: reach(),
+      // The hands work on the real disk rather than through the door, so what they changed
+      // is filed here instead: the checkout they ran in is the scoped one, and the errand is
+      // the finest grain there is.
+      tools: (by) => ({
+        ...reach(by),
+        noteErrand: (paths, note) => {
+          for (const changed of paths)
+            this.recordAct({
+              root: this.scope,
+              path: changed,
+              action: 'errand',
+              actor: by,
+              note,
+            })
+        },
+      }),
     })
     // Records are the project's, the way wikilinks and sync are: a repo is a code repository
     // and what is written down about it is written down next door.
     this.entities = new Entities({
       project: () => this.projectOpen?.tree ?? null,
       links: () => this.projectOpen?.links ?? null,
-      writeDoc: (path, markdown) => this.writeDoc('project', path, markdown),
+      writeDoc: (path, markdown, by) => this.writeDoc('project', path, markdown, by),
     })
   }
 
@@ -486,9 +512,16 @@ export class AppContext {
    *
    * Both writers go through here — the editor's `PUT /api/doc` and the chat's `write_doc`
    * tool — because a write that skipped any of it would be a document the rest of the app
-   * does not know about.
+   * does not know about. Which of them it was is the last argument, and unsaid it is a
+   * person: the editor is the one writer that claims nothing, and somebody typing is the
+   * truthful reading of a write nobody signed.
    */
-  async writeDoc(root: DocRoot, path: string, markdown: string): Promise<DocPath> {
+  async writeDoc(
+    root: DocRoot,
+    path: string,
+    markdown: string,
+    by: Actor = PERSON,
+  ): Promise<DocPath> {
     const open = this.rootOf(root)
     const docPath = normalize(path)
     checkBoard(docPath, markdown)
@@ -501,12 +534,37 @@ export class AppContext {
       await this.open.links.update(docPath)
       this.sync.noteEdit()
     }
+    // Filed before the sidebar hears about it, so anything that comes looking on the back of
+    // the event finds the row already there.
+    this.recordAct({ root, path: docPath, action: 'write', actor: by, created: !existed })
     this.broadcast({
       type: 'tree',
       root,
       event: { type: existed ? 'changed' : 'created', path: docPath },
     })
     return docPath
+  }
+
+  /** What was done to one document, newest first. The project is the ledger's key and the
+   *  context is the one thing that knows which is open, so this is asked here. */
+  actsFor(root: DocRoot, path: string, limit?: number): LedgerEntry[] {
+    const project = this.config.projectPath
+    if (!project) return []
+    return this.ledgerStore.forPath(project, root, normalize(path), limit)
+  }
+
+  /**
+   * One act, filed under the open project. Every write the app makes ends here the way it
+   * ends at the broadcast — the project is the ledger's key and the context is the one thing
+   * that knows which is open, so a route hands over what it did and nothing else.
+   *
+   * With no project open there is nothing to key a row on and nothing is filed. Provenance
+   * is worth having and is not worth failing a write over, so this never throws.
+   */
+  recordAct(entry: Omit<NewEntry, 'project'>): void {
+    const project = this.config.projectPath
+    if (!project) return
+    this.ledgerStore.record({ ...entry, project })
   }
 
   async checkAccess(root: DocRoot): Promise<AccessCheck> {

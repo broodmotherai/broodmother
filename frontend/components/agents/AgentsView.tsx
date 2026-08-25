@@ -24,7 +24,7 @@ export function AgentsView() {
   const app = useApp()
   const router = useRouter()
   /** Who to open on, when something linked here meant somebody in particular — the chart's
-   *  faces do, and it is what makes an agent addressable from anywhere else later. */
+   *  faces do, and so does the line under a document saying who last changed it. */
   const asked = useSearchParams().get('agent')
   const project = app.project?.path ?? null
   const [agents, setAgents] = useState<AgentSummary[]>([])

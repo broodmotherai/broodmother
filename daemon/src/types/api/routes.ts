@@ -26,6 +26,7 @@ import type {
   PostEntities,
   PostEntityLink,
 } from './entities'
+import type { GetLedger } from './ledger'
 import type { GetPersonas } from './personas'
 import type { DeleteTerminal } from './terminal'
 import type {
@@ -137,6 +138,7 @@ interface ApiRoutes {
   'DELETE /api/doc': DeleteDoc
   'POST /api/folder': PostFolder
   'GET /api/links': GetLinks
+  'GET /api/ledger': GetLedger
   'GET /api/config': GetConfig
   'PUT /api/config': PutConfig
   'POST /api/git/check': PostGitCheck

@@ -10,6 +10,7 @@ import { docs } from './docs'
 import { entities } from './entities'
 import { git } from './git'
 import { github } from './github'
+import { ledger } from './ledger'
 import { profiles } from './profiles'
 import { projects } from './projects'
 import { repos } from './repos'
@@ -26,6 +27,7 @@ const TABLES = [
   entities,
   git,
   github,
+  ledger,
   profiles,
   projects,
   repos,
@@ -42,6 +44,7 @@ type Registered =
   | keyof typeof entities
   | keyof typeof git
   | keyof typeof github
+  | keyof typeof ledger
   | keyof typeof profiles
   | keyof typeof projects
   | keyof typeof repos

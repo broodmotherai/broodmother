@@ -45,6 +45,26 @@ async function toolbox() {
   return { tools, checkout, handle }
 }
 
+/** The same door, opened for somebody — what an agent's tools are built with. */
+async function agentsToolbox() {
+  const made = await toolbox()
+  return {
+    ...made,
+    tools: chatTools({
+      tree: () => new Tree(made.checkout),
+      call: apiCall(() => made.handle.url, {
+        kind: 'agent',
+        id: 'agent-1',
+        name: 'Priya',
+        persona: 'research/suggestion-researcher',
+        model: 'claude-opus-5',
+        context: 'chat-4',
+      }),
+      by: 'agent/Priya',
+    }),
+  }
+}
+
 /** One tool, called the way the model would call it. */
 const use = async (tools: ToolSet, name: string, input: unknown): Promise<string> => {
   const tool = tools[name]
@@ -205,12 +225,47 @@ it('answers a missing document with an error it can read', async () => {
   expect(answer).toContain('"error"')
 })
 
+/* The tool the ledger exists for: an agent finding a changed file and finding out whose
+   work it is looking at, which git alone cannot say. */
+it('says whose work a document is, and in whose words', async () => {
+  const { tools } = await agentsToolbox()
+  await use(tools, 'write_doc', {
+    root: 'project',
+    path: 'notes/plan.md',
+    markdown: '# plan\n',
+  })
+
+  const said = await use(tools, 'who_did', { root: 'project', path: 'notes/plan.md' })
+  expect(said).toContain('Priya (agent, research/suggestion-researcher, claude-opus-5)')
+  expect(said).toContain('made this')
+  expect(said).toContain('in chat-4')
+})
+
+/* A write nobody claimed is somebody typing, which is what the editor's save is. */
+it('says a write nobody claimed was somebody typing', async () => {
+  const { tools } = await toolbox()
+  await use(tools, 'write_doc', { root: 'project', path: 'a.md', markdown: 'a\n' })
+  expect(await use(tools, 'who_did', { root: 'project', path: 'a.md' })).toContain(
+    'somebody typing in the editor',
+  )
+})
+
+/* The honest silence: a file the app never watched change is a file the ledger cannot speak
+   for, and saying so is the whole point of not guessing. */
+it('says the ledger does not know rather than naming whoever wrote last', async () => {
+  const { tools } = await toolbox()
+  const said = await use(tools, 'who_did', { root: 'project', path: 'index.md' })
+  expect(said).toContain('the ledger has nothing for index.md')
+  expect(said).not.toContain('Priya')
+})
+
 it('titles a step by what the tool was asked to do', () => {
   expect(titleOf('read_doc', { root: 'project', path: 'a.md' })).toBe('read project a.md')
   expect(titleOf('search_docs', { root: 'project', query: 'sync' })) //
     .toBe('search project for “sync”')
   expect(titleOf('api', { method: 'POST', route: '/api/sync/now' })) //
     .toBe('POST /api/sync/now')
+  expect(titleOf('who_did', { root: 'project', path: 'a.md' })).toBe('who did project a.md')
 })
 
 it('records something, and hands back the path to cite rather than a message', async () => {

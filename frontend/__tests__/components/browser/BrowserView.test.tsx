@@ -6,6 +6,12 @@ import { AppProvider } from '@/State'
 import { BrowserTab } from '@/components/browser/BrowserView'
 import { DocView } from '@/components/doc/DocView'
 
+// The line under a document clicks through to a thread, which is the router's business.
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => '/doc',
+}))
+
 /** Monaco is stood in for, but `@/Editor` around it is the real thing: which of the two ways
  *  of showing a page is on screen is exactly what these tests are about. */
 vi.mock('@/components/editor/Editor', () => ({

@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   CHAT_PROVIDERS,
   DEFAULT_CHAT_MODEL,
@@ -38,17 +39,23 @@ export function ChatView() {
 
   const conversation = useConversation({ open, model, onDone: () => void list() })
 
+  // Which conversation was asked for, where somebody arrived by clicking one — the line
+  // under a document, saying it was this chat that changed it.
+  const asked = useSearchParams().get('chat')
+
   useEffect(() => {
     let alive = true
     setChats(null)
     setOpen(null)
     void list().then((found) => {
-      if (alive && found) setOpen(found[0]?.id ?? null)
+      if (!alive || !found) return
+      const wanted = found.find((one) => one.id === asked)
+      setOpen(wanted?.id ?? found[0]?.id ?? null)
     })
     return () => {
       alive = false
     }
-  }, [list, project])
+  }, [list, project, asked])
 
   const send = (text: string) => {
     setFailed(null)
