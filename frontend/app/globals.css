@@ -4110,7 +4110,8 @@ p.palette-label {
    dressed as the tree's menus: the same lifted surface, holding flat rows that light up
    under the pointer rather than buttons standing raised on their own. */
 .task-bar,
-.canvas-bar {
+.canvas-bar,
+.org-bar {
   position: absolute;
   top: 0.75rem;
   left: 0.75rem;
@@ -4125,7 +4126,8 @@ p.palette-label {
 }
 
 .task-button,
-.canvas-button {
+.canvas-button,
+.org-button {
   display: flex;
   padding: 0.35rem;
   background: none;
@@ -4137,13 +4139,15 @@ p.palette-label {
 .task-button:hover,
 .task-button[data-state='open'],
 .canvas-button:hover,
-.canvas-button[data-state='open'] {
+.canvas-button[data-state='open'],
+.org-button:hover {
   background: var(--active);
   color: var(--ink);
 }
 
 .task-button .icon,
-.canvas-button .icon {
+.canvas-button .icon,
+.org-button .icon {
   width: 0.85rem;
   height: 0.85rem;
 }
@@ -5484,6 +5488,206 @@ p.palette-label {
 /* Their bubbles are close together in a run, the way messages typed one after another are. */
 .chat-message[data-who='true'] + .chat-message[data-who='true']:not([data-lead='true']) {
   margin-top: -0.35rem;
+}
+
+/* The org chart, drawn as a graph rather than as a board of cards: faces on a plain ground,
+   a line from each to the one it reports to, and nothing ruled under them. No dots — a grid
+   is for a thing you place on it, and nobody places these; the physics does. */
+.org-page {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.org {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  user-select: none;
+  background: var(--ground);
+  outline: none;
+  cursor: grab;
+}
+
+.org-world {
+  position: absolute;
+  transform-origin: 0 0;
+}
+
+.org-lines {
+  position: absolute;
+  overflow: visible;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.org-line {
+  stroke: var(--line);
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+
+/* A marker draws itself rather than inheriting the line it is on, so its ink is set here:
+   the line's own stroke where the engine can say what that is — which makes the head of a
+   line being drawn the same indigo as the line — and the resting colour where it cannot. */
+#org-arrow path {
+  fill: none;
+  stroke: var(--line);
+  stroke: context-stroke;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.org-ghost {
+  stroke: var(--opal-indigo);
+  stroke-dasharray: 5 4;
+}
+
+/* Fat and invisible under the line, so its end can be taken hold of without aim. */
+.org-line-hit {
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+  cursor: grab;
+}
+
+/* A face and its name under it. The circle is the avatar the rest of the app draws people
+   with, pinned to 40px so the world's units and the screen's agree whatever the root size. */
+.org-node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  cursor: grab;
+  transition: opacity 140ms ease-out;
+}
+
+.org-node .agent-avatar {
+  position: relative;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  font-size: 0.85rem;
+}
+
+/* Where a line is attached: the ring around the face, which is nothing at rest and lights as
+   you come near it. It stands just outside the face, so what it leaves exposed to the pointer
+   is the rim alone — the middle is the face, and the face is what you move.
+
+   It lights three ways, and they are all the same news: the pointer is on this one, a line
+   being drawn is near it (`--pull`, written by the board, 0 to 1), or that line has hold. */
+.org-ring {
+  position: absolute;
+  inset: -8px;
+  border: 2px solid
+    color-mix(in srgb, var(--opal-indigo) calc(var(--pull, 0) * 100%), transparent);
+  border-radius: 50%;
+  cursor: crosshair;
+  transition: border-color 120ms ease-out;
+}
+
+.org-node:hover .org-ring,
+.org-node[data-held] .org-ring {
+  border-color: var(--opal-indigo);
+}
+
+/* No dot at rest. In the rail a face is a row and the dot beside it says whether they are
+   about; here every face is a dot already, and a ring of them on a graph is a rash. It comes
+   out only for somebody actually at something, where it is the news. */
+.org-node .agent-presence {
+  display: none;
+}
+
+.org-node .agent-avatar[data-working='true'] .agent-presence {
+  display: block;
+  border-color: var(--ground);
+}
+
+/* Under the face, and out of the way of the pointer: the label is a caption, not a target.
+   It clears the ring, which stands outside the face. */
+.org-label {
+  position: absolute;
+  top: calc(100% + 0.7rem);
+  max-width: 8rem;
+  overflow: hidden;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Everything not on the face under the pointer, nor a line to it, steps back — which is how
+   a graph answers "who is this one's". */
+.org-node[data-dim],
+.org-lines g[data-dim] {
+  opacity: 0.25;
+}
+
+/* Nobody hired yet. The way out is the bar's, which is on screen already. */
+.org-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: 0;
+  color: var(--faint);
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  transform: translate(-50%, -50%);
+}
+
+/* Why a line did not land, under the graph rather than over it: the board never drew the
+   line, so there is nothing to point at — only a reason to read. */
+.org-refused {
+  flex: none;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid var(--line);
+  color: var(--danger);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+}
+
+/* Hiring and the chart share the rail's first row: the button that is pressed daily keeps
+   its width, and the one pressed rarely is a mark at the end of it. */
+.agent-rail-head {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.agent-rail-head .chat-new {
+  flex: 1;
+  min-width: 0;
+}
+
+.agent-chart {
+  display: flex;
+  flex: none;
+  padding: 0.35rem;
+  border: none;
+  border-radius: var(--row-radius);
+  background: none;
+  color: var(--muted);
+}
+
+.agent-chart:hover {
+  background: var(--active);
+  color: var(--ink);
+}
+
+.agent-chart .icon {
+  width: 0.85rem;
+  height: 0.85rem;
 }
 
 /* The box that cannot pick a model says which one it has, where the picker would be. */

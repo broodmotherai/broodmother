@@ -9,6 +9,7 @@ import { initialsOf } from '@/components/chat/Avatar'
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
   usePathname: () => '/agents',
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 const PRIYA = {

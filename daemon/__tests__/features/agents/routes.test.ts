@@ -53,6 +53,18 @@ const priya = () => ({
   color: '#c084fc',
 })
 
+type Call = (method: string, url: string, body?: unknown) => Promise<{
+  status: number
+  body: unknown
+}>
+
+/** Somebody hired, by name — the chart tests care who is on it, not what they wear. */
+async function hired(call: Call, name: string) {
+  const { agent } = (await call('POST', '/api/agents', { ...priya(), name }))
+    .body as ApiResponse<'POST /api/agents'>
+  return agent
+}
+
 it('makes an agent with a thread and a folder, lists them, and takes them away', async () => {
   const { root, call } = await server()
   expect((await call('GET', '/api/agents')).body).toEqual({ agents: [] })
@@ -96,4 +108,65 @@ it('refuses a persona the project has not got, a model nobody serves, and an age
   expect((await call('POST', '/api/agents', { ...priya(), name: '  ' })).status).toBe(400)
   expect((await call('DELETE', '/api/agent?agent=agent-9')).status).toBe(400)
   expect((await call('POST', '/api/agent/clear', { agent: 'agent-9' })).status).toBe(400)
+})
+
+/* The chart through the door it is drawn through: everyone on it whether or not anybody has
+   placed them, a lead set and cleared, and a card put where it was dragged to. */
+it('answers the chart, sets a lead and clears it, and remembers where a card was put', async () => {
+  const { call } = await server()
+  const sam = await hired(call, 'Sam')
+  const priya = await hired(call, 'Priya')
+
+  const empty = (await call('GET', '/api/agents/org')).body as ApiResponse<'GET /api/agents/org'>
+  expect(empty.agents.map((one) => [one.name, one.lead, one.place])).toEqual([
+    ['Priya', null, null],
+    ['Sam', null, null],
+  ])
+
+  expect((await call('POST', '/api/agent/lead', { agent: priya.id, lead: sam.id })).status).toBe(200)
+  expect((await call('POST', '/api/agent/place', { agent: priya.id, x: 256, y: 144 })).status).toBe(200)
+  const drawn = (await call('GET', '/api/agents/org')).body as ApiResponse<'GET /api/agents/org'>
+  expect(drawn.agents[0]).toMatchObject({
+    name: 'Priya',
+    lead: sam.id,
+    place: { x: 256, y: 144 },
+  })
+
+  expect((await call('POST', '/api/agent/lead', { agent: priya.id, lead: null })).status).toBe(200)
+  const cleared = (await call('GET', '/api/agents/org')).body as ApiResponse<'GET /api/agents/org'>
+  expect(cleared.agents.map((one) => one.lead)).toEqual([null, null])
+})
+
+it('refuses a loop, a lead that is not there, and a place that is not a number', async () => {
+  const { call } = await server()
+  const sam = await hired(call, 'Sam')
+  const priya = await hired(call, 'Priya')
+  await call('POST', '/api/agent/lead', { agent: priya.id, lead: sam.id })
+
+  expect(await call('POST', '/api/agent/lead', { agent: sam.id, lead: priya.id })).toMatchObject({
+    status: 400,
+    body: { error: 'that would make a loop: Priya already reports to Sam' },
+  })
+  expect((await call('POST', '/api/agent/lead', { agent: sam.id, lead: 'agent-9' })).status).toBe(400)
+  expect((await call('POST', '/api/agent/lead', { agent: 'agent-9', lead: sam.id })).status).toBe(400)
+  expect((await call('POST', '/api/agent/place', { agent: sam.id, x: 'over there', y: 0 })).status).toBe(400)
+  expect((await call('POST', '/api/agent/place', { agent: 'agent-9', x: 0, y: 0 })).status).toBe(400)
+})
+
+/* Removing somebody takes their lines with them and leaves their reports under their own
+   lead — orphaning a whole limb of the chart is what an org never does. */
+it('takes a removed agent off the chart and re-parents what was under them', async () => {
+  const { call } = await server()
+  const sam = await hired(call, 'Sam')
+  const priya = await hired(call, 'Priya')
+  const ada = await hired(call, 'Ada')
+  await call('POST', '/api/agent/lead', { agent: priya.id, lead: sam.id })
+  await call('POST', '/api/agent/lead', { agent: ada.id, lead: priya.id })
+
+  await call('DELETE', `/api/agent?agent=${priya.id}`)
+  const left = (await call('GET', '/api/agents/org')).body as ApiResponse<'GET /api/agents/org'>
+  expect(left.agents.map((one) => [one.name, one.lead])).toEqual([
+    ['Ada', sam.id],
+    ['Sam', null],
+  ])
 })
