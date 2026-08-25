@@ -6220,3 +6220,250 @@ p.palette-label {
   opacity: 0.35;
   pointer-events: none;
 }
+
+/* ---------- Mother ---------- */
+
+/* The popup: the last and rarest stage. Bottom-right the ProactiveVA way, one suggestion at
+   most, floating on the surface the inspectors float on. It retires into the dot on her row
+   rather than vanishing, so a missed one is still findable. */
+.mother-popup {
+  position: fixed;
+  z-index: 40;
+  right: 1rem;
+  bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 19rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+  box-shadow: var(--surface-shadow);
+  font-size: 0.85rem;
+}
+
+.mother-popup > header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.mother-popup > header .icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: var(--muted);
+}
+
+.mother-popup-title {
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* What the suggestion is about, named in the corner of it: the anchor is half the point. */
+.mother-popup-anchor,
+.mother-anchor {
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mother-popup-anchor:hover,
+.mother-anchor:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.mother-popup-anchor {
+  margin-left: auto;
+}
+
+.mother-popup > p {
+  margin: 0;
+}
+
+.mother-popup-actions,
+.mother-said-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.mother-popup-actions button,
+.mother-said-actions button {
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--row-radius);
+  background: transparent;
+  font-size: 0.75rem;
+}
+
+.mother-popup-actions button:hover,
+.mother-said-actions button:hover {
+  background: var(--raised);
+}
+
+/* A popup that retired unanswered, still findable on her row. */
+.mother-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--opal-gold);
+}
+
+/* The page's controls: the off switch, PRISM's C_FA worn as the frequency slider, and the
+   per-rule switches with the counts that are the gate's whole memory. */
+.mother-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.mother-controls > button {
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--row-radius);
+  background: transparent;
+  font-size: 0.75rem;
+}
+
+.mother-controls > button:hover:not(:disabled) {
+  background: var(--raised);
+}
+
+.mother-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mother-slider {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mother-slider input {
+  width: 9rem;
+}
+
+.mother-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+}
+
+.mother-rules li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.mother-rules .mother-switch {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+
+/* The feed: each moment's whole story on one card-less row — noticed, then held or
+   deliberated, then said or kept quiet. */
+.mother-feed > li {
+  padding: 0.45rem 0.1rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.85rem;
+}
+
+.mother-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.mother-rule {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Where the moment ended up. Held is the gate saying no, quiet is a deliberation that
+   found nothing — both are the product working, so neither wears a warning colour. */
+.mother-outcome {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.mother-outcome[data-outcome='surfaced'] {
+  color: var(--opal-mint);
+}
+
+.mother-evidence {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* What she said, under what she saw, with the record where one was written. */
+.mother-said {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-top: 0.3rem;
+}
+
+.mother-said > p {
+  margin: 0;
+}
+
+/* The spider at the centre of the org chart. The face is the avatar's 40px circle, worn
+   plain: she is drawn by the view, not stored as a node, and clicking her opens her page. */
+.org-mother {
+  cursor: pointer;
+}
+
+.org-mother-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--muted);
+}
+
+.org-mother-face .icon {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.org-mother:hover .org-mother-face {
+  color: var(--ink);
+}
+
+/* Oversight rather than a lead somebody drew: the same ink, half said. */
+.org-mother-line {
+  stroke-dasharray: 4 5;
+  transition: opacity 140ms ease-out;
+}
+
+.org-mother-line[data-dim] {
+  opacity: 0.25;
+}

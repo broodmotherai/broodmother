@@ -42,6 +42,7 @@ import { Confirm } from '@/components/core/Confirm'
 import { Icon } from '@/components/core/Icons'
 import { Resizer, useStoredSize } from '@/components/core/Resizer'
 import { type NewTab, type Tab, TabStrip } from './TabStrip'
+import { MotherPopup } from '@/components/mother/MotherPopup'
 import { TerminalPanel, TerminalTab } from '@/components/terminal/TerminalPanel'
 import { BrowserTab } from '@/components/browser/BrowserView'
 import { closed as forget } from '@/components/terminal/Known'
@@ -331,6 +332,7 @@ export function Shell({ children }: { children: ReactNode }) {
     agentOrg: () => show('/agents/org'),
     chat: () => show('/chat'),
     entities: () => show('/entities'),
+    mother: () => show('/mother'),
     projects: () => setPicker(true),
     repos: () => setWhereMenu(true),
     createRepo: () => setCreating(true),
@@ -451,6 +453,21 @@ export function Shell({ children }: { children: ReactNode }) {
             >
               <Icon name="library" />
               <span className="name">Entities</span>
+            </button>
+            {/* The overseer, last: she watches everything the rows above are about. The
+                dot is a popup that retired unanswered, still findable here. */}
+            <button
+              type="button"
+              className="row explorer-tab"
+              aria-label="Mother"
+              aria-pressed={pathname === '/mother'}
+              onClick={ctx.mother}
+            >
+              <Icon name="antenna" />
+              <span className="name">Mother</span>
+              {app.motherSuggestion && (
+                <span className="mother-dot" aria-label="Mother has a suggestion" />
+              )}
             </button>
           </>
         }
@@ -644,6 +661,9 @@ export function Shell({ children }: { children: ReactNode }) {
         <CreateRepo onCreate={app.addRepo} onClose={() => setCreating(false)} />
       )}
       {flow && <Palette flow={flow} ctx={ctx} setFlow={setFlow} />}
+      {/* The last and rarest stage: at most one suggestion, bottom-right, over whatever
+          page is up — the shell is the one component wrapping every one of them. */}
+      <MotherPopup />
     </div>
   )
 }

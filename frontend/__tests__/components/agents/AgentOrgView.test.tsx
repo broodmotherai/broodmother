@@ -68,7 +68,8 @@ function dragTo(element: Element, to: { x: number; y: number }, from: { x: numbe
   fireEvent.pointerUp(window, { clientX: to.x, clientY: to.y })
 }
 
-const lines = () => document.querySelectorAll('.org-line:not(.org-ghost)').length
+const lines = () =>
+  document.querySelectorAll('.org-line:not(.org-ghost):not(.org-mother-line)').length
 
 /* Everyone the project has is on the graph, whether or not anybody has placed them, and a
    line stands for each pair that has one. */
@@ -240,4 +241,25 @@ it('says the chart is empty and offers the way back', async () => {
   push.mockClear()
   fireEvent.click(screen.getByRole('button', { name: 'Agents' }))
   expect(push).toHaveBeenCalledWith('/agents')
+})
+
+/* The spider at the centre: Mother is drawn by the view rather than stored as a node, with
+   a line to everyone who reports to nobody, and clicking her opens her page. */
+it('draws Mother at the centre, lined to whoever reports to nobody', async () => {
+  await show(
+    createMockClient({
+      personas: [PERSONA],
+      agents: [hired('Sam'), hired('Priya', { lead: 'Sam' }), hired('Ada')],
+    }),
+  )
+  await screen.findByRole('group', { name: 'Priya' })
+  const mother = screen.getByRole('link', { name: 'Mother' })
+  expect(mother.style.left).toBe('-20px')
+  expect(mother.style.top).toBe('-20px')
+  // Sam and Ada answer to nobody; Priya answers to Sam, so her line is Sam's alone.
+  expect(document.querySelectorAll('.org-mother-line')).toHaveLength(2)
+
+  push.mockClear()
+  fireEvent.click(mother)
+  expect(push).toHaveBeenCalledWith('/mother')
 })

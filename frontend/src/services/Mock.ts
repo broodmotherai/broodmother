@@ -22,6 +22,11 @@ import type { Skill } from '@broodmother/types/api/skills'
 import type { AgentInOrg } from '@broodmother/types/api/agents'
 import type { LedgerEntry } from '@broodmother/types/ledger'
 import type { EntitySummary } from '@broodmother/types/api/entities'
+import type {
+  MotherItem,
+  MotherSettings,
+  RuleStatus,
+} from '@broodmother/types/api/mother'
 import type { ApiRequest, ApiResponse, ApiRoute } from '@broodmother/types/api/routes'
 import type { TaskRun } from '@broodmother/types/api/tasks'
 import {
@@ -201,6 +206,10 @@ export function createMockClient(
      *  happen, so a document can arrive already belonging to somebody. */
     acts?: LedgerEntry[]
 
+    /** What Mother has already noticed, newest first, each with its suggestion where one
+     *  was made — what her page and the popup's badge arrive already showing. */
+    mother?: MotherItem[]
+
     /** Routes that never answer, for asking what the app does while it is waiting. */
     stall?: ApiRoute[]
 
@@ -294,6 +303,10 @@ export function createMockClient(
   /** Who did what, newest first — the app keeps this in SQLite; here it is an array, and a
    *  write through this client files a row the way the app's write path does. */
   const ledger: LedgerEntry[] = [...(seed.acts ?? [])]
+  const motherItems: MotherItem[] = [...(seed.mother ?? [])]
+  const motherRules: RuleStatus[] = []
+  let motherSettings: MotherSettings = { on: true, cfa: 0.5 }
+  let sweptAt: number | null = null
   const file = (act: Omit<LedgerEntry, 'at' | 'project' | 'actor'>) => {
     ledger.unshift({
       at: Date.now(),
@@ -1115,6 +1128,37 @@ export function createMockClient(
           repoBranch: {},
         }
         return { config }
+      },
+
+      'GET /api/mother': async () => ({
+        settings: motherSettings,
+        rules: motherRules,
+        items: motherItems,
+        sweptAt,
+      }),
+      'POST /api/mother/verdict': async ({ suggestion, verdict }) => {
+        const item = motherItems.find((one) => one.suggestion?.id === suggestion)
+        if (!item?.suggestion) throw new Error(`no suggestion ${suggestion}`)
+        // Accepted and dismissed are final; expired yields to either, the store's rule.
+        if (item.suggestion.verdict !== 'accepted' && item.suggestion.verdict !== 'dismissed')
+          item.suggestion = { ...item.suggestion, verdict }
+        return { suggestion: item.suggestion }
+      },
+      'PUT /api/mother/settings': async (body) => {
+        motherSettings = {
+          on: body.on ?? motherSettings.on,
+          cfa: body.cfa ?? motherSettings.cfa,
+        }
+        for (const [rule, enabled] of Object.entries(body.rules ?? {})) {
+          const held = motherRules.find((one) => one.rule === rule)
+          if (held) held.enabled = enabled
+          else motherRules.push({ rule, enabled, shown: 0, accepted: 0 })
+        }
+        return { settings: motherSettings, rules: motherRules }
+      },
+      'POST /api/mother/sweep': async () => {
+        sweptAt = Date.now()
+        return { sweptAt }
       },
 
       'GET /api/sync': async () => sync,

@@ -11,6 +11,7 @@ import {
 import type { GithubDevice, GithubRepo } from '@broodmother/types/github'
 import type { SyncStatus } from '@broodmother/types/sync'
 import type { ActivityStates } from '@broodmother/types/api/activity'
+import type { Suggestion, SuggestionVerdict } from '@broodmother/types/api/mother'
 import {
   repoOf,
   repoRoot,
@@ -54,6 +55,11 @@ export interface App {
    *  they move while some other thread is on screen. What the socket has said since the page
    *  loaded; the list itself says where each stood when it was asked for. */
   agentsWorking: Record<string, boolean>
+  /** The suggestion Mother has surfaced and nobody has answered: what the popup shows,
+   *  and — expired — what the badge on her row points at. Null is Mother with nothing to
+   *  say, which is most afternoons. */
+  motherSuggestion: Suggestion | null
+  answerMother(suggestion: string, verdict: SuggestionVerdict): Promise<Failure>
   /** False until config, projects and profiles have answered — the shell gates on all three,
    *  and rendering before they land shows the home screen for a frame. */
   ready: boolean
@@ -223,6 +229,7 @@ export function AppProvider({
   const [sync, setSync] = useState<SyncStatus>(idleSync)
   const [activity, setActivity] = useState<ActivityStates>({})
   const [agentsWorking, setAgentsWorking] = useState<Record<string, boolean>>({})
+  const [motherSuggestion, setMotherSuggestion] = useState<Suggestion | null>(null)
   const [ready, setReady] = useState(false)
   const [config, setConfig] = useState<BroodmotherConfig | null>(null)
   const [configReset, setConfigReset] = useState<string[]>([])
@@ -336,6 +343,22 @@ export function AppProvider({
       return result.config
     })
 
+  /** The suggestion still waiting on an answer, if the last session missed one: newest
+   *  first, and anything accepted or dismissed is settled rather than pending. */
+  const loadMother = () =>
+    client
+      .request('GET /api/mother', null)
+      .then((result) => {
+        const pending = result.items.find(
+          (item) =>
+            item.suggestion &&
+            item.suggestion.verdict !== 'accepted' &&
+            item.suggestion.verdict !== 'dismissed',
+        )?.suggestion
+        setMotherSuggestion(pending ?? null)
+      })
+      .catch(() => null)
+
   const loadGit = () =>
     client
       .request('GET /api/git', null)
@@ -380,6 +403,7 @@ export function AppProvider({
       .request('GET /api/activity', null)
       .then((result) => setActivity(result.activity))
       .catch(() => null)
+    void loadMother()
 
     let dropped = false
     connection.current = client.connect(
@@ -399,6 +423,10 @@ export function AppProvider({
             break
           case 'agent':
             setAgentsWorking((held) => ({ ...held, [message.id]: message.working }))
+            break
+          case 'mother':
+            // One popup at most, newest wins: a second suggestion takes the screen over.
+            setMotherSuggestion(message.suggestion)
             break
           case 'error':
             // Nothing surfaces this now that the status bar is gone. Left as a case so the
@@ -420,6 +448,7 @@ export function AppProvider({
           .request('GET /api/activity', null)
           .then((result) => setActivity(result.activity))
           .catch(() => null)
+        void loadMother()
       },
     )
     return () => {
@@ -479,6 +508,7 @@ export function AppProvider({
     sync,
     activity,
     agentsWorking,
+    motherSuggestion,
     ready,
     config,
     configReset,
@@ -539,6 +569,22 @@ export function AppProvider({
     clearConflict: () =>
       run(async () => {
         setSync(await client.request('POST /api/sync/clear-conflict', null))
+      }),
+
+    answerMother: (suggestion, verdict) =>
+      run(async () => {
+        const result = await client.request('POST /api/mother/verdict', {
+          suggestion,
+          verdict,
+        })
+        // Expired keeps the badge pointing at it; a real answer settles it and clears.
+        setMotherSuggestion((held) =>
+          held && held.id === suggestion
+            ? verdict === 'expired'
+              ? result.suggestion
+              : null
+            : held,
+        )
       }),
 
     saveConfig: (next) =>
