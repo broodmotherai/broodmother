@@ -2,108 +2,145 @@
 
 import { useState } from 'react'
 import { useApp } from '@/State'
-import { Button } from '@/components/core/Button'
-import { Input } from '@/components/core/Input'
+import { Icon } from '@/components/core/Icons'
+import { Menu } from '@/components/core/Menu'
 import PanelTable, { PanelRow } from '@/components/panels/PanelTable'
-import { Hint, Section } from './Layout'
+import {
+  AGENT_KINDS,
+  DEFAULT_COMMANDS,
+  TERMINALS,
+  type AgentCommands,
+  type AgentKind,
+} from '@/components/terminal/Kinds'
+import { AgentDialog } from './AgentDialog'
+import { dots, Hint, Section } from './Layout'
 
 /**
- * The agents that can be given a shell here, one row each, against where each keeps its
- * config. A sign-in like the model keys above rather than something about who you are, which
- * is why it left the profile page to stand with the rest of what the app reaches for.
+ * The agents that can be given a shell here, a row each: its mark, its name, and under the
+ * name the line the daemon types into the pty for it.
  *
- * A row per agent rather than a field per setting: what you want to know is which of them are
- * pointed somewhere of this profile's choosing and which are running on whatever they found.
+ * One setting rather than a page of them, because everything else an agent needs is already
+ * sayable in the line. A config folder, a login, a model, a flag — `CLAUDE_CONFIG_DIR=…
+ * claude …` is a command, and a field beside the command offering to say the same thing
+ * again is a second place to look and a second place to be wrong.
+ *
+ * The line is read where it is written: text under the name, the way an id sits under every
+ * other row in this panel. Changing one happens in a modal off the row's own menu — a column
+ * of open fields says the page is a form to fill in, and what it is is a list of what each
+ * agent runs, one line of which is occasionally wrong.
+ *
+ * Which agents there are is the daemon's — `AGENT_KINDS` and the default lines are the same
+ * table the tab strip and the pty draw from — so what is decided here is only which of them
+ * this profile has written its own line for.
  */
 
-/**
- * What each agent reads its own configuration out of. Claude takes a directory the profile
- * names; muse takes none — `muse exec` runs on whatever login the muse CLI itself holds, so
- * there is nothing here for this profile to point at, and a field offering to would be a
- * setting that changed nothing.
- */
-const AGENTS = [
-  {
-    id: 'claude',
-    label: 'Claude',
-    env: 'CLAUDE_CONFIG_DIR',
-    placeholder: '~/.claude',
-  },
-  {
-    id: 'muse',
-    label: 'Muse',
-    env: null,
-    note: 'Signed in through the muse CLI',
-  },
-] as const
+/** The name over each row, which is the agent's rather than the kind's spelling. */
+const LABELS: Record<AgentKind, string> = { claude: 'Claude', muse: 'Muse' }
+
+/** Each agent's mark in the colour it comes with, the same one it wears in the tab strip:
+ *  one glance down the column says which row is whose. The `!` is the stylesheet's `.icon`
+ *  rule, which colours the glyph itself and outranks a utility whatever the specificity. */
+const MARKS: Record<AgentKind, string> = {
+  claude: 'text-[var(--claude)]!',
+  muse: 'text-[var(--muse)]!',
+}
 
 export function CodingAgent() {
   const app = useApp()
-  const [draft, setDraft] = useState<string | null>(null)
+  // The agent whose settings are open, if any. One at a time, because it is a modal.
+  const [editing, setEditing] = useState<AgentKind | null>(null)
   const [busy, setBusy] = useState(false)
 
   if (!app.profile) return null
   const profile = app.profile
-  // The saved value until it is typed over, so a row nobody has touched shows what is set
-  // rather than an empty box the profile would be written back from.
-  const held = profile.claudeCfgDir ?? ''
-  const value = draft ?? held
+  /** What this profile has written for an agent, or nothing where it runs the default. */
+  const held = (kind: AgentKind) => profile.agentCommands[kind] ?? ''
 
-  const save = async () => {
+  /** Writes one agent's line, or drops it where the line is empty: emptied is not an agent
+   *  that runs nothing, it is one back on its default, which is what leaving the kind out of
+   *  the record says. */
+  const write = async (kind: AgentKind, line: string) => {
     setBusy(true)
+    const { [kind]: _was, ...rest } = profile.agentCommands
     await app.saveIdentity({
       color: profile.color,
       gitAuthor: profile.gitAuthor,
       sshKeyPath: profile.sshKeyPath,
-      claudeCfgDir: value.trim() || null,
+      agentCommands: (line ? { ...rest, [kind]: line } : rest) as AgentCommands,
       // The rest of the profile is carried through untouched, the way the soul's page
       // carries this one: a page that wrote only its own field would clear the others.
       soul: profile.soul,
     })
     setBusy(false)
-    setDraft(null)
   }
 
+  const reset = (kind: AgentKind) => write(kind, '')
+
   return (
-    <Section title="Coding Agent">
+    <Section title="Terminal Agents">
       <Hint>
-        Where each agent reads its login from. The directory is this profile&rsquo;s, so
-        switching profile switches which account the terminals here open as.
+        The agents a terminal here can open as, and the line each is handed once its shell has
+        spoken. <code>$BROODMOTHER_BRIEF</code> is set in the shell&rsquo;s environment and
+        holds the brief. Left empty, an agent runs the default line.
       </Hint>
 
-      <PanelTable empty="No coding agents.">
-        {AGENTS.map((agent) => (
+      <PanelTable empty="No terminal agents.">
+        {AGENT_KINDS.map((kind) => (
           <PanelRow
-            key={agent.id}
-            label={agent.label}
+            key={kind}
+            fill
+            icon={<Icon name={TERMINALS[kind].icon} className={MARKS[kind]} />}
+            label={LABELS[kind]}
+            hint={held(kind) || DEFAULT_COMMANDS[kind]}
+            /* What is true of the row rather than something you do to it: whether the line
+               under the name is this profile's or the one it came with. */
+            meta={held(kind) ? undefined : 'Default'}
             actions={
-              agent.env ? (
-                <>
-                  <Input
-                    className="w-[13rem]"
-                    aria-label={`${agent.label} config directory`}
-                    placeholder={agent.placeholder}
-                    value={value}
-                    onChange={(event) => setDraft(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') void save()
-                    }}
-                  />
-                  <Button onClick={() => void save()} disabled={busy || value === held}>
-                    {busy ? 'Saving…' : 'Save'}
-                  </Button>
-                </>
-              ) : (
-                /* Not a field left empty — there is no directory to name. Saying so is the
-                   row's whole content. */
-                <span className="[font-family:var(--mono)] text-[0.75rem] text-muted">
-                  {agent.note}
-                </span>
-              )
+              /* The row's dots rather than a button that says Edit: what you do to a row
+                 lives behind the same mark everywhere else in the app, and a column of Edits
+                 down a settings page is a column of the same word. */
+              <Menu
+                label={LABELS[kind]}
+                anchorLabel={`Options for ${LABELS[kind]}`}
+                anchorClass={dots}
+                align="end"
+                sections={[
+                  {
+                    actions: [
+                      {
+                        id: 'edit',
+                        label: 'Edit agent',
+                        icon: 'terminal',
+                        onSelect: () => setEditing(kind),
+                      },
+                      {
+                        id: 'default',
+                        label: 'Reset to default',
+                        icon: 'rotate-ccw',
+                        // Nothing to put back where the line is already the default.
+                        disabled: !held(kind) || busy,
+                        onSelect: () => void reset(kind),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <Icon name="ellipsis-vertical" />
+              </Menu>
             }
           />
         ))}
       </PanelTable>
+
+      {editing && (
+        <AgentDialog
+          kind={editing}
+          label={LABELS[editing]}
+          command={held(editing)}
+          onSave={(line) => write(editing, line)}
+          onClose={() => setEditing(null)}
+        />
+      )}
     </Section>
   )
 }

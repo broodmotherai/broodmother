@@ -15,7 +15,7 @@ const IDENTITY = {
   color: '#8fb8d8',
   gitAuthor: { name: 'Test', email: 'test@localhost' },
   sshKeyPath: null,
-  claudeCfgDir: null,
+  agentCommands: {},
   soul: null,
 }
 
@@ -1129,7 +1129,7 @@ describe('profiles', () => {
       color: '#c084fc',
       gitAuthor: { name: 'Ada', email: 'ada@example.com' },
       sshKeyPath: '~/.ssh/id_ed25519',
-      claudeCfgDir: '~/.claude',
+      agentCommands: { claude: 'claude --resume' },
       soul: '# Ada\n\nTerse, and never cheerful about it.',
     }
 

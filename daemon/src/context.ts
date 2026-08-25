@@ -53,7 +53,6 @@ import {
 import { GitHubService } from '@daemon/services/GitHubService'
 import type { GithubReach } from '@daemon/features/tasks/blocks/Block'
 import { Git } from '@daemon/utils/git'
-import { expandHome } from '@daemon/utils/fs'
 import { SyncLoop } from '@daemon/services/SyncLoop'
 import { GitService } from '@daemon/services/GitService'
 import { ActivityService } from '@daemon/services/ActivityService'
@@ -304,12 +303,10 @@ export class AppContext {
     })
   }
 
-  /** What an agent the app starts runs with, beyond the ambient environment: the profile's
-   *  Claude config folder, and a key where the server has one. */
+  /** What an agent the app starts runs with, beyond the ambient environment: a key where
+   *  the server has one. */
   private agentEnv(): Record<string, string> {
     const env: Record<string, string> = {}
-    const claudeCfgDir = this.profiles.active?.claudeCfgDir
-    if (claudeCfgDir) env.CLAUDE_CONFIG_DIR = expandHome(claudeCfgDir)
     if (process.env.ANTHROPIC_API_KEY) env.ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
     return env
   }
@@ -572,8 +569,7 @@ export class AppContext {
   }
 
   private async followActivity(): Promise<void> {
-    const dir = this.profiles.active?.claudeCfgDir
-    await this.activityService.follow(dir ? expandHome(dir) : null).catch(() => null)
+    await this.activityService.follow().catch(() => null)
   }
 
   get activity(): ActivityStates {
@@ -594,15 +590,13 @@ export class AppContext {
   private session(root: DocRoot | null): TerminalSession {
     const name = root ? repoOf(root) : repoOf(this.scope)
     const repo = name ? this.reposOpen.get(name) : null
-    const claudeCfgDir = this.profiles.active?.claudeCfgDir
     const cwd = repo?.path ?? this.projectOpen?.path ?? this.home
     const here = repo ? repoRoot(repo.name) : 'project'
     return {
       cwd,
-      env: {
-        ...(claudeCfgDir ? { CLAUDE_CONFIG_DIR: expandHome(claudeCfgDir) } : {}),
-        BROODMOTHER_BRIEF: brief(this.briefState(cwd, here)),
-      },
+      // The brief and nothing else: what an agent runs as is said in the line it is handed,
+      // which is the profile's to write.
+      env: { BROODMOTHER_BRIEF: brief(this.briefState(cwd, here)) },
     }
   }
 

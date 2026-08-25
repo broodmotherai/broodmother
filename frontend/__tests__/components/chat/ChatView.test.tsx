@@ -21,7 +21,7 @@ const unconnected: Profile = {
   color: '#c084fc',
   gitAuthor: { name: 'You', email: 'you@example.com' },
   sshKeyPath: null,
-  claudeCfgDir: null,
+  agentCommands: {},
   soul: null,
   github: null,
   models: [],

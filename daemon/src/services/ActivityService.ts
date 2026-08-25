@@ -4,7 +4,7 @@
  *
  * Claude Code says so itself. Every interactive session writes a probe file under its
  * config folder — `sessions/<pid>.json`, with `cwd` and a `status` it keeps current — and
- * this watches that folder for the profile the app is working as. That is the mechanism the
+ * this watches that folder. That is the mechanism the
  * tooling around Claude has settled on, and it needs nothing installed in the session: no
  * hook, no flag, no wrapper. It also tells the one thing no process list can — Claude
  * waiting to be told what next and Claude thinking are the same process, and the probe is
@@ -104,11 +104,11 @@ export class ActivityService {
   }
 
   /**
-   * Which config folder's sessions to read — the profile's `CLAUDE_CONFIG_DIR`, or Claude's
-   * default. Switching profile switches the folder, and everything known from the old one is
-   * dropped: its sessions were somebody else's desk.
+   * Which config folder's sessions to read — Claude's own, unless a caller names another,
+   * which is a test pointing this at a folder it made. Moving it drops everything known
+   * from the folder that was there: those sessions were somebody else's desk.
    */
-  async follow(configDir: string | null): Promise<void> {
+  async follow(configDir: string | null = null): Promise<void> {
     const folder = path.join(configDir ?? defaultConfigDir(), 'sessions')
     if (folder === this.folder) return
     this.folder = folder

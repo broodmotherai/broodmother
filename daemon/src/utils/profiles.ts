@@ -6,6 +6,7 @@ import path from 'node:path'
 import { z } from 'zod'
 import type { GitAuthor } from '@daemon/types/git'
 import type { Identity, Profile } from '@daemon/types/profile'
+import { AGENT_KINDS } from '@daemon/types/terminal'
 import { DEFAULT_SOUL } from '@daemon/features/brief/soul'
 import { atomicWrite } from '@daemon/utils/fs'
 import { expandHome } from '@daemon/utils/fs'
@@ -21,11 +22,16 @@ const DEFAULT_COLOR = '#8fb8d8'
 
 const credential = z.string().min(1).nullable()
 
+/** What a profile says about its terminal agents, which is a line each and nothing else. A
+ *  kind left out runs the default one; a blank line is the same as leaving it out, so it is
+ *  refused here rather than saved as an agent that runs nothing. */
+const agentCommands = z.partialRecord(z.enum(AGENT_KINDS), z.string().min(1))
+
 export const identitySchema = z.object({
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'color must be #rrggbb'),
   gitAuthor: z.object({ name: z.string().min(1), email: z.string().min(1) }),
   sshKeyPath: credential,
-  claudeCfgDir: credential,
+  agentCommands,
   soul: credential,
 })
 
@@ -180,7 +186,7 @@ async function identityOf(file: string, name: string): Promise<Identity> {
     color: DEFAULT_COLOR,
     gitAuthor: { name, email: `${name}@localhost` },
     sshKeyPath: null,
-    claudeCfgDir: null,
+    agentCommands: {},
     soul: null,
   }
   const source = await rawProfile(file)

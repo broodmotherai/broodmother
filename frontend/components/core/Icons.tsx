@@ -478,10 +478,13 @@ const GLYPHS: Record<IconName, ReactNode> = {
   ),
 }
 
-export function Icon({ name }: { name: IconName }) {
+/** A mark that comes with a colour — an agent's, a provider's — wears it through
+ *  `className`: the stylesheet's `.icon` rule puts a colour on the glyph itself, so one set
+ *  on whatever wraps it never arrives. A `text-…!` utility is what gets past that. */
+export function Icon({ name, className }: { name: IconName; className?: string }) {
   return (
     <svg
-      className="icon"
+      className={className ? `icon ${className}` : 'icon'}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

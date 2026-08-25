@@ -32,7 +32,7 @@ async function show(client = createMockClient()) {
       <SettingsView />
     </AppProvider>,
   )
-  await screen.findByLabelText('Author Name')
+  await screen.findByRole('radiogroup', { name: 'Color' })
   return client
 }
 
@@ -41,14 +41,19 @@ async function open(section: string) {
   await userEvent.click(screen.getByRole('tab', { name: section }))
 }
 
+/** What a row of the rail reads as, which is its label and the glyph beside it. */
+const named = (tab: HTMLElement) => tab.textContent
+
 /** Claude's row of the coding-agent list. The models table on the same page has a Save of
  *  its own, so the button is taken from inside the row rather than off the page. */
-async function setClaudeConfig(value: string) {
-  const dir = screen.getByLabelText('Claude config directory')
-  await userEvent.type(dir, value)
-  const row = dir.closest('li')
-  if (!row) throw new Error('the config field is not in a row')
-  await userEvent.click(within(row).getByRole('button', { name: 'Save' }))
+/** Opens one agent from its dots, types a line over what its modal holds, and saves it. */
+async function setAgentCommand(agent: string, value: string) {
+  await userEvent.click(screen.getByRole('button', { name: `Options for ${agent}` }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /Edit agent/ }))
+  const command = await screen.findByLabelText(`${agent} command`)
+  await userEvent.clear(command)
+  await userEvent.type(command, value)
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 }
 
 /** The swatches the profile is offered, in the order the row wears them. */
@@ -77,7 +82,7 @@ const unkeyed: Profile = {
   color: '#c084fc',
   gitAuthor: { name: 'You', email: 'you@example.com' },
   sshKeyPath: null,
-  claudeCfgDir: null,
+  agentCommands: {},
   soul: null,
   github: null,
   models: [],
@@ -87,23 +92,92 @@ const unkeyed: Profile = {
    long as everything. */
 it('opens on the profile, and shows one section at a time', async () => {
   await show()
-  expect(screen.getByRole('tab', { name: 'Profile' })).toHaveAttribute(
+  expect(screen.getByRole('tab', { name: 'Account' })).toHaveAttribute(
     'aria-selected',
     'true',
   )
-  // The key is the profile's, so it is under it rather than beside it.
+  // The account is a colour and who you are signed in with; the author line is git's.
+  expect(screen.queryByLabelText('Author Name')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Repository')).not.toBeInTheDocument()
+
+  await open('Git & Worktrees')
+  expect(screen.getByRole('tab', { name: 'Git & Worktrees' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  // Who the commits are from, and the key they go out with, both the profile's.
+  expect(screen.getByLabelText('Author Name')).toBeVisible()
   expect(screen.getByRole('heading', { name: 'Key' })).toBeVisible()
   expect(screen.queryByLabelText('Repository')).not.toBeInTheDocument()
 
   await open('Project')
-  expect(screen.getByRole('tab', { name: 'Project' })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
-  // And the sync is the project's.
+  // And what the project does with git is the project's.
   expect(screen.getByRole('heading', { name: 'Git sync' })).toBeVisible()
   expect(screen.getByLabelText('Repository')).toBeVisible()
   expect(screen.queryByLabelText('Author Name')).not.toBeInTheDocument()
+})
+
+/* Who you are, then how the work runs: the rail says which of the two a section is about
+   rather than leaving four rows in one list. */
+it('stands the rail in named bands', async () => {
+  await show()
+  const general = screen.getByRole('tablist', { name: 'General settings' })
+  const workflow = screen.getByRole('tablist', { name: 'Workflow settings' })
+
+  const organization = screen.getByRole('tablist', { name: 'Organization settings' })
+
+  expect(screen.getByRole('heading', { name: 'General' })).toBeVisible()
+  expect(screen.getByRole('heading', { name: 'Workflow' })).toBeVisible()
+  expect(screen.getByRole('heading', { name: 'Organization' })).toBeVisible()
+  // The soul is who you are showing up as rather than how the work runs, so it stands with
+  // the account it belongs to.
+  expect(within(general).getAllByRole('tab').map(named)).toEqual(['Account', 'Soul'])
+  expect(within(workflow).getAllByRole('tab').map(named)).toEqual([
+    'Agents',
+    'Git & Worktrees',
+  ])
+  // What belongs to the project rather than to whoever has it open — the section, and a row
+  // under it for every project this profile has.
+  expect(within(organization).getAllByRole('tab').map(named)).toEqual([
+    'Project',
+    'handbook',
+  ])
+})
+
+/* The one row in the rail with rows of its own, so it folds — and folds without a tween:
+   a list that grew by two is not a drawer. */
+it('folds the projects away under the section they hang off', async () => {
+  await show()
+  const organization = screen.getByRole('tablist', { name: 'Organization settings' })
+  const project = () => screen.getByRole('tab', { name: /Project/ })
+
+  expect(project()).toHaveAttribute('aria-expanded', 'true')
+  // A click on the section you are already on is what shuts it.
+  await open('Project')
+  await open('Project')
+
+  expect(project()).toHaveAttribute('aria-expanded', 'false')
+  expect(within(organization).getAllByRole('tab').map(named)).toEqual(['Project'])
+
+  await open('Project')
+  expect(within(organization).getAllByRole('tab').map(named)).toEqual([
+    'Project',
+    'handbook',
+  ])
+})
+
+/* A project's settings are the project's, so each has a page rather than one page meaning
+   whichever is open. */
+it('opens a project’s own page off the row under the section', async () => {
+  await show()
+  await open('handbook')
+
+  expect(screen.getByRole('tab', { name: 'handbook' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  // The one that is open is the one the sync settings belong to.
+  expect(screen.getByRole('heading', { name: 'Git sync' })).toBeVisible()
 })
 
 it('saves the sync settings for the open project', async () => {
@@ -214,6 +288,9 @@ it('offers no GitHub connection in a build that has none', async () => {
 /* The one step of setting a key up that the app can take off you. */
 it('generates a key and shows the public half with somewhere to put it', async () => {
   await show()
+  // The key belongs to the profile, and it is read where it is used: beside the author line
+  // it pushes under.
+  await open('Git & Worktrees')
 
   expect(screen.queryByText(/^ssh-ed25519/)).not.toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'Generate a Key' }))
@@ -230,6 +307,7 @@ it('generates a key and shows the public half with somewhere to put it', async (
    before it offers the button. */
 it('says the machine’s own credentials are used before offering to make a key', async () => {
   await show()
+  await open('Git & Worktrees')
   expect(screen.getByText(/already uses whatever ssh and git have/)).toBeVisible()
 })
 
@@ -264,7 +342,7 @@ it('checks the swatch the profile already is', async () => {
           color: '#b39051',
           gitAuthor: { name: 'You', email: 'you@example.com' },
           sshKeyPath: null,
-          claudeCfgDir: null,
+          agentCommands: {},
           soul: null,
           github: null,
           models: [],
@@ -272,7 +350,7 @@ it('checks the swatch the profile already is', async () => {
       ],
     }),
   )
-  await open('Profile')
+  await open('Account')
   expect(picked()).toBe('opal gold')
 })
 
@@ -288,7 +366,7 @@ it('wears a colour off the palette on the custom swatch', async () => {
           color: '#ff8800',
           gitAuthor: { name: 'You', email: 'you@example.com' },
           sshKeyPath: null,
-          claudeCfgDir: null,
+          agentCommands: {},
           soul: null,
           github: null,
           models: [],
@@ -296,7 +374,7 @@ it('wears a colour off the palette on the custom swatch', async () => {
       ],
     }),
   )
-  await open('Profile')
+  await open('Account')
   expect(picked()).toMatch(/^custom/)
 })
 
@@ -304,7 +382,7 @@ it('wears a colour off the palette on the custom swatch', async () => {
    surface at once, and the one you would pick for yourself at the end of the row. */
 it('offers the whole opal palette as swatches, with a custom one at the end', async () => {
   await show()
-  await open('Profile')
+  await open('Account')
   expect(palette()).toEqual([
     'opal violet',
     'opal indigo',
@@ -319,12 +397,12 @@ it('offers the whole opal palette as swatches, with a custom one at the end', as
 
 it('picks a colour off the row, and saves it with the rest of the profile', async () => {
   const client = await show()
-  await open('Profile')
+  await open('Account')
 
   await userEvent.click(screen.getByRole('radio', { name: 'opal mint' }))
   expect(picked()).toBe('opal mint')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Save Profile' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save Account' }))
   await waitFor(async () =>
     expect((await client.request('GET /api/profiles', null)).active?.color).toBe(
       '#34d399',
@@ -362,45 +440,119 @@ it('empties the home from the danger zone, and only once it is confirmed', async
    the profile's own button and land in its file. */
 it('saves the credentials the profile works with', async () => {
   const client = await show()
-  await open('Profile')
+  await open('Git & Worktrees')
   await userEvent.type(screen.getByLabelText('SSH Key'), '~/.ssh/id_ed25519')
-  await userEvent.click(screen.getByRole('button', { name: 'Save Profile' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save Git Identity' }))
 
   const { active } = await client.request('GET /api/profiles', null)
   expect(active).toMatchObject({ sshKeyPath: '~/.ssh/id_ed25519', soul: null })
 })
 
-/* The claude login is a sign-in rather than something about who you are, so it stands with
-   the model keys and saves on a button of its own. */
-it('saves the claude config directory from the integrations page', async () => {
-  const client = await show()
-  await open('Integrations')
-  await setClaudeConfig('~/.claude-work')
+/* A row an agent, and under each name the line that agent is launched by — read where it
+   is written rather than through a box. A profile that has written nothing shows the line it
+   would run anyway, and says whose it is. */
+it('shows each terminal agent against the line it launches', async () => {
+  await show()
+  await open('Agents')
 
-  const { active } = await client.request('GET /api/profiles', null)
-  expect(active).toMatchObject({ claudeCfgDir: '~/.claude-work' })
+  const claude = screen.getByText('Claude').closest('li')!
+  expect(claude).toHaveTextContent('claude --dangerously-skip-permissions')
+  // Typed into the pty, not shown: the return that sends the line is not part of it.
+  expect(claude.textContent).not.toContain('\r')
+  expect(claude).toHaveTextContent('Default')
+
+  expect(screen.getByText('Muse').closest('li')).toHaveTextContent('muse --yolo')
+
+  // The line is the whole of what a row says, and nothing is open to be typed in until
+  // somebody asks for it.
+  expect(screen.queryByLabelText('Claude command')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Claude config directory')).not.toBeInTheDocument()
 })
 
-/* Saving one page must not roll back what another set: the profile's button carries the
-   claude login through untouched rather than writing the field it no longer shows. */
-it('does not lose the claude config when the profile is saved', async () => {
+/* Written over, the row shows the line this profile gave it and stops calling it default. */
+it('shows an agent’s own line in place of the one it came with', async () => {
+  await show()
+  await open('Agents')
+  await setAgentCommand('Claude', 'claude --resume')
+
+  const claude = await screen.findByText('claude --resume')
+  expect(claude.closest('li')).not.toHaveTextContent('Default')
+})
+
+/* Emptying the box is one way back to the default; the row's own menu is the short one. */
+it('puts an agent back on its default line', async () => {
   const client = await show()
-  await open('Integrations')
-  await setClaudeConfig('~/.claude-work')
+  await open('Agents')
+  await setAgentCommand('Muse', 'muse --resume')
   await waitFor(async () =>
-    expect((await client.request('GET /api/profiles', null)).active).toMatchObject({
-      claudeCfgDir: '~/.claude-work',
+    expect((await client.request('GET /api/profiles', null)).active?.agentCommands).toEqual({
+      muse: 'muse --resume',
     }),
   )
 
-  await open('Profile')
+  await userEvent.click(screen.getByRole('button', { name: 'Options for Muse' }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /Reset to default/ }))
+
+  await waitFor(async () =>
+    expect((await client.request('GET /api/profiles', null)).active?.agentCommands).toEqual(
+      {},
+    ),
+  )
+})
+
+/* What an agent runs is the profile's to say, so it stands with the model keys and saves on
+   a button of its own. */
+it('saves the line a terminal agent is launched with', async () => {
+  const client = await show()
+  await open('Agents')
+  await setAgentCommand('Claude', 'claude --resume')
+
+  const { active } = await client.request('GET /api/profiles', null)
+  expect(active).toMatchObject({ agentCommands: { claude: 'claude --resume' } })
+})
+
+/* The settings of an agent are opened from its row and edited in a modal, so the panel is a
+   list of what runs rather than a column of open fields. */
+it('opens an agent’s settings in a modal off its own row', async () => {
+  await show()
+  await open('Agents')
+  // Nothing to type in until the row is asked.
+  expect(screen.queryByLabelText('Claude command')).not.toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Options for Claude' }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /Edit agent/ }))
+
+  const dialog = await screen.findByRole('dialog')
+  expect(dialog).toHaveTextContent('Edit Claude')
+  expect(within(dialog).getByLabelText('Claude command')).toHaveAttribute(
+    'placeholder',
+    expect.stringContaining('claude --dangerously-skip-permissions'),
+  )
+
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+})
+
+/* Saving one page must not roll back what another set: the profile's button carries the
+   agents' lines through untouched rather than writing the fields it no longer shows. */
+it('does not lose the agent commands when the profile is saved', async () => {
+  const client = await show()
+  await open('Agents')
+  await setAgentCommand('Claude', 'claude --resume')
+  await waitFor(async () =>
+    expect((await client.request('GET /api/profiles', null)).active).toMatchObject({
+      agentCommands: { claude: 'claude --resume' },
+    }),
+  )
+
+  await open('Git & Worktrees')
   await userEvent.type(screen.getByLabelText('SSH Key'), '~/.ssh/id_ed25519')
-  await userEvent.click(screen.getByRole('button', { name: 'Save Profile' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save Git Identity' }))
 
   const { active } = await client.request('GET /api/profiles', null)
   expect(active).toMatchObject({
     sshKeyPath: '~/.ssh/id_ed25519',
-    claudeCfgDir: '~/.claude-work',
+    agentCommands: { claude: 'claude --resume' },
   })
 })
 
@@ -420,15 +572,16 @@ it('saves the soul the claude shells of this profile wake up with', async () => 
    with — the bargain the GitHub token beside it already makes. */
 it('takes a model key and shows the provider as connected, never the key', async () => {
   const client = await show(createMockClient({ profiles: [unkeyed] }))
-  await open('Integrations')
+  await open('Agents')
+  expect(screen.getByText('Anthropic').closest('li')).toHaveTextContent('No key')
 
-  const key = screen.getByLabelText('Anthropic key')
+  await userEvent.click(screen.getByRole('button', { name: 'Options for Anthropic' }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /Add key/ }))
+
+  const key = await screen.findByLabelText('Anthropic key')
   expect(key).toHaveAttribute('type', 'password')
   await userEvent.type(key, 'sk-ant-secret')
-  // The coding-agent table below has a Save of its own, so this one comes off the row.
-  const row = key.closest('tr')
-  if (!row) throw new Error('the key field is not in a row')
-  await userEvent.click(within(row).getByRole('button', { name: 'Save' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('Connected')).toBeVisible()
   expect(screen.queryByDisplayValue('sk-ant-secret')).not.toBeInTheDocument()
@@ -439,16 +592,20 @@ it('takes a model key and shows the provider as connected, never the key', async
 
 it('forgets a provider, leaving the row ready for another key', async () => {
   await show()
-  await open('Integrations')
-  await userEvent.click(screen.getByRole('button', { name: 'Forget' }))
-  expect(await screen.findByLabelText('Anthropic key')).toBeVisible()
+  await open('Agents')
+  await userEvent.click(screen.getByRole('button', { name: 'Options for Anthropic' }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /Forget key/ }))
+  expect(await screen.findByText('No key')).toBeVisible()
 })
 
-/* A link beats a description of where to look, for the same reason the ssh key has one. */
+/* A link beats a description of where to look, for the same reason the ssh key has one. It
+   stands in the box the key is typed into, which is where not having one comes up. */
 it('points at where a provider’s keys are made', async () => {
   await show(createMockClient({ profiles: [unkeyed] }))
-  await open('Integrations')
-  expect(screen.getByRole('link', { name: /Get a Key/ })).toHaveAttribute(
+  await open('Agents')
+  await userEvent.click(screen.getByRole('button', { name: 'Options for Anthropic' }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /Add key/ }))
+  expect(await screen.findByRole('link', { name: /Get a Key/ })).toHaveAttribute(
     'href',
     'https://console.anthropic.com/settings/keys',
   )

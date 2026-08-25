@@ -113,7 +113,7 @@ const seedProfile: Profile = {
   color: '#c084fc',
   gitAuthor: { name: 'You', email: 'you@example.com' },
   sshKeyPath: null,
-  claudeCfgDir: null,
+  agentCommands: {},
   soul: null,
   github: null,
   // Connected by default: a chat page that cannot chat is the exception, and a test about

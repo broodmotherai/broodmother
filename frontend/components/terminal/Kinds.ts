@@ -1,7 +1,15 @@
 import { type IconName } from '@/components/core/Icons'
 import { type TerminalKind } from '@broodmother/types/terminal'
 
-export { agentCommand, TERMINAL_KINDS, type TerminalKind } from '@broodmother/types/terminal'
+export {
+  agentCommand,
+  AGENT_KINDS,
+  DEFAULT_COMMANDS,
+  TERMINAL_KINDS,
+  type AgentCommands,
+  type AgentKind,
+  type TerminalKind,
+} from '@broodmother/types/terminal'
 
 /** How each kind is drawn and named. The kinds themselves, and the line each is handed, are
  *  the daemon's — it spawns the pty — so only the clothes are decided here. */

@@ -21,7 +21,7 @@ const PROFILE: Profile = {
   color: '#c084fc',
   gitAuthor: { name: 'Tester', email: 'tester@example.com' },
   sshKeyPath: null,
-  claudeCfgDir: null,
+  agentCommands: {},
   soul: null,
   github: null,
   models: [],

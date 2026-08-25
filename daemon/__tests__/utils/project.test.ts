@@ -20,7 +20,7 @@ const profile: Profile = {
   color: '#8fb8d8',
   gitAuthor: { name: 'Test', email: 'test@localhost' },
   sshKeyPath: null,
-  claudeCfgDir: null,
+  agentCommands: {},
   soul: null,
   github: null,
   models: [],

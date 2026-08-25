@@ -5,7 +5,7 @@ import { tilde } from '@broodmother/path'
 import { useApp } from '@/State'
 import { Button } from '@/components/core/Button'
 import { Confirm } from '@/components/core/Confirm'
-import { Hint, Section } from './Layout'
+import { Group, Hint } from './Layout'
 
 /** The foot of the profile: everything this machine holds is one profile's doing, so the
  *  gesture that removes all of it is asked for where the profile is. */
@@ -15,7 +15,7 @@ export function DangerZone() {
   const home = app.home ? tilde(app.home) : 'the broodmother home'
 
   return (
-    <Section title="Danger zone" danger>
+    <Group legend="Danger zone" danger>
       <Hint>
         Every project, profile and setting is a file in {home}. Deleting them leaves
         broodmother the way it was before you first opened it.
@@ -36,6 +36,6 @@ export function DangerZone() {
           the project again. Anything you never pushed goes with the folder.
         </Confirm>
       )}
-    </Section>
+    </Group>
   )
 }

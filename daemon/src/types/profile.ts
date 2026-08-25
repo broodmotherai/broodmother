@@ -3,6 +3,7 @@
  * them commits as.
  */
 
+import type { AgentCommands } from './terminal'
 import type { GitAuthor } from './git'
 
 export interface Profile {
@@ -11,7 +12,10 @@ export interface Profile {
   color: string // the profile's colour, as #rrggbb
   gitAuthor: GitAuthor
   sshKeyPath: string | null // git SSH key in this profile's projects, null reverts to default
-  claudeCfgDir: string | null // `CLAUDE_CONFIG_DIR` for shells opened here, null reverts to default
+  /** The line each terminal agent is handed here, by kind, where this profile has written
+   *  one of its own. A kind that is absent runs the default line. It is the whole of what
+   *  a profile says about an agent: everything else an agent needs is said in the line. */
+  agentCommands: AgentCommands
   soul: string | null // markdown appended to the system prompt of claude shells opened here
   /** The GitHub login this profile is connected as. Never the token: that is the server's,
    *  and a secret that reaches the browser is a secret in a screenshot. */

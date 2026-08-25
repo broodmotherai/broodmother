@@ -1,127 +1,109 @@
 'use client'
 
 import { useState } from 'react'
-import { CHAT_PROVIDERS } from '@broodmother/types/api/chat'
+import { CHAT_MODELS, CHAT_PROVIDERS } from '@broodmother/types/api/chat'
 import { useApp } from '@/State'
-import { Button, LinkButton } from '@/components/core/Button'
-import { Input } from '@/components/core/Input'
-import { Hint, Section } from './Layout'
+import { Icon, type IconName } from '@/components/core/Icons'
+import { Menu } from '@/components/core/Menu'
+import PanelTable, { PanelRow } from '@/components/panels/PanelTable'
+import { KeyDialog } from './KeyDialog'
+import { dots, Hint, Section } from './Layout'
 
 /**
- * The keys the chat page speaks with, one row per provider. A key is a password and is kept
- * the way the GitHub token beside it is — in the profile's own file, on the server, at 0600 —
- * so the row can say a provider is connected and never show what it is connected with.
+ * The keys the chat page speaks with, one row per provider — the same row the agents below
+ * stand in: the provider's mark, its name, and under the name the models it serves here.
  *
  * A row per provider rather than a field per model: you authenticate with whoever serves the
  * model, once, however many of their models you go on to use.
+ *
+ * A key is a password and is kept the way the GitHub token beside it is — in the profile's
+ * own file, on the server, at 0600 — so the row says a provider is connected and never shows
+ * what it is connected with. Which is also why the box you type one into is a modal and not
+ * a field standing open in the page: there is nothing for a field here to hold.
  */
 
-/* A table of three columns and no chrome: the hairline under each row is the whole grid.
-   The last cell holds the buttons and drops both its rule and its right padding, so a row
-   of them ends where the column does. */
-const head =
-  'border-b border-[var(--line)] py-[0.35rem] pr-[0.55rem] text-left text-[0.72rem] font-semibold tracking-[0.04em] text-[var(--faint)] uppercase'
-
-const name =
-  'border-b border-[var(--line)] py-[0.45rem] pr-[0.55rem] text-left align-middle text-[0.85rem] font-medium whitespace-nowrap text-foreground'
-
-const cell = 'border-b border-[var(--line)] py-[0.45rem] pr-[0.55rem] align-middle'
-
-const acts = 'flex justify-end gap-[0.35rem] border-b-0 py-[0.45rem] align-middle'
+/** Each provider's own mark, in the colour it comes with. The `!` is the stylesheet's
+ *  `.icon` rule, which colours the glyph itself and outranks a utility whatever the
+ *  specificity says. */
+const MARKS: Record<string, { icon: IconName; className: string }> = {
+  anthropic: { icon: 'claude', className: 'text-[var(--claude)]!' },
+}
 
 export function ModelKeys() {
   const app = useApp()
-  const [drafts, setDrafts] = useState<Record<string, string>>({})
-  const [busy, setBusy] = useState<string | null>(null)
+  const [typing, setTyping] = useState<string | null>(null)
 
   if (!app.profile) return null
   const held = app.profile.models
 
-  const save = async (provider: string) => {
-    const key = drafts[provider]?.trim()
-    if (!key) return
-    setBusy(provider)
-    await app.saveModelKey(provider, key)
-    setDrafts((all) => ({ ...all, [provider]: '' }))
-    setBusy(null)
-  }
-
   return (
-    <Section title="Models">
+    <Section title="Chat Models">
       <Hint>
         What this profile talks to models with. The key is kept in the profile on this machine
         and never leaves the server — switching profile switches whose key, and whose bill, the
         chat page is on.
       </Hint>
-      <table className="w-full border-collapse text-[0.85rem]">
-        <thead>
-          <tr>
-            <th scope="col" className={head}>
-              Provider
-            </th>
-            <th scope="col" className={head}>
-              Key
-            </th>
-            {/* The buttons head nothing: a column of them wants a name only if the name
-                says something the buttons do not. */}
-            <th scope="col" className={head} />
-          </tr>
-        </thead>
-        <tbody>
-          {CHAT_PROVIDERS.map((provider) => {
-            const connected = held.includes(provider.id)
-            return (
-              <tr key={provider.id} data-connected={connected ? 'true' : undefined}>
-                <th scope="row" className={name}>
-                  {provider.label}
-                </th>
-                <td className={cell}>
-                  {connected ? (
-                    /* A key that is set is a fact, not a field: there is nothing to read
-                       back and nothing to type over. */
-                    <span className="[font-family:var(--mono)] text-[0.75rem] text-muted">
-                      Connected
-                    </span>
-                  ) : (
-                    /* The field fills its cell, so the row reads as one line rather than a
-                       box floating in one. */
-                    <Input
-                      type="password"
-                      className="w-full min-w-[8rem]"
-                      aria-label={`${provider.label} key`}
-                      placeholder="paste a key"
-                      value={drafts[provider.id] ?? ''}
-                      onChange={(event) =>
-                        setDrafts((all) => ({ ...all, [provider.id]: event.target.value }))
-                      }
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') void save(provider.id)
-                      }}
-                    />
-                  )}
-                </td>
-                <td className={acts}>
-                  {connected ? (
-                    <Button onClick={() => void app.forgetModelKey(provider.id)}>
-                      Forget
-                    </Button>
-                  ) : (
-                    <>
-                      <LinkButton href={provider.keysUrl}>Get a Key</LinkButton>
-                      <Button
-                        onClick={() => void save(provider.id)}
-                        disabled={busy === provider.id || !drafts[provider.id]?.trim()}
-                      >
-                        {busy === provider.id ? 'Saving…' : 'Save'}
-                      </Button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+
+      <PanelTable empty="No model providers.">
+        {CHAT_PROVIDERS.map((provider) => {
+          const connected = held.includes(provider.id)
+          const mark = MARKS[provider.id]
+          return (
+            <PanelRow
+              key={provider.id}
+              fill
+              icon={mark && <Icon name={mark.icon} className={mark.className} />}
+              label={provider.label}
+              /* What this provider is here for, under its name — the same place the agents
+                 below carry the line they run. */
+              hint={CHAT_MODELS.filter((model) => model.provider === provider.id)
+                .map((model) => model.label)
+                .join(', ')}
+              meta={connected ? 'Connected' : 'No key'}
+              actions={
+                <Menu
+                  label={provider.label}
+                  anchorLabel={`Options for ${provider.label}`}
+                  anchorClass={dots}
+                  align="end"
+                  sections={[
+                    {
+                      actions: [
+                        {
+                          id: 'key',
+                          label: connected ? 'Replace key' : 'Add key',
+                          icon: 'key',
+                          onSelect: () => setTyping(provider.id),
+                        },
+                        {
+                          id: 'forget',
+                          label: 'Forget key',
+                          icon: 'trash',
+                          danger: true,
+                          // Nothing to forget where nothing is held.
+                          disabled: !connected,
+                          onSelect: () => void app.forgetModelKey(provider.id),
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  <Icon name="ellipsis-vertical" />
+                </Menu>
+              }
+            />
+          )
+        })}
+      </PanelTable>
+
+      {typing && (
+        <KeyDialog
+          label={CHAT_PROVIDERS.find((one) => one.id === typing)?.label ?? typing}
+          keysUrl={CHAT_PROVIDERS.find((one) => one.id === typing)?.keysUrl ?? ''}
+          onSave={(key) => app.saveModelKey(typing, key).then(() => undefined)}
+          onClose={() => setTyping(null)}
+        />
+      )}
     </Section>
   )
 }

@@ -11,7 +11,7 @@ const existing: Profile[] = [
     color: '#c084fc',
     gitAuthor: { name: 'Ada Lovelace', email: 'ada@example.com' },
     sshKeyPath: null,
-    claudeCfgDir: null,
+    agentCommands: {},
     soul: null,
     github: null,
     models: [],
@@ -71,24 +71,26 @@ it('creates a profile from the name and identity you typed', async () => {
       name: 'Personal',
       gitAuthor: { name: 'Personal', email: 'you@example.com' },
       sshKeyPath: null,
-      claudeCfgDir: null,
+      agentCommands: {},
       soul: null,
     }),
   )
 })
 
-/* The credentials are what makes a profile more than a name on a commit. */
+/* The credentials are what makes a profile more than a name on a commit. What its agents
+   run is not asked for here: a new profile is a name and an author, and every agent starts
+   on its default line. */
 it('carries the credentials it was given, expanded by the server not here', async () => {
   const { onCreate } = show()
   await fill('Personal', 'you@example.com')
   await userEvent.type(screen.getByLabelText('SSH Key'), '~/.ssh/id_personal')
-  await userEvent.type(screen.getByLabelText('Config Directory'), '~/.claude-work')
+  expect(screen.queryByLabelText('Config Directory')).not.toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Add Profile' }))
 
   expect(onCreate.mock.calls[0][0]).toMatchObject({
     sshKeyPath: '~/.ssh/id_personal',
-    claudeCfgDir: '~/.claude-work',
+    agentCommands: {},
     soul: null,
   })
 })
