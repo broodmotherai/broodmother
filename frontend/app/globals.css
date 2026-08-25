@@ -1183,28 +1183,200 @@ body[data-resizing='column'] {
   color: var(--ink);
 }
 
+/* Where each opal is sitting this moment. Registered rather than plain custom properties,
+   since only a typed property interpolates — an untyped one would jump from waypoint to
+   waypoint instead of drifting between them. */
+@property --tab-violet-x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 19%;
+}
+
+@property --tab-violet-y {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 114%;
+}
+
+@property --tab-cyan-x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 73%;
+}
+
+@property --tab-cyan-y {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: -22%;
+}
+
+@property --tab-rose-x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 96%;
+}
+
+@property --tab-rose-y {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 61%;
+}
+
 /* The tab you are in catches the light. Three of the opals bloom across the same ground every
    other chosen control stands on, sat where they fell rather than at the corners — a sheen
-   too slight to read as colour, felt only as the tab being warmer than its neighbours. */
+   too slight to read as colour, felt only as the tab being warmer than its neighbours. Each
+   wanders its own small circuit on its own clock, over waypoints spaced unevenly and periods
+   sharing no factor, so the three never line up twice inside an hour of looking: the sheen
+   drifts rather than pulses, which is the difference between weather and a metronome. */
 .tab[data-active] {
   background:
     radial-gradient(
-      86% 132% at 19% 114%,
+      86% 132% at var(--tab-violet-x) var(--tab-violet-y),
       color-mix(in srgb, var(--opal-violet) 11%, transparent),
       transparent 68%
     ),
     radial-gradient(
-      104% 118% at 73% -22%,
+      104% 118% at var(--tab-cyan-x) var(--tab-cyan-y),
       color-mix(in srgb, var(--opal-cyan) 9%, transparent),
       transparent 66%
     ),
     radial-gradient(
-      72% 154% at 96% 61%,
+      72% 154% at var(--tab-rose-x) var(--tab-rose-y),
       color-mix(in srgb, var(--opal-rose) 8%, transparent),
       transparent 70%
     ),
     var(--active);
   color: var(--ink);
+  animation:
+    tab-opal-violet 17s ease-in-out -7s infinite,
+    tab-opal-cyan 23s ease-in-out -13s infinite,
+    tab-opal-rose 31s ease-in-out -5s infinite;
+}
+
+@keyframes tab-opal-violet {
+  0% {
+    --tab-violet-x: 19%;
+    --tab-violet-y: 114%;
+  }
+
+  14% {
+    --tab-violet-x: 31%;
+    --tab-violet-y: 107%;
+  }
+
+  29% {
+    --tab-violet-x: 11%;
+    --tab-violet-y: 121%;
+  }
+
+  46% {
+    --tab-violet-x: 26%;
+    --tab-violet-y: 118%;
+  }
+
+  61% {
+    --tab-violet-x: 8%;
+    --tab-violet-y: 109%;
+  }
+
+  78% {
+    --tab-violet-x: 22%;
+    --tab-violet-y: 124%;
+  }
+
+  89% {
+    --tab-violet-x: 33%;
+    --tab-violet-y: 112%;
+  }
+
+  100% {
+    --tab-violet-x: 19%;
+    --tab-violet-y: 114%;
+  }
+}
+
+@keyframes tab-opal-cyan {
+  0% {
+    --tab-cyan-x: 73%;
+    --tab-cyan-y: -22%;
+  }
+
+  12% {
+    --tab-cyan-x: 61%;
+    --tab-cyan-y: -14%;
+  }
+
+  27% {
+    --tab-cyan-x: 85%;
+    --tab-cyan-y: -29%;
+  }
+
+  41% {
+    --tab-cyan-x: 68%;
+    --tab-cyan-y: -33%;
+  }
+
+  58% {
+    --tab-cyan-x: 88%;
+    --tab-cyan-y: -18%;
+  }
+
+  73% {
+    --tab-cyan-x: 59%;
+    --tab-cyan-y: -26%;
+  }
+
+  86% {
+    --tab-cyan-x: 79%;
+    --tab-cyan-y: -12%;
+  }
+
+  100% {
+    --tab-cyan-x: 73%;
+    --tab-cyan-y: -22%;
+  }
+}
+
+@keyframes tab-opal-rose {
+  0% {
+    --tab-rose-x: 96%;
+    --tab-rose-y: 61%;
+  }
+
+  16% {
+    --tab-rose-x: 85%;
+    --tab-rose-y: 72%;
+  }
+
+  33% {
+    --tab-rose-x: 104%;
+    --tab-rose-y: 49%;
+  }
+
+  47% {
+    --tab-rose-x: 91%;
+    --tab-rose-y: 77%;
+  }
+
+  64% {
+    --tab-rose-x: 107%;
+    --tab-rose-y: 66%;
+  }
+
+  81% {
+    --tab-rose-x: 88%;
+    --tab-rose-y: 52%;
+  }
+
+  93% {
+    --tab-rose-x: 100%;
+    --tab-rose-y: 74%;
+  }
+
+  100% {
+    --tab-rose-x: 96%;
+    --tab-rose-y: 61%;
+  }
 }
 
 .tab:focus-visible {
@@ -1427,9 +1599,9 @@ body[data-resizing='column'] {
 /* The same mark the project row wears, in gold rather than ink. Four layers cut to the one
    shape by the one mask, since the mask a parent wears reaches everything it draws: a leaf of
    beaten gold, a highlight sweeping across it, and two sets of specks catching out of step
-   with each other, which is what makes it read as twinkling rather than blinking. Gaudy is
-   the brief — this is the sign the app shows when there is nothing else to show, so it may as
-   well be the only thing moving on the page. */
+   with each other, which is what makes it read as twinkling rather than blinking. It is the
+   only thing moving on the page, so it stays warm rather than bright: no white in the glint
+   or the specks, and a halo close enough to read as sheen rather than a lamp. */
 .home .mark {
   position: relative;
   flex: none;
@@ -1441,24 +1613,24 @@ body[data-resizing='column'] {
     linear-gradient(
       104deg,
       transparent 40%,
-      rgb(255 255 255 / 0.95) 48%,
-      rgb(255 250 200 / 0.75) 53%,
+      rgb(255 246 214 / 0.45) 48%,
+      rgb(255 238 186 / 0.35) 53%,
       transparent 62%
     ),
     linear-gradient(
       152deg,
-      #7a4708 0%,
-      #c98f14 9%,
-      #fff3ae 18%,
-      #ffd24a 26%,
-      #a5670c 35%,
-      #ffe98a 44%,
-      #fffbe0 52%,
-      #f2b62a 60%,
-      #8f5a0b 69%,
-      #ffd95e 79%,
-      #fff7cd 88%,
-      #c98f14 100%
+      #6f4108 0%,
+      #b8830f 9%,
+      #edd28c 18%,
+      #e8bd48 26%,
+      #98600b 35%,
+      #e6c97c 44%,
+      #f2dfa2 52%,
+      #dda72a 60%,
+      #85520a 69%,
+      #e2c257 79%,
+      #eddb9c 88%,
+      #b8830f 100%
     );
   background-repeat: no-repeat;
   background-size:
@@ -1467,7 +1639,7 @@ body[data-resizing='column'] {
   background-position:
     -120% 0,
     0 0;
-  filter: drop-shadow(0 0 0.55rem rgb(255 197 61 / 0.55));
+  filter: drop-shadow(0 0 0.55rem rgb(228 175 56 / 0.4));
   animation: mark-glint 4.5s linear infinite;
 }
 
@@ -1480,17 +1652,17 @@ body[data-resizing='column'] {
 
 .home .mark::before {
   background:
-    radial-gradient(circle at 28% 34%, rgb(255 255 255 / 0.95) 0 3%, transparent 8%),
-    radial-gradient(circle at 50% 44%, rgb(255 252 214 / 0.9) 0 4%, transparent 10%),
-    radial-gradient(circle at 70% 66%, rgb(255 255 255 / 0.9) 0 3%, transparent 8%);
+    radial-gradient(circle at 28% 34%, rgb(255 250 226 / 0.7) 0 3%, transparent 8%),
+    radial-gradient(circle at 50% 44%, rgb(255 244 198 / 0.6) 0 4%, transparent 10%),
+    radial-gradient(circle at 70% 66%, rgb(255 250 226 / 0.65) 0 3%, transparent 8%);
   animation: mark-sparkle 2.3s ease-in-out infinite alternate;
 }
 
 .home .mark::after {
   background:
-    radial-gradient(circle at 70% 28%, rgb(255 255 255 / 0.9) 0 3%, transparent 8%),
-    radial-gradient(circle at 30% 62%, rgb(255 249 208 / 0.9) 0 3%, transparent 8%),
-    radial-gradient(circle at 50% 78%, rgb(255 255 255 / 0.95) 0 4%, transparent 10%);
+    radial-gradient(circle at 70% 28%, rgb(255 250 226 / 0.65) 0 3%, transparent 8%),
+    radial-gradient(circle at 30% 62%, rgb(255 244 198 / 0.6) 0 3%, transparent 8%),
+    radial-gradient(circle at 50% 78%, rgb(255 250 226 / 0.7) 0 4%, transparent 10%);
   animation: mark-sparkle 3.1s ease-in-out 0.7s infinite alternate;
 }
 
