@@ -17,6 +17,6 @@ export function holding(url: string): string {
   p { margin: 0 }
 </style>
 <p>Waiting for broodmother at <code>${url}</code></p>
-<p><code>make -C daemon start</code> &nbsp; <code>make -C frontend start</code></p>`
+<p><code>make desktop</code> in the repo root brings up the daemon and the site</p>`
   return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
 }
