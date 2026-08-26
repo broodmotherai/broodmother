@@ -14,6 +14,7 @@ import { cx } from '@/Cx'
 
 export type TreeCommand =
   | 'create'
+  | 'create-file'
   | 'create-task'
   | 'create-canvas'
   | 'create-folder'
@@ -60,6 +61,15 @@ function menuFor(
                 label: 'New note here',
                 icon: 'plus' as const,
                 onSelect: () => onCommand('create', ref),
+              },
+              // The same act with the name left open: a note is a `.md` because that is
+              // what a note is, and everything else a folder holds — a script, a `.env`, a
+              // README somebody wants called `README` — is named by whoever makes it.
+              {
+                id: 'create-file',
+                label: 'New file here',
+                icon: 'file' as const,
+                onSelect: () => onCommand('create-file', ref),
               },
               {
                 id: 'create-task',

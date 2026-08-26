@@ -161,6 +161,5 @@ The two token sets share no variable name.
   modules at the root. It scanned `app` and `src`.
 - **`wasm/` is excluded from tsc.** It is AssemblyScript, and `asc` is what compiles it.
 - **The daemon is on 4242**; this app is on 4243.
-- **`app/globals.css` came across whole**, recovered from the checkout under
-  `~/.broodmother/Michael/broodmother-wiki/.repos/broodmother/` after `example/` was emptied
-  mid-port.
+- **`app/globals.css` came across whole**, recovered from another checkout of the project
+  after `example/` was emptied mid-port.

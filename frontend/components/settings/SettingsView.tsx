@@ -133,9 +133,11 @@ const page =
   'grid min-h-0 flex-1 content-start items-start gap-x-8 gap-y-4 overflow-auto px-7 pt-[var(--page-top)] pb-24 grid-cols-[minmax(0,1fr)_minmax(0,var(--measure))_minmax(0,1fr)] @max-[80rem]/pane:grid-cols-[13rem_minmax(0,1fr)]'
 
 /* Both placed rather than flowed: an item given a column is placed before the ones that are
-   not, so left to the auto-placement the rail lands in the wrong row. */
+   not, so left to the auto-placement the rail lands in the wrong row. Which column the rail
+   stands in changes with the pane; which row it stands in does not — it is beside the content
+   in either layout, and what changes is only whether the column it hangs in is a gutter. */
 const rail =
-  'sticky top-0 col-start-1 row-start-1 flex w-52 flex-col gap-px justify-self-end @max-[80rem]/pane:row-start-2 @max-[80rem]/pane:justify-self-stretch'
+  'sticky top-0 col-start-1 row-start-1 flex w-52 flex-col gap-px justify-self-end @max-[80rem]/pane:justify-self-stretch'
 
 /* A row of the rail is the app's row — the same one the Explorer's files and the Tasks and
    Chat entries above them wear, from the kit rather than restated here. What is left is

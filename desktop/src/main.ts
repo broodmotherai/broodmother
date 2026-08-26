@@ -1,8 +1,9 @@
 import { app, BrowserWindow, shell } from 'electron'
 import { holding } from './holding.js'
 import { BLANK, isBrowsable } from './loopback.js'
+import { serve, stopServing, SITE_PORT } from './serve.js'
 
-const URL = process.env.BROODMOTHER_URL ?? 'http://127.0.0.1:4243'
+const URL = process.env.BROODMOTHER_URL ?? `http://127.0.0.1:${SITE_PORT}`
 
 const RETRY_MS = 500
 
@@ -113,7 +114,7 @@ async function open() {
     window = null
   })
 
-  await window.loadURL(holding(URL))
+  await window.loadURL(holding(URL, app.isPackaged))
   while (window && !(await answering())) await new Promise((r) => setTimeout(r, RETRY_MS))
   await window?.loadURL(URL)
 }
@@ -135,7 +136,14 @@ app.on('web-contents-created', (_event, contents) => {
   })
 })
 
-void app.whenReady().then(open)
+// The servers first, so the port is on its way up while the window is being drawn: the
+// holding page is for the second or two the daemon spends reading itself, not for the wait
+// that starting it by hand used to be.
+void app.whenReady().then(serve).then(open)
+
+// Everything this process started goes when it does — a quit from the menu, a ⌘Q, or the
+// last window closing on a platform where that ends the app.
+app.on('will-quit', stopServing)
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) void open()

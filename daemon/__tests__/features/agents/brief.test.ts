@@ -5,7 +5,7 @@ const VOICE = {
   name: 'Priya',
   persona: 'research/aggregator',
   personaBody: '# Identity\n\nYou pull things together.',
-  profile: 'Michael',
+  profile: 'Ada',
   attachmentsAbs: '/Users/you/.broodmother/you/handbook/local/attachments/priya',
   attachments: 'attachments/priya',
 }
@@ -19,7 +19,7 @@ it('puts the persona, the voice and the folder after the room', () => {
   expect(text.indexOf('## The room')).toBeLessThan(text.indexOf('## Who you are'))
   expect(text).toContain('You are Priya')
   expect(text).toContain('You pull things together.')
-  expect(text).toContain('messaging Michael on a work chat')
+  expect(text).toContain('messaging Ada on a work chat')
   expect(text).toContain('write like a person typing into a chat window')
   expect(text).toContain(VOICE.attachmentsAbs)
   expect(text).toContain('(attachments/priya in the project)')

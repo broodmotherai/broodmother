@@ -105,9 +105,9 @@ it('offers git’s answer where the ledger has none, as git’s', async () => {
     route === 'GET /api/ledger'
       ? Promise.resolve({
           acts: [],
-          git: { sha: '9f2c4b1', author: 'Michael', at: '', subject: 'docs: first cut' },
+          git: { sha: '9f2c4b1', author: 'Ada', at: '', subject: 'docs: first cut' },
         })
       : request(route as never, body)) as typeof client.request
   show(client)
-  expect(await screen.findByText(/git: Michael, docs: first cut/)).toBeInTheDocument()
+  expect(await screen.findByText(/git: Ada, docs: first cut/)).toBeInTheDocument()
 })

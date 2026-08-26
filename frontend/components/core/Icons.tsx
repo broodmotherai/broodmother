@@ -55,7 +55,7 @@ export type IconName =
   | 'users'
   | 'key'
   | 'alert'
-  | 'antenna'
+  | 'spider'
   | 'zap'
   | 'copy'
   | 'github'
@@ -414,14 +414,23 @@ const GLYPHS: Record<IconName, ReactNode> = {
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </>
   ),
-  antenna: (
+  /* Not Lucide: the set has no spider, and Mother is one. Drawn to its rules all the same —
+     the same 24 box, the same stroke, the same round ends — so she sits in a column of its
+     glyphs without standing out as a different hand. Eight legs, bent once and splayed front
+     to back, because a spider at 14px is read by its legs; the body is two rounds, which is
+     all that survives at that size. */
+  spider: (
     <>
-      <path d="M2 12 7 2" />
-      <path d="M7 12 12 2" />
-      <path d="M12 12 17 2" />
-      <path d="M17 12 22 2" />
-      <path d="M4.5 7h15" />
-      <path d="M12 16v6" />
+      <ellipse cx="12" cy="15.5" rx="3.5" ry="4" />
+      <circle cx="12" cy="9" r="2.4" />
+      <path d="M10 11 6 7.5 3.5 9.5" />
+      <path d="M9 13.2 5 11.5 2.5 14" />
+      <path d="M9 16.4 5 16.8 3 19.5" />
+      <path d="M10.4 18.6 8 20.5 7 22.5" />
+      <path d="M14 11 18 7.5 20.5 9.5" />
+      <path d="M15 13.2 19 11.5 21.5 14" />
+      <path d="M15 16.4 19 16.8 21 19.5" />
+      <path d="M13.6 18.6 16 20.5 17 22.5" />
     </>
   ),
   key: (
