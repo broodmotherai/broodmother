@@ -6,6 +6,36 @@ const URL = process.env.BROODMOTHER_URL ?? 'http://127.0.0.1:4243'
 
 const RETRY_MS = 500
 
+/** The window's buttons are the frame's, drawn over the page, so this process is the only
+ *  one that knows where they are — and the stylesheet is the only one that knows what they
+ *  have to line up with. These are its figures, in points: the padding the shell keeps
+ *  around its panes, the column a row stands its glyph in — a row's own margin and padding,
+ *  added up — the margin alone, and `--head`, the row at the top of the sidebar the buttons
+ *  land in. */
+const SHELL = 8
+const COLUMN = 10.4
+const ROW_MARGIN = 4
+const HEAD = 41.6
+
+/** Three 12pt buttons, 20pt apart. The frame then draws them a little inside wherever it is
+ *  told to put them, which is measured rather than documented. */
+const BUTTONS = { width: 52, height: 12 }
+const FRAME = { x: 1.5, y: 2.2 }
+
+/** In the column the sidebar's glyphs stand in, and centred on the row they land in rather
+ *  than sitting where a title bar would have put them, there being no title bar. */
+const TRAFFIC_LIGHTS = {
+  x: SHELL + COLUMN - FRAME.x,
+  y: SHELL + (HEAD - BUTTONS.height) / 2 - FRAME.y,
+}
+
+/** How far the buttons reach across the page, and so how far in whatever the page puts in
+ *  that corner has to start. The page cannot see them, so the window says how much room
+ *  they take: the column they stand in, the buttons, and the same column again after them,
+ *  less the margin the row spends on its own. Full screen takes the buttons away and gives
+ *  the corner back, which is the only time it is nothing. */
+const TITLEBAR_INSET = COLUMN + BUTTONS.width + COLUMN - ROW_MARGIN
+
 /** The browser tab's own jar. Named rather than left to the default so a site it is signed
  *  into is never a site the app is signed into. */
 const GUEST_PARTITION = 'persist:browser'
@@ -23,6 +53,16 @@ async function answering(): Promise<boolean> {
   }
 }
 
+/** Said again after every load, because the property is set on the document and a new
+ *  document is a new one to set, and again on the way in and out of full screen. */
+function declareInset() {
+  if (!window) return
+  const px = window.isFullScreen() ? 0 : TITLEBAR_INSET
+  void window.webContents.executeJavaScript(
+    `document.documentElement.style.setProperty('--titlebar-inset', '${px}px')`,
+  )
+}
+
 async function open() {
   window = new BrowserWindow({
     width: 1440,
@@ -31,6 +71,7 @@ async function open() {
     minHeight: 480,
     backgroundColor: '#f6f0e4',
     titleBarStyle: 'hiddenInset',
+    trafficLightPosition: TRAFFIC_LIGHTS,
     // `webviewTag` lets the browser tab hold a real Chromium view. An iframe cannot browse
     // the web — most addresses worth typing refuse to be framed — and what a guest is
     // allowed to be is settled below, in this process, rather than in the markup that asks
@@ -63,6 +104,10 @@ async function open() {
       void shell.openExternal(url)
     }
   })
+
+  window.webContents.on('did-finish-load', declareInset)
+  window.on('enter-full-screen', declareInset)
+  window.on('leave-full-screen', declareInset)
 
   window.on('closed', () => {
     window = null

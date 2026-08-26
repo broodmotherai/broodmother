@@ -220,17 +220,23 @@ async function adoptRepos(project: string): Promise<void> {
 }
 
 /** Tasks were called dreams, and the name was in the extension every one of them wears.
- *  Renamed in place, in every checkout — git sees the rename and the next sync carries it. */
+ *  Renamed in place, in every checkout — git sees the rename and the next sync carries it.
+ *  A checkout at a time rather than the project whole: the repos are checkouts of somebody
+ *  else's source, a task was never written into one, and walking them is walking every
+ *  dependency folder of every branch of every repository the project has — on every start,
+ *  for a rename that happened once. */
 async function adoptTasks(project: string): Promise<void> {
-  const entries = await readdir(project, { withFileTypes: true, recursive: true }).catch(
-    () => [],
-  )
-  for (const entry of entries) {
-    if (!entry.isFile() || !entry.name.endsWith(LEGACY_TASK)) continue
-    const from = path.join(entry.parentPath, entry.name)
-    const to = `${from.slice(0, -LEGACY_TASK.length)}${TASK_EXTENSION}`
-    if (await exists(to)) continue
-    await rename(from, to)
+  for (const checkout of await checkoutsOf(project)) {
+    const entries = await readdir(checkout, { withFileTypes: true, recursive: true }).catch(
+      () => [],
+    )
+    for (const entry of entries) {
+      if (!entry.isFile() || !entry.name.endsWith(LEGACY_TASK)) continue
+      const from = path.join(entry.parentPath, entry.name)
+      const to = `${from.slice(0, -LEGACY_TASK.length)}${TASK_EXTENSION}`
+      if (await exists(to)) continue
+      await rename(from, to)
+    }
   }
 }
 
@@ -239,10 +245,7 @@ async function adoptTasks(project: string): Promise<void> {
  *  the project, since a branch has a copy of both. A checkout already holding the new name is
  *  left alone rather than merged — neither copy is worth losing to the other. */
 async function adoptFolders(project: string): Promise<void> {
-  const entries = await readdir(project, { withFileTypes: true }).catch(() => [])
-  for (const entry of entries) {
-    if (!entry.isDirectory() || entry.name === REPOS_DIR) continue
-    const checkout = path.join(project, entry.name)
+  for (const checkout of await checkoutsOf(project)) {
     for (const [was, now] of [
       [LEGACY_ATTACHMENTS, ATTACHMENTS_DIR],
       [LEGACY_SKILLS, SKILLS_DIR],
@@ -254,6 +257,20 @@ async function adoptFolders(project: string): Promise<void> {
       await move(from, to)
     }
   }
+}
+
+/** Every checkout the project holds, which is every folder in it but the one its repos live
+ *  in. What is under there is a repository, not a document. */
+async function checkoutsOf(project: string): Promise<string[]> {
+  const entries = await readdir(project, { withFileTypes: true }).catch(() => [])
+  return entries
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        entry.name !== REPOS_DIR &&
+        entry.name !== LEGACY_REPOS_DIR,
+    )
+    .map((entry) => path.join(project, entry.name))
 }
 
 /** A rename across devices is not a rename, and a repository on another volume is an

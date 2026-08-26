@@ -4,6 +4,7 @@ import path from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
 import type { BroodmotherConfig } from '@daemon/types/config'
 import { defaultConfig } from '@daemon/utils/config'
+import { TASK_EXTENSION } from '@daemon/types/task/schema'
 import { migrate } from '@daemon/utils/migrate'
 import { listProfiles } from '@daemon/utils/profiles'
 import { listRepos } from '@daemon/utils/repo'
@@ -247,6 +248,32 @@ describe('migrate', () => {
       '# hello\n',
     )
     expect(await names(local)).toEqual(['.attachments', '.git', '.tools', 'Notes'])
+  })
+
+  it('renames the tasks in every checkout, and reads nothing under .repos', async () => {
+    const home = await tempDir()
+    await mkdir(path.join(home, 'ada'), { recursive: true })
+    await writeFile(path.join(home, 'ada', 'profile.json'), '{}\n')
+    const projectDir = path.join(home, 'ada', 'handbook')
+    for (const checkout of [PRIMARY, 'fix-login']) {
+      await mkdir(path.join(projectDir, checkout, 'Notes'), { recursive: true })
+      await writeFile(path.join(projectDir, checkout, 'Notes', 'nightly.dream'), 'run\n')
+    }
+    // A repo is a checkout of somebody else's source. Whatever it calls a file is its own
+    // business, and reaching in to rename one is reaching through every dependency folder
+    // of every branch it has.
+    const vendored = path.join(projectDir, '.repos', 'api', PRIMARY, 'fixtures')
+    await mkdir(vendored, { recursive: true })
+    await writeFile(path.join(vendored, 'sample.dream'), 'not ours\n')
+
+    await migrate(home, loaded(defaultConfig(projectDir)))
+
+    for (const checkout of [PRIMARY, 'fix-login']) {
+      const notes = path.join(projectDir, checkout, 'Notes')
+      expect(await readFile(path.join(notes, `nightly${TASK_EXTENSION}`), 'utf8')).toBe('run\n')
+      await expect(stat(path.join(notes, 'nightly.dream'))).rejects.toThrow()
+    }
+    expect(await readFile(path.join(vendored, 'sample.dream'), 'utf8')).toBe('not ours\n')
   })
 
   it('leaves a checkout that already has the new folders alone', async () => {

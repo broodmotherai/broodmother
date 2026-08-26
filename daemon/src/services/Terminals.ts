@@ -10,6 +10,12 @@ import type { DocRoot } from '@daemon/services/Tree'
 const SHELL = process.env.SHELL ?? '/bin/bash'
 const TERM = 'xterm-256color'
 
+/* The ground this terminal is actually drawn on, which is light. A shell started from a
+   dark terminal hands its own COLORFGBG down to everything it spawns, and a TUI that reads
+   it — Claude Code picking a theme among them — dresses itself for a black background it is
+   not standing on. Dark ink on light, stated rather than inherited. */
+const COLORFGBG = '0;15'
+
 /** What a terminal is until it says otherwise — xterm's own defaults, so a client that has
  *  not measured itself yet and the pty it is attached to agree rather than differ. */
 const COLS = 80
@@ -221,7 +227,7 @@ export class Terminals {
     const pty = spawn(SHELL, ['-l'], {
       name: TERM,
       cwd,
-      env: { ...ambient(), ...env, TERM },
+      env: { ...ambient(), ...env, TERM, COLORFGBG },
       // The terminal's own size where the client sent one, so the first prompt is drawn to
       // the width it will be read at. Otherwise the size a terminal is until it is told
       // otherwise, which is what an unfitted one on the other end still has.

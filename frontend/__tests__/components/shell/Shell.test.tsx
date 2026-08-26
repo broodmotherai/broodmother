@@ -615,7 +615,7 @@ it('lists the open project’s repos, and drops them with the project', async ()
   await screen.findByRole('treeitem', { name: 'api' })
 
   await userEvent.click(screen.getByRole('button', { name: 'you' }))
-  await userEvent.click(await screen.findByRole('button', { name: /Switch Profile/ }))
+  await userEvent.click(await screen.findByRole('button', { name: /Profile/ }))
   await userEvent.click(await screen.findByRole('menuitemradio', { name: /ada/ }))
 
   await waitFor(() =>
@@ -638,7 +638,8 @@ it('empties the tree of repos when the new profile has no project', async () => 
   await screen.findByRole('treeitem', { name: 'api' })
 
   await userEvent.click(screen.getByRole('button', { name: 'you' }))
-  await userEvent.click(await screen.findByRole('menuitem', { name: /New Profile/ }))
+  await userEvent.click(await screen.findByRole('button', { name: /Profile/ }))
+  await userEvent.click(await screen.findByRole('menuitem', { name: /New profile/ }))
   await userEvent.type(screen.getByLabelText('Profile Name'), 'ada')
   await userEvent.type(screen.getByLabelText('Author Email'), 'ada@example.com')
   await userEvent.click(screen.getByRole('button', { name: 'Add Profile' }))

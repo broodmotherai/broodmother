@@ -124,6 +124,23 @@ export function AccountCenter({
         },
       })),
     },
+    /* Under a rule, below the profiles there are: making one is not a pick among them, but
+       it is what you reach for in the same breath — the same pairing the foot of the tree
+       offers, in the same order. */
+    {
+      actions: [
+        {
+          id: 'new-profile',
+          label: 'New profile…',
+          icon: 'plus' as const,
+          onSelect: () => {
+            setPicking(false)
+            setOpen(false)
+            onAddProfile()
+          },
+        },
+      ],
+    },
   ]
 
   return (
@@ -137,8 +154,8 @@ export function AccountCenter({
          are — rather than a figure of its own that has to be kept equal to theirs by hand.
          The cap is the branch selector's, so no one profile's name can take the row. The
          floor is what the card needs: the card is as wide as the host, so anything narrower
-         than its longest row — the icon, the gaps, the padding and "Switch Profile" — wraps
-         that line in two. */
+         than its longest row — the icon, the gaps, the padding and the word — wraps that
+         line in two. */
       className="relative h-[var(--track-control)] min-w-[8rem] max-w-[14rem] shrink-0"
       style={{ WebkitAppRegion: 'no-drag' } as CSSProperties}
     >
@@ -160,9 +177,10 @@ export function AccountCenter({
 
       <Collapse open={open} role="menu" className="flex flex-col px-1" openClassName="pb-1">
         {/* First, under the name the head already shows: the card opens on who you are, and
-            what the app can do for you comes after. A row like the two below it rather than a
+            what the app can do for you comes after. A row like the one below it rather than a
             control of its own — the head above says which profile is in use, so this one only
-            has to offer the change, and the list it opens is where the profiles are. */}
+            has to name the thing, and the list it opens is everything there is to do with
+            one: the profiles to switch to, and making another. */}
         <Menu
           label="Who you work as"
           sections={picks}
@@ -172,23 +190,8 @@ export function AccountCenter({
           onOpenChange={setPicking}
         >
           <CoreIcon name="user" size={13} className="block shrink-0 text-muted group-hover:text-foreground" />
-          Switch Profile
+          Profile
         </Menu>
-
-        {/* Beside switching rather than inside it: the list above is the profiles there are,
-            and making one is not among them. */}
-        <button
-          type="button"
-          role="menuitem"
-          onClick={() => {
-            setOpen(false)
-            onAddProfile()
-          }}
-          className={itemButton}
-        >
-          <CoreIcon name="plus" size={13} className="block shrink-0 text-muted group-hover:text-foreground" />
-          New Profile…
-        </button>
 
         <button
           type="button"
