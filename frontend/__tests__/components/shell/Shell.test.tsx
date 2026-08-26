@@ -910,6 +910,45 @@ it('renames a folder beside itself, not into itself', async () => {
   )
 })
 
+/* Everything a folder holds that is not a note — a script, a `.env`, a README somebody
+   wants called `README` — was unmakeable from the tree: the one row that made a file put
+   `.md` on the end of it. The file arrives with no extension at all, so the rename that
+   follows says what it is as well as what it is called. */
+it('makes a file with no extension and lets the name say what it is', async () => {
+  const client = createMockClient()
+  const request = vi.spyOn(client, 'request')
+  show(client)
+  await screen.findByText('the project')
+  await waitFor(() => expect(screen.getByRole('treeitem', { name: 'Handbook' })))
+
+  await userEvent.pointer({
+    keys: '[MouseRight]',
+    target: screen.getByRole('treeitem', { name: 'Handbook' }),
+  })
+  await userEvent.click(await screen.findByRole('menuitem', { name: 'New file here' }))
+
+  await waitFor(() =>
+    expect(request).toHaveBeenCalledWith('PUT /api/doc', {
+      root: 'project',
+      path: 'Handbook/Untitled',
+      markdown: '',
+    }),
+  )
+  const field = await screen.findByRole('textbox', { name: 'Rename Untitled' })
+  expect(field).toHaveValue('Untitled')
+
+  // Nothing is put back on the end of what is typed, which is the whole point of the row.
+  await userEvent.keyboard('setup.sh{Enter}')
+
+  await waitFor(() =>
+    expect(request).toHaveBeenCalledWith('POST /api/doc/move', {
+      root: 'project',
+      from: 'Handbook/Untitled',
+      to: 'Handbook/setup.sh',
+    }),
+  )
+})
+
 /* A second note made before the first is named cannot be called the same thing. */
 it('numbers the next Untitled rather than colliding with it', async () => {
   const client = createMockClient()

@@ -256,6 +256,10 @@ export function Shell({ children }: { children: ReactNode }) {
   }
 
   const newNote = (seed: DocRef) => newDoc(seed, '.md')
+  // Nameless rather than untyped: `Untitled` with nothing after it, so the rename that
+  // follows says what the file is as well as what it is called. A note is the one document
+  // whose extension is a foregone conclusion; anything else is the person's to say.
+  const newFile = (seed: DocRef) => newDoc(seed, '')
   // Born with its manual trigger already on the canvas: a task that opens empty would
   // open as a question, and the file has an answer.
   const newTask = (seed: DocRef) =>
@@ -370,6 +374,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   const fromTree = (command: TreeCommand, ref: DocRef) => {
     if (command === 'create') return newNote(ref)
+    if (command === 'create-file') return newFile(ref)
     if (command === 'create-task') return newTask(ref)
     if (command === 'create-canvas') return newCanvas(ref)
     if (command === 'create-folder') return newFolder(ref)
@@ -464,7 +469,7 @@ export function Shell({ children }: { children: ReactNode }) {
               aria-pressed={pathname === '/mother'}
               onClick={ctx.mother}
             >
-              <Icon name="antenna" />
+              <Icon name="spider" />
               <span className="name">Mother</span>
               {app.motherSuggestion && (
                 <span className="mother-dot" aria-label="Mother has a suggestion" />

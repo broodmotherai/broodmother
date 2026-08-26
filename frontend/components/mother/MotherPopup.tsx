@@ -42,7 +42,7 @@ export function MotherPopup() {
   return (
     <aside className="mother-popup" role="status" aria-label="Mother suggests">
       <header>
-        <Icon name="antenna" />
+        <Icon name="spider" />
         <span className="mother-popup-title">Mother</span>
         {fresh.ref && (
           <button

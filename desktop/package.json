@@ -1,6 +1,6 @@
 {
   "name": "@broodmother/desktop",
-  "version": "0.0.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "main": "./dist/main.js",
@@ -10,7 +10,7 @@
   "scripts": {
     "compile": "tsc -p .",
     "dev": "npm run compile && electron .",
-    "package": "npm run compile && electron-packager . broodmother --platform=darwin --overwrite --out=out --app-bundle-id=ai.broodmother.desktop --ignore=\"^/src$\" --ignore=\"^/node_modules$\" --ignore=\"^/out$\" --ignore=\"^/README\\.md$\" --ignore=\"^/Makefile$\" --ignore=\"^/tsconfig\\.json$\"",
+    "package": "electron-packager . broodmother --platform=darwin --overwrite --out=out --app-bundle-id=ai.broodmother.desktop --app-version=$npm_package_version --icon=build/icon.icns --extra-resource=build/daemon --extra-resource=build/site --ignore=\"^/src$\" --ignore=\"^/build$\" --ignore=\"^/node_modules$\" --ignore=\"^/out$\" --ignore=\"^/README\\.md$\" --ignore=\"^/Makefile$\" --ignore=\"^/tsconfig\\.json$\"",
     "typecheck": "tsc --noEmit -p ."
   },
   "devDependencies": {

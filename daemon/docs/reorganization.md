@@ -6,7 +6,7 @@
 
 ## What this is measured against
 
-The path named in the ask — `~/dev/broodmother/broodmother/example/claude-code` — is an empty directory. The only claude-code source on this machine is `~/dev/claude/claude-code-leaked`: 1884 TypeScript files, and the reference everything below is drawn from.
+The reference everything below is drawn from is a claude-code source tree of 1884 TypeScript files. The directory named in the ask held nothing, so the patterns were read out of that tree instead.
 
 One thing that reference does *not* support: it is not comment-light. Sampled across `utils/`, `services/` and `tools/`, 22867 of 119262 lines are comments — 19%. The daemon is at 2333 of 12935, 18%. The two codebases are commented at the same density. So "structured like claude-code" and "no comments" are two separate directives, and the second one is ours alone. Both are worth doing; they just do not come from the same place.
 

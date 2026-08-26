@@ -382,7 +382,7 @@ export function AgentOrgView({ kernel: given }: { kernel?: Kernel }) {
             onClick={() => router.push('/mother')}
           >
             <span className="org-mother-face">
-              <Icon name="antenna" />
+              <Icon name="spider" />
             </span>
             <span className="org-label">Mother</span>
           </div>

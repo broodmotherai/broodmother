@@ -88,9 +88,8 @@ export function MotherView() {
       <section aria-label="mother">
         <h2>Mother</h2>
         <p className="tasks-dim">
-          She watches everything already flowing through the project — runs, agents, sync,
-          the records — and, rarely and well, suggests the next thing worth doing. She is
-          judged by the popups she does not show.
+          Watches the project&rsquo;s runs, agents, sync and records, and suggests the next
+          thing worth doing.
         </p>
         <div className="mother-controls">
           <label className="mother-switch">
@@ -101,7 +100,10 @@ export function MotherView() {
             />
             watching
           </label>
-          <label className="mother-slider" data-tip="Right is quieter: a false alarm costs more, and the bar for speaking rises everywhere">
+          <label
+            className="mother-slider"
+            data-tip="Right is quieter: the bar a suggestion must clear before it is shown"
+          >
             <span className="tasks-dim">chatty</span>
             <input
               type="range"
@@ -152,8 +154,8 @@ export function MotherView() {
         <h2>Seen</h2>
         {items.length === 0 && (
           <p className="tasks-empty">
-            All quiet. What she notices lands here — what she said, and what she kept to
-            herself.
+            Nothing seen yet. What Mother notices appears here, whether or not she suggested
+            anything.
           </p>
         )}
         {items.length > 0 && (

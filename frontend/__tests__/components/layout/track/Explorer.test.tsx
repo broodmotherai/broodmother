@@ -454,6 +454,7 @@ it('offers a new folder on a folder, beside the new note', async () => {
       .map((item) => item.textContent),
   ).toEqual([
     'New note here',
+    'New file here',
     'New task here',
     'New diagram here',
     'New folder here',
@@ -463,6 +464,20 @@ it('offers a new folder on a folder, beside the new note', async () => {
 
   await userEvent.click(within(menu).getByRole('menuitem', { name: 'New folder here' }))
   expect(onCommand).toHaveBeenCalledWith('create-folder', project('Handbook'))
+})
+
+/* A note is a `.md`; a file is whatever it is called. The row is offered wherever the note
+   is, because the folder is the answer to the same question for both. */
+it('offers a new file beside the new note, for the things that are not notes', async () => {
+  const { onCommand } = show()
+
+  await userEvent.pointer({
+    keys: '[MouseRight]',
+    target: screen.getByRole('treeitem', { name: 'Handbook' }),
+  })
+  const menu = await screen.findByRole('menu')
+  await userEvent.click(within(menu).getByRole('menuitem', { name: 'New file here' }))
+  expect(onCommand).toHaveBeenCalledWith('create-file', project('Handbook'))
 })
 
 it('offers a new task wherever a note goes', async () => {
