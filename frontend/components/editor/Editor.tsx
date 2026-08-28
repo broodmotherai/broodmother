@@ -294,7 +294,9 @@ export function Editor({
   }, [value])
 
   return (
-    <div className={prose ? 'monaco-host prose' : 'monaco-host'}>
+    // Monaco names only the offscreen textarea it reads keystrokes from, and that sits
+    // behind the text where nothing can click it. The surface itself is named here.
+    <div className={prose ? 'monaco-host prose' : 'monaco-host'} data-testid="editor">
       <div className="monaco-mount" ref={host} />
       {menu && (
         <ul

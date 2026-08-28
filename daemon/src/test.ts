@@ -1,4 +1,5 @@
 import { execa } from 'execa'
+import type { ChatPart, ChatStream } from '@daemon/features/chat/model'
 import { mkdtemp, realpath, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -47,6 +48,22 @@ export function fakeCrontab() {
     write: async (next: string) => {
       text = next
     },
+  }
+}
+
+/**
+ * A model that says what it was told to, so a conversation can be exercised on a machine
+ * with no key. One answer per turn, the last one repeating once the script runs out.
+ *
+ * The words arrive one at a time rather than all at once, because a turn that streams is a
+ * turn whatever is reading it has to keep up with — a page that only works when the answer
+ * lands whole is a page that works nowhere but here.
+ */
+export function scriptedStream(...answers: string[]): ChatStream {
+  const script = [...answers]
+  return async function* (): AsyncIterable<ChatPart> {
+    const answer = (script.length > 1 ? script.shift() : script[0]) ?? ''
+    for (const word of answer.split(/(?<= )/)) yield { type: 'text', text: word }
   }
 }
 

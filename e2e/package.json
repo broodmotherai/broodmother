@@ -1,0 +1,19 @@
+{
+  "name": "@broodmother/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "playwright test",
+    "ui": "playwright test --ui",
+    "web": "playwright test --project=web --headed",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.1.2",
+    "typescript": "^5.9.3"
+  }
+}

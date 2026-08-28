@@ -2,7 +2,7 @@
 # the OS rather than fixed, so a second checkout can be up at the same time as this one.
 # Either one falling over takes the other with it — half an app up is worse than none, and
 # quieter about it.
-.PHONY: dev
+.PHONY: dev e2e e2e-ui e2e-web
 
 free_port = $$(node -e 'const s=require("net").createServer();s.listen(0,"127.0.0.1",()=>{console.log(s.address().port);s.close()})')
 
@@ -17,6 +17,21 @@ dev: daemon/node_modules frontend/node_modules
 	  npm run --silent dev; kill 0) & \
 	wait
 
-daemon/node_modules frontend/node_modules: %/node_modules: %/package-lock.json
+# The end-to-end suite: a real daemon on a temp home, the built site, and the shell. The site
+# is built and the shell compiled every time — 14 seconds against a run that tests the last
+# checkout is not a trade worth making — and one build serves every worker.
+e2e: e2e/node_modules frontend/node_modules desktop/node_modules
+	cd frontend && npm run --silent build
+	cd desktop && npm run --silent compile
+	cd e2e && npm run --silent test -- $(ARGS)
+
+# The same suite in Playwright's UI mode, and the browser tier in a browser you can watch.
+e2e-ui: ARGS = --ui
+e2e-ui: e2e
+
+e2e-web: ARGS = --project=web --headed
+e2e-web: e2e
+
+daemon/node_modules frontend/node_modules desktop/node_modules e2e/node_modules: %/node_modules: %/package-lock.json
 	cd $* && npm install
 	@touch $@

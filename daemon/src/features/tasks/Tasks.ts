@@ -53,6 +53,8 @@ export interface TasksDeps {
   scratch(): string
   /** Extra environment for the agent, the profile's say — CLAUDE_CONFIG_DIR and kin. */
   env?(): Record<string, string>
+  /** How Claude Code is invoked. A test points it at a script; the app has `claude` on PATH. */
+  claude?(): string
   /** The system-prompt body a persona name resolves to — a project idea, like notes, so a
    *  host that has no project resolves it against the task's own site. */
   persona?(name: string, site: TaskSite): Promise<string | null>
@@ -641,6 +643,7 @@ export class Tasks {
       brief: this.deps.brief?.(site) ?? null,
       scratch: files ? path.dirname(files.output) : '',
       reach: this.reaching(site),
+      claude: this.deps.claude?.(),
       signal,
       notify: (title, body) => this.deps.tell?.({ type: 'notify', title, body }),
     }

@@ -37,7 +37,7 @@ import { PERSON, type Actor, type LedgerEntry } from '@daemon/types/ledger'
 import { apiCall } from '@daemon/features/chat/api'
 import { Chats } from '@daemon/features/chat/Chats'
 import { ChatStore } from '@daemon/features/chat/db'
-import { chatStream } from '@daemon/features/chat/model'
+import { chatStream, type ChatStream } from '@daemon/features/chat/model'
 import { chatTools } from '@daemon/features/chat/tools'
 import { Agents } from '@daemon/features/agents/Agents'
 import { Entities } from '@daemon/features/entities/Entities'
@@ -85,6 +85,11 @@ export interface ContextOptions {
   home?: string
   /** The system crontab unless a test hands in a tamer one. */
   cron?: CrontabIO
+  /** What answers a conversation unless a test hands in a scripted one. Built here rather
+   *  than by the caller, because the real one reads the open profile's keys. */
+  stream?: ChatStream
+  /** How Claude Code is invoked. A test points it at a script; the app has `claude` on PATH. */
+  claude?: string
 }
 
 /**
@@ -149,7 +154,7 @@ export class AppContext {
   private constructor(
     readonly store: ConfigStore,
     readonly home: string,
-    cron: CrontabIO,
+    options: ContextOptions,
   ) {
     this.relay = new Relay()
     this.workspace = new WorkspaceService({
@@ -223,11 +228,12 @@ export class AppContext {
     this.tasks = new Tasks({
       sites: () => this.sites(),
       project: () => this.projectOpen?.tree ?? null,
-      scheduler: crontabScheduler(new Crontab(cron), () => this.url),
+      scheduler: crontabScheduler(new Crontab(options.cron ?? systemCrontab()), () => this.url),
       store: new TriggerStore(path.join(home, 'triggers.json')),
       runs: this.runStore,
       scratch: () => path.join(home, 'tasks', 'runs'),
       env: () => this.agentEnv(),
+      claude: () => options.claude ?? 'claude',
       persona: (name) =>
         this.projectOpen ? readPersona(this.projectOpen.path, name) : Promise.resolve(null),
       brief: (site) => brief(this.briefState(site.path, site.root)),
@@ -239,7 +245,9 @@ export class AppContext {
     })
     // A conversation belongs to the project it was held in, and speaks with the key the
     // profile holds for whichever provider serves the model it was asked for.
-    const stream = chatStream({ credential: (provider) => this.profiles.keys[provider] })
+    const stream =
+      options.stream ??
+      chatStream({ credential: (provider) => this.profiles.keys[provider] })
     // Its own front door, allowlisted — so what a tool does is what the route does. Whoever
     // the door is opened for travels with it, so the ledger can say whose write it was.
     const reach = (by: Actor) => ({
@@ -295,6 +303,7 @@ export class AppContext {
       // the finest grain there is.
       tools: (by) => ({
         ...reach(by),
+        claude: options.claude,
         noteErrand: (paths, note) => {
           for (const changed of paths)
             this.recordAct({
@@ -431,7 +440,7 @@ export class AppContext {
     // place for state the sync loop would offer to commit.
     const store = new ConfigStore(path.join(home, 'config.json'), defaultConfig(null))
     const migrated = await migrate(home, await store.load())
-    const context = new AppContext(store, home, options.cron ?? systemCrontab())
+    const context = new AppContext(store, home, options)
 
     const projectPath = await resolveProject(options.root, migrated.config, home)
     // A project sits inside the profile it commits as, so the open one settles who you are.

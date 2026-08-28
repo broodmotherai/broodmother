@@ -16,9 +16,27 @@ import type { ServerMessage, WsRoute } from '@broodmother/types/api/ws'
 import type { DocRef } from '@broodmother/types/doc'
 import type { ApiClient, Connection } from './DataSource'
 
-/** Where the backend is. Exported because bytes are fetched by the browser directly —
- *  an `<img src>` is a request this client does not make. */
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4242'
+/** Set on the window before any of the app's own script runs, by whoever knows which daemon
+ *  this page belongs to. Deliberately not read from the URL: a query parameter that repoints
+ *  the app at another server is a link somebody can be sent. */
+declare global {
+  interface Window {
+    BROODMOTHER_API_URL?: string
+  }
+}
+
+/**
+ * Where the backend is. Exported because bytes are fetched by the browser directly — an
+ * `<img src>` is a request this client does not make.
+ *
+ * The build-time address is right for the app a person runs and wrong wherever the daemon
+ * takes the port the OS gave it — a test harness running one per worker today, a packaged
+ * app that starts its own tomorrow — so a window set before the app loads wins over it.
+ */
+export const API_BASE =
+  (typeof window === 'undefined' ? undefined : window.BROODMOTHER_API_URL) ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  'http://127.0.0.1:4242'
 const base = API_BASE
 
 /** The URL the server serves a file's bytes from, for the one reader that only needs the

@@ -62,6 +62,8 @@ export interface StepCtx {
   scratch: string
   /** Whichever service this step needs, as this profile is connected to it. */
   reach: Reach
+  /** How Claude Code is invoked. A test points it at a script; the app has `claude` on PATH. */
+  claude?: string
   /** Raised when the run is stopped. A block that starts a process hands this to it, so
    *  stopping reaches the work and not just the row that describes it. */
   signal: AbortSignal

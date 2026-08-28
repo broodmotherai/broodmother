@@ -21,7 +21,7 @@ export const claudeBlock = defineBlock({
     if (system) args.push('--append-system-prompt', system)
     args.push('--permission-mode', 'acceptEdits')
     if (ctx.outputPath) args.push('--add-dir', path.dirname(ctx.outputPath))
-    const result = await execa('claude', args, {
+    const result = await execa(ctx.claude ?? 'claude', args, {
       cwd: ctx.cwd,
       input: ctx.input,
       env: { ...ambient(), ...ctx.env, ...flowEnv(ctx) },
