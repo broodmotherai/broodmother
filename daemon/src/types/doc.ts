@@ -23,7 +23,15 @@ export function repoOf(root: DocRoot): string | null {
   return root === 'project' ? null : root.slice('repo:'.length)
 }
 
-interface TreeFile {
+/** Git ignores it. The sidebar still draws it — a build folder or an env file is on disk,
+ *  and a tree that hides what is there is a tree you cannot trust — but it is drawn faint,
+ *  and it is not material the app collects: no task inside one is scheduled, no `.md` inside
+ *  one is in the link index. Absent rather than false where git has nothing against it. */
+interface Ignorable {
+  ignored?: true
+}
+
+interface TreeFile extends Ignorable {
   kind: 'file'
   path: DocPath
   name: string
@@ -31,7 +39,7 @@ interface TreeFile {
   modifiedAt: number
 }
 
-interface TreeDir {
+interface TreeDir extends Ignorable {
   kind: 'dir'
   path: DocPath
   name: string
