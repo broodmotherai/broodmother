@@ -1,0 +1,1228 @@
+[
+  {
+    "name": "a config as it is written",
+    "source": "{\"projectPath\": \"/tmp/a\", \"profile\": \"Michael\", \"checkouts\": {\"/tmp/a\": \"local\"}, \"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000, \"trailers\": false}}, \"repo\": {\"/tmp/a\": null}, \"repoBranch\": {\"/tmp/a#broodmother\": \"refactor\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": "Michael",
+        "checkouts": {
+          "/tmp/a": "local"
+        },
+        "git": {
+          "/tmp/a": {
+            "enabled": true,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 10000,
+            "trailers": false
+          }
+        },
+        "repo": {
+          "/tmp/a": null
+        },
+        "repoBranch": {
+          "/tmp/a#broodmother": "refactor"
+        }
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {\n    \"/tmp/a\": \"local\"\n  },\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": true,\n      \"idleMs\": 10000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": \"Michael\",\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {\n    \"/tmp/a\": null\n  },\n  \"repoBranch\": {\n    \"/tmp/a#broodmother\": \"refactor\"\n  }\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "a first run",
+    "source": "{\"projectPath\": null, \"profile\": null, \"checkouts\": {}, \"git\": {}, \"repo\": {}, \"repoBranch\": {}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "nothing at all",
+    "source": "",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "projectPath",
+        "profile",
+        "checkouts",
+        "git",
+        "repo",
+        "repoBranch"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "projectPath",
+      "profile",
+      "checkouts",
+      "git",
+      "repo",
+      "repoBranch"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "not JSON",
+    "source": "{projectPath: null}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "projectPath",
+        "profile",
+        "checkouts",
+        "git",
+        "repo",
+        "repoBranch"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "projectPath",
+      "profile",
+      "checkouts",
+      "git",
+      "repo",
+      "repoBranch"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "a list rather than a config",
+    "source": "[]",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "projectPath",
+        "profile",
+        "checkouts",
+        "git",
+        "repo",
+        "repoBranch"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "projectPath",
+      "profile",
+      "checkouts",
+      "git",
+      "repo",
+      "repoBranch"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "a number rather than a config",
+    "source": "42",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "projectPath",
+        "profile",
+        "checkouts",
+        "git",
+        "repo",
+        "repoBranch"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "projectPath",
+      "profile",
+      "checkouts",
+      "git",
+      "repo",
+      "repoBranch"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "null rather than a config",
+    "source": "null",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "projectPath",
+        "profile",
+        "checkouts",
+        "git",
+        "repo",
+        "repoBranch"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "projectPath",
+      "profile",
+      "checkouts",
+      "git",
+      "repo",
+      "repoBranch"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "an empty object",
+    "source": "{}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "every field of the wrong type",
+    "source": "{\"projectPath\": 1, \"profile\": [], \"checkouts\": \"x\", \"git\": 2, \"repo\": false, \"repoBranch\": null}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "projectPath",
+        "profile",
+        "checkouts",
+        "git",
+        "repo",
+        "repoBranch"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "projectPath",
+      "profile",
+      "checkouts",
+      "git",
+      "repo",
+      "repoBranch"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "a project path that is empty",
+    "source": "{\"projectPath\": \"\"}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "projectPath"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "projectPath"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "a profile that is null",
+    "source": "{\"profile\": null}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "more than one project",
+    "source": "{\"projectPath\": \"/tmp/a\", \"profile\": \"Michael\", \"checkouts\": {\"/tmp/a\": \"local\", \"/tmp/b\": \"refactor\", \"/tmp/c\": \"main\"}, \"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000, \"trailers\": false}}, \"repo\": {\"/tmp/a\": null}, \"repoBranch\": {\"/tmp/a#broodmother\": \"refactor\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": "Michael",
+        "checkouts": {
+          "/tmp/a": "local",
+          "/tmp/b": "refactor",
+          "/tmp/c": "main"
+        },
+        "git": {
+          "/tmp/a": {
+            "enabled": true,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 10000,
+            "trailers": false
+          }
+        },
+        "repo": {
+          "/tmp/a": null
+        },
+        "repoBranch": {
+          "/tmp/a#broodmother": "refactor"
+        }
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {\n    \"/tmp/a\": \"local\",\n    \"/tmp/b\": \"refactor\",\n    \"/tmp/c\": \"main\"\n  },\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": true,\n      \"idleMs\": 10000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": \"Michael\",\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {\n    \"/tmp/a\": null\n  },\n  \"repoBranch\": {\n    \"/tmp/a#broodmother\": \"refactor\"\n  }\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "a checkout with an empty key",
+    "source": "{\"checkouts\": {\"\": \"local\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "checkouts"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "checkouts"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "a checkout with an empty value",
+    "source": "{\"checkouts\": {\"/tmp/a\": \"\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "checkouts"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "checkouts"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "a checkout whose value is not a string",
+    "source": "{\"checkouts\": {\"/tmp/a\": 3}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "checkouts"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "checkouts"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "git settings with no trailers",
+    "source": "{\"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000}}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": true,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 10000,
+            "trailers": false
+          }
+        },
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": true,\n      \"idleMs\": 10000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "git settings with trailers on",
+    "source": "{\"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": false, \"pull\": false, \"push\": false, \"idleMs\": 2000, \"trailers\": true}}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": true,
+            "autoCommit": false,
+            "pull": false,
+            "push": false,
+            "idleMs": 2000,
+            "trailers": true
+          }
+        },
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": false,\n      \"enabled\": true,\n      \"idleMs\": 2000,\n      \"pull\": false,\n      \"push\": false,\n      \"trailers\": true\n    }\n  },\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "git settings under a second",
+    "source": "{\"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 999}}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "git"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "git"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "git settings at exactly a second",
+    "source": "{\"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 1000}}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": true,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 1000,
+            "trailers": false
+          }
+        },
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": true,\n      \"idleMs\": 1000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "git settings with a fractional idle",
+    "source": "{\"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 1000.5}}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "git"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "git"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "git settings missing a switch",
+    "source": "{\"git\": {\"/tmp/a\": {\"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000}}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "git"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "git"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "git settings with a key nobody asked for",
+    "source": "{\"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000, \"trailers\": false, \"remote\": \"origin\"}}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": true,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 10000,
+            "trailers": false
+          }
+        },
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": true,\n      \"idleMs\": 10000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "git settings that are not an object",
+    "source": "{\"git\": {\"/tmp/a\": true}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "git"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "git"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "a repo scoped to the project itself",
+    "source": "{\"repo\": {\"/tmp/a\": null}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {
+          "/tmp/a": null
+        },
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {\n    \"/tmp/a\": null\n  },\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "a repo scoped to a repo",
+    "source": "{\"repo\": {\"/tmp/a\": \"broodmother\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {
+          "/tmp/a": "broodmother"
+        },
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {\n    \"/tmp/a\": \"broodmother\"\n  },\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "a repo scoped to an empty name",
+    "source": "{\"repo\": {\"/tmp/a\": \"\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [
+        "repo"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [
+      "repo"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "one bad field costs only itself",
+    "source": "{\"projectPath\": \"/tmp/a\", \"profile\": \"Michael\", \"checkouts\": 7, \"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000, \"trailers\": false}}, \"repo\": {\"/tmp/a\": null}, \"repoBranch\": {\"/tmp/a#broodmother\": \"refactor\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": "Michael",
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": true,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 10000,
+            "trailers": false
+          }
+        },
+        "repo": {
+          "/tmp/a": null
+        },
+        "repoBranch": {
+          "/tmp/a#broodmother": "refactor"
+        }
+      },
+      "reset": [
+        "checkouts"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": true,\n      \"idleMs\": 10000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": \"Michael\",\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {\n    \"/tmp/a\": null\n  },\n  \"repoBranch\": {\n    \"/tmp/a#broodmother\": \"refactor\"\n  }\n}\n",
+    "reset": [
+      "checkouts"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "two bad fields",
+    "source": "{\"projectPath\": \"/tmp/a\", \"profile\": \"Michael\", \"checkouts\": 7, \"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000, \"trailers\": false}}, \"repo\": 9, \"repoBranch\": {\"/tmp/a#broodmother\": \"refactor\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": "Michael",
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": true,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 10000,
+            "trailers": false
+          }
+        },
+        "repo": {},
+        "repoBranch": {
+          "/tmp/a#broodmother": "refactor"
+        }
+      },
+      "reset": [
+        "checkouts",
+        "repo"
+      ],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": true,\n      \"idleMs\": 10000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": \"Michael\",\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {},\n  \"repoBranch\": {\n    \"/tmp/a#broodmother\": \"refactor\"\n  }\n}\n",
+    "reset": [
+      "checkouts",
+      "repo"
+    ],
+    "bindings": {}
+  },
+  {
+    "name": "the older name for the open project",
+    "source": "{\"vaultPath\": \"/tmp/legacy\"}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/legacy",
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": \"/tmp/legacy\",\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "the older name is ignored where the current one is said",
+    "source": "{\"projectPath\": null, \"vaultPath\": \"/tmp/legacy\"}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "the older name is ignored where the current one has a value",
+    "source": "{\"projectPath\": \"/tmp/a\", \"vaultPath\": \"/tmp/legacy\"}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "the older name, empty",
+    "source": "{\"vaultPath\": \"\"}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "the older names for the repo fields",
+    "source": "{\"project\": {\"/tmp/a\": \"broodmother\"}, \"projectBranch\": {\"/tmp/a#broodmother\": \"refactor\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {
+          "/tmp/a": "broodmother"
+        },
+        "repoBranch": {
+          "/tmp/a#broodmother": "refactor"
+        }
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {\n    \"/tmp/a\": \"broodmother\"\n  },\n  \"repoBranch\": {\n    \"/tmp/a#broodmother\": \"refactor\"\n  }\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "the older repo names are ignored where the current ones are said",
+    "source": "{\"repo\": {}, \"repoBranch\": {}, \"project\": {\"/tmp/a\": \"x\"}, \"projectBranch\": {\"/tmp/a#x\": \"y\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "the older repo names, malformed",
+    "source": "{\"project\": 5, \"projectBranch\": {\"\": \"y\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "sync as one switch for the whole machine",
+    "source": "{\"projectPath\": \"/tmp/a\", \"syncEnabled\": true, \"syncIdleMs\": 30000}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": null,
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": true,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 30000,
+            "trailers": false
+          }
+        },
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": true,\n      \"idleMs\": 30000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": null,\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "sync switched off, machine-wide",
+    "source": "{\"projectPath\": \"/tmp/a\", \"syncEnabled\": false}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": null,
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": false,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 10000,
+            "trailers": false
+          }
+        },
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": false,\n      \"idleMs\": 10000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": null,\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "a machine-wide idle and nothing else",
+    "source": "{\"projectPath\": \"/tmp/a\", \"syncIdleMs\": 45000}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": null,
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": false,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 45000,
+            "trailers": false
+          }
+        },
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": false,\n      \"idleMs\": 45000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": null,\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "the newer idle name wins over the older",
+    "source": "{\"projectPath\": \"/tmp/a\", \"idleMs\": 20000, \"syncIdleMs\": 45000}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": null,
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": false,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 20000,
+            "trailers": false
+          }
+        },
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": false,\n      \"idleMs\": 20000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": null,\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "an idle of null falls through to the older name",
+    "source": "{\"projectPath\": \"/tmp/a\", \"idleMs\": null, \"syncIdleMs\": 45000}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": null,
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": false,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 45000,
+            "trailers": false
+          }
+        },
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": false,\n      \"idleMs\": 45000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": null,\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "a machine-wide idle under a second",
+    "source": "{\"projectPath\": \"/tmp/a\", \"syncEnabled\": true, \"syncIdleMs\": 500}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": null,
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": true,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 10000,
+            "trailers": false
+          }
+        },
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": true,\n      \"idleMs\": 10000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": null,\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "a machine-wide idle with a fraction",
+    "source": "{\"projectPath\": \"/tmp/a\", \"syncIdleMs\": 45000.7}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": null,
+        "checkouts": {},
+        "git": {
+          "/tmp/a": {
+            "enabled": false,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 45000,
+            "trailers": false
+          }
+        },
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": false,\n      \"idleMs\": 45000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": null,\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "a machine-wide idle that is not a number",
+    "source": "{\"projectPath\": \"/tmp/a\", \"syncIdleMs\": \"45000\"}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "machine-wide sync where the project already has its own",
+    "source": "{\"projectPath\": \"/tmp/a\", \"profile\": \"Michael\", \"checkouts\": {\"/tmp/a\": \"local\"}, \"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000, \"trailers\": false}}, \"repo\": {\"/tmp/a\": null}, \"repoBranch\": {\"/tmp/a#broodmother\": \"refactor\"}, \"syncEnabled\": false, \"syncIdleMs\": 45000}",
+    "parsed": {
+      "config": {
+        "projectPath": "/tmp/a",
+        "profile": "Michael",
+        "checkouts": {
+          "/tmp/a": "local"
+        },
+        "git": {
+          "/tmp/a": {
+            "enabled": true,
+            "autoCommit": true,
+            "pull": true,
+            "push": true,
+            "idleMs": 10000,
+            "trailers": false
+          }
+        },
+        "repo": {
+          "/tmp/a": null
+        },
+        "repoBranch": {
+          "/tmp/a#broodmother": "refactor"
+        }
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {\n    \"/tmp/a\": \"local\"\n  },\n  \"git\": {\n    \"/tmp/a\": {\n      \"autoCommit\": true,\n      \"enabled\": true,\n      \"idleMs\": 10000,\n      \"pull\": true,\n      \"push\": true,\n      \"trailers\": false\n    }\n  },\n  \"profile\": \"Michael\",\n  \"projectPath\": \"/tmp/a\",\n  \"repo\": {\n    \"/tmp/a\": null\n  },\n  \"repoBranch\": {\n    \"/tmp/a#broodmother\": \"refactor\"\n  }\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "machine-wide sync with no project open",
+    "source": "{\"syncEnabled\": true, \"syncIdleMs\": 30000}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "the bindings a project had before it sat in a profile",
+    "source": "{\"profiles\": {\"/tmp/a\": \"Michael\", \"/tmp/b\": \"Someone\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {
+        "/tmp/a": "Michael",
+        "/tmp/b": "Someone"
+      }
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {
+      "/tmp/a": "Michael",
+      "/tmp/b": "Someone"
+    }
+  },
+  {
+    "name": "bindings that are not a map",
+    "source": "{\"profiles\": 5}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  },
+  {
+    "name": "bindings with an empty name",
+    "source": "{\"profiles\": {\"/tmp/a\": \"\"}}",
+    "parsed": {
+      "config": {
+        "projectPath": null,
+        "profile": null,
+        "checkouts": {},
+        "git": {},
+        "repo": {},
+        "repoBranch": {}
+      },
+      "reset": [],
+      "bindings": {}
+    },
+    "serialized": "{\n  \"checkouts\": {},\n  \"git\": {},\n  \"profile\": null,\n  \"projectPath\": null,\n  \"repo\": {},\n  \"repoBranch\": {}\n}\n",
+    "reset": [],
+    "bindings": {}
+  }
+]

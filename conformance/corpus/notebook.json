@@ -1,0 +1,1874 @@
+[
+  {
+    "name": "not JSON",
+    "source": "[]\u0001{cells:[]}",
+    "error": "not JSON"
+  },
+  {
+    "name": "a list rather than a notebook",
+    "source": "[]\u0001[]",
+    "error": "notebook is not an object"
+  },
+  {
+    "name": "a string rather than a notebook",
+    "source": "[]\u0001\"a notebook\"",
+    "error": "notebook is not an object"
+  },
+  {
+    "name": "nbformat 3",
+    "source": "[]\u0001{\"nbformat\":3,\"cells\":[]}",
+    "error": "nbformat 3"
+  },
+  {
+    "name": "no nbformat",
+    "source": "[]\u0001{\"cells\":[]}",
+    "error": "nbformat undefined"
+  },
+  {
+    "name": "nbformat as a string",
+    "source": "[]\u0001{\"nbformat\":\"4\",\"cells\":[]}",
+    "error": "nbformat \"4\""
+  },
+  {
+    "name": "cells is not a list",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":{}}",
+    "error": "cells is not a list"
+  },
+  {
+    "name": "no cells at all",
+    "source": "[]\u0001{\"nbformat\":4}",
+    "error": "cells is not a list"
+  },
+  {
+    "name": "a cell that is not an object",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[1]}",
+    "error": "cell 0 is not an object"
+  },
+  {
+    "name": "a cell with no type",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[{\"source\":\"x\"}]}",
+    "error": "cell 0 has unknown type undefined"
+  },
+  {
+    "name": "a cell of an unknown type",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[{\"cell_type\":\"sql\"}]}",
+    "error": "cell 0 has unknown type \"sql\""
+  },
+  {
+    "name": "an output that is not an object",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[{\"cell_type\":\"code\",\"outputs\":[7]}]}",
+    "error": "cell 0 output 0 is not an object"
+  },
+  {
+    "name": "an output with no type",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[{\"cell_type\":\"code\",\"outputs\":[{}]}]}",
+    "error": "cell 0 output 0 has unknown output type undefined"
+  },
+  {
+    "name": "an output of an unknown type",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[{\"cell_type\":\"code\",\"outputs\":[{\"output_type\":\"html\"}]}]}",
+    "error": "cell 0 output 0 has unknown output type \"html\""
+  },
+  {
+    "name": "display data that is not an object",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[{\"cell_type\":\"code\",\"outputs\":[{\"output_type\":\"display_data\",\"data\":\"<b>hi</b>\"}]}]}",
+    "error": "cell 0 output 0 data is not an object"
+  },
+  {
+    "name": "an output on a markdown cell is not read",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[{\"cell_type\":\"markdown\",\"outputs\":[7],\"source\":\"hi\"}]}",
+    "parsed": {
+      "cells": [
+        {
+          "id": "cell@0",
+          "type": "markdown",
+          "source": "hi",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\"nbformat\":4,\"cells\":[{\"cell_type\":\"markdown\",\"outputs\":[7],\"source\":\"hi\"}]}",
+    "language": "python"
+  },
+  {
+    "name": "an empty notebook",
+    "source": "[]\u0001{\n \"cells\": [],\n \"metadata\": {},\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [],\n \"metadata\": {},\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a notebook with everything in it",
+    "source": "[]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a notebook with no trailing newline",
+    "source": "[]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}",
+    "language": "python"
+  },
+  {
+    "name": "a notebook written on one line",
+    "source": "[]\u0001{\"cells\":[{\"cell_type\":\"code\",\"execution_count\":3,\"id\":\"a1b2\",\"metadata\":{\"tags\":[\"keep\"],\"collapsed\":false},\"outputs\":[{\"name\":\"stdout\",\"output_type\":\"stream\",\"text\":[\"hello\\n\",\"world\\n\"]},{\"name\":\"stderr\",\"output_type\":\"stream\",\"text\":\"warned\\n\"},{\"ename\":\"ValueError\",\"evalue\":\"bad\",\"output_type\":\"error\",\"traceback\":[\"\\u001b[0;31mValueError\\u001b[0m\",\"  line two\"]},{\"data\":{\"text/plain\":[\"42\"],\"text/html\":[\"<b>42</b>\"]},\"execution_count\":3,\"metadata\":{},\"output_type\":\"execute_result\"},{\"data\":{\"image/png\":\"iVBOR\"},\"metadata\":{\"needs_background\":\"light\"},\"output_type\":\"display_data\"}],\"source\":[\"print('hello')\\n\",\"print('world')\\n\"]},{\"cell_type\":\"markdown\",\"id\":\"c3d4\",\"metadata\":{},\"source\":\"# Title\\n\"},{\"cell_type\":\"raw\",\"id\":\"e5f6\",\"metadata\":{\"format\":\"text/latex\"},\"source\":[]}],\"metadata\":{\"kernelspec\":{\"display_name\":\"Python 3\",\"language\":\"python\",\"name\":\"python3\"},\"language_info\":{\"name\":\"python\",\"version\":\"3.12.1\"}},\"nbformat\":4,\"nbformat_minor\":5}",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\"cells\":[{\"cell_type\":\"code\",\"execution_count\":3,\"id\":\"a1b2\",\"metadata\":{\"tags\":[\"keep\"],\"collapsed\":false},\"outputs\":[{\"name\":\"stdout\",\"output_type\":\"stream\",\"text\":[\"hello\\n\",\"world\\n\"]},{\"name\":\"stderr\",\"output_type\":\"stream\",\"text\":\"warned\\n\"},{\"ename\":\"ValueError\",\"evalue\":\"bad\",\"output_type\":\"error\",\"traceback\":[\"\\u001b[0;31mValueError\\u001b[0m\",\"  line two\"]},{\"data\":{\"text/plain\":[\"42\"],\"text/html\":[\"<b>42</b>\"]},\"execution_count\":3,\"metadata\":{},\"output_type\":\"execute_result\"},{\"data\":{\"image/png\":\"iVBOR\"},\"metadata\":{\"needs_background\":\"light\"},\"output_type\":\"display_data\"}],\"source\":[\"print('hello')\\n\",\"print('world')\\n\"]},{\"cell_type\":\"markdown\",\"id\":\"c3d4\",\"metadata\":{},\"source\":\"# Title\\n\"},{\"cell_type\":\"raw\",\"id\":\"e5f6\",\"metadata\":{\"format\":\"text/latex\"},\"source\":[]}],\"metadata\":{\"kernelspec\":{\"display_name\":\"Python 3\",\"language\":\"python\",\"name\":\"python3\"},\"language_info\":{\"name\":\"python\",\"version\":\"3.12.1\"}},\"nbformat\":4,\"nbformat_minor\":5}",
+    "language": "python"
+  },
+  {
+    "name": "cells with no ids",
+    "source": "[]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"metadata\": {},\n   \"outputs\": [],\n   \"source\": [\n    \"x = 1\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"metadata\": {},\n   \"source\": [\n    \"one\\n\",\n    \"two\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"language\": \"julia\",\n   \"name\": \"julia-1.10\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 0\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "cell@0",
+          "type": "code",
+          "source": "x = 1",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "cell@1",
+          "type": "markdown",
+          "source": "one\ntwo",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "julia"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"metadata\": {},\n   \"outputs\": [],\n   \"source\": [\n    \"x = 1\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"metadata\": {},\n   \"source\": [\n    \"one\\n\",\n    \"two\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"language\": \"julia\",\n   \"name\": \"julia-1.10\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 0\n}\n",
+    "language": "julia"
+  },
+  {
+    "name": "unknown keys ride through",
+    "source": "[]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"id\": \"keep-me\",\n   \"metadata\": {\n    \"scrolled\": true\n   },\n   \"source\": \"a = 1\",\n   \"attachments\": {},\n   \"outputs\": [],\n   \"execution_count\": 7,\n   \"unheard_of\": {\n    \"z\": 1,\n    \"a\": 2\n   }\n  }\n ],\n \"metadata\": {\n  \"widgets\": {\n   \"state\": {}\n  },\n  \"authors\": [\n   {\n    \"name\": \"somebody\"\n   }\n  ]\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5,\n \"extra\": [\n  1,\n  2,\n  3\n ]\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "keep-me",
+          "type": "code",
+          "source": "a = 1",
+          "outputs": [],
+          "executionCount": 7
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"id\": \"keep-me\",\n   \"metadata\": {\n    \"scrolled\": true\n   },\n   \"source\": \"a = 1\",\n   \"attachments\": {},\n   \"outputs\": [],\n   \"execution_count\": 7,\n   \"unheard_of\": {\n    \"z\": 1,\n    \"a\": 2\n   }\n  }\n ],\n \"metadata\": {\n  \"widgets\": {\n   \"state\": {}\n  },\n  \"authors\": [\n   {\n    \"name\": \"somebody\"\n   }\n  ]\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5,\n \"extra\": [\n  1,\n  2,\n  3\n ]\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "no metadata at all",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[]}",
+    "parsed": {
+      "cells": [],
+      "language": "python"
+    },
+    "serialized": "{\"nbformat\":4,\"cells\":[]}",
+    "language": "python"
+  },
+  {
+    "name": "metadata that is not an object",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[],\"metadata\":\"none\"}",
+    "parsed": {
+      "cells": [],
+      "language": "python"
+    },
+    "serialized": "{\"nbformat\":4,\"cells\":[],\"metadata\":\"none\"}",
+    "language": "python"
+  },
+  {
+    "name": "a kernelspec with no language",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[],\"metadata\":{\"kernelspec\":{\"name\":\"deno\"}}}",
+    "parsed": {
+      "cells": [],
+      "language": "python"
+    },
+    "serialized": "{\"nbformat\":4,\"cells\":[],\"metadata\":{\"kernelspec\":{\"name\":\"deno\"}}}",
+    "language": "python"
+  },
+  {
+    "name": "a stream named something else",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[{\"cell_type\":\"code\",\"outputs\":[{\"output_type\":\"stream\",\"name\":\"log\",\"text\":\"hi\"}]}]}",
+    "parsed": {
+      "cells": [
+        {
+          "id": "cell@0",
+          "type": "code",
+          "source": "",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hi"
+            }
+          ],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"nbformat\": 4,\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"outputs\": [\n    {\n     \"output_type\": \"stream\",\n     \"name\": \"log\",\n     \"text\": \"hi\"\n    }\n   ],\n   \"execution_count\": null\n  }\n ]\n}",
+    "language": "python"
+  },
+  {
+    "name": "an execute_result with no count",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[{\"cell_type\":\"code\",\"outputs\":[{\"output_type\":\"execute_result\",\"data\":{\"text/plain\":\"42\"},\"metadata\":{}}]}]}",
+    "parsed": {
+      "cells": [
+        {
+          "id": "cell@0",
+          "type": "code",
+          "source": "",
+          "outputs": [
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": "42"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"nbformat\": 4,\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"outputs\": [\n    {\n     \"output_type\": \"execute_result\",\n     \"data\": {\n      \"text/plain\": \"42\"\n     },\n     \"metadata\": {}\n    }\n   ],\n   \"execution_count\": null\n  }\n ]\n}",
+    "language": "python"
+  },
+  {
+    "name": "a traceback of things that are not strings",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[{\"cell_type\":\"code\",\"outputs\":[{\"output_type\":\"error\",\"ename\":1,\"traceback\":[1,null,true,{\"a\":1},[\"x\",\"y\"]]}]}]}",
+    "parsed": {
+      "cells": [
+        {
+          "id": "cell@0",
+          "type": "code",
+          "source": "",
+          "outputs": [
+            {
+              "kind": "error",
+              "ename": "",
+              "evalue": "",
+              "traceback": [
+                "1",
+                "null",
+                "true",
+                "[object Object]",
+                "x,y"
+              ]
+            }
+          ],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"nbformat\": 4,\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"outputs\": [\n    {\n     \"output_type\": \"error\",\n     \"ename\": 1,\n     \"traceback\": [\n      1,\n      null,\n      true,\n      {\n       \"a\": 1\n      },\n      [\n       \"x\",\n       \"y\"\n      ]\n     ]\n    }\n   ],\n   \"execution_count\": null\n  }\n ]\n}",
+    "language": "python"
+  },
+  {
+    "name": "an execution count that is not a number",
+    "source": "[]\u0001{\"nbformat\":4,\"cells\":[{\"cell_type\":\"code\",\"execution_count\":\"3\",\"source\":\"x\"}]}",
+    "parsed": {
+      "cells": [
+        {
+          "id": "cell@0",
+          "type": "code",
+          "source": "x",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"nbformat\": 4,\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"source\": \"x\"\n  }\n ]\n}",
+    "language": "python"
+  },
+  {
+    "name": "an id that is not a string",
+    "source": "[]\u0001{\"nbformat\":4,\"nbformat_minor\":5,\"cells\":[{\"cell_type\":\"code\",\"id\":7,\"source\":\"x\"}]}",
+    "parsed": {
+      "cells": [
+        {
+          "id": "cell@0",
+          "type": "code",
+          "source": "x",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"nbformat\": 4,\n \"nbformat_minor\": 5,\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"id\": 7,\n   \"source\": \"x\",\n   \"execution_count\": null\n  }\n ]\n}",
+    "language": "python"
+  },
+  {
+    "name": "a source edited",
+    "source": "[{\"op\": \"source\", \"at\": 0, \"text\": \"print('other')\\n\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('other')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('other')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a source edited to nothing",
+    "source": "[{\"op\": \"source\", \"at\": 0, \"text\": \"\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": []\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a source edited to the same text",
+    "source": "[{\"op\": \"source\", \"at\": 1, \"text\": \"# Title\\n\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a source with no trailing newline",
+    "source": "[{\"op\": \"source\", \"at\": 1, \"text\": \"# Title\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": [\n    \"# Title\"\n   ]\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a source in unicode",
+    "source": "[{\"op\": \"source\", \"at\": 1, \"text\": \"# \\u65e5\\u672c\\u8a9e \\u2014 \\u2705\\n\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# 日本語 — ✅\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": [\n    \"# 日本語 — ✅\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a source edited where the file keeps unknown keys",
+    "source": "[{\"op\": \"source\", \"at\": 0, \"text\": \"a = 2\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"id\": \"keep-me\",\n   \"metadata\": {\n    \"scrolled\": true\n   },\n   \"source\": \"a = 1\",\n   \"attachments\": {},\n   \"outputs\": [],\n   \"execution_count\": 7,\n   \"unheard_of\": {\n    \"z\": 1,\n    \"a\": 2\n   }\n  }\n ],\n \"metadata\": {\n  \"widgets\": {\n   \"state\": {}\n  },\n  \"authors\": [\n   {\n    \"name\": \"somebody\"\n   }\n  ]\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5,\n \"extra\": [\n  1,\n  2,\n  3\n ]\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "keep-me",
+          "type": "code",
+          "source": "a = 2",
+          "outputs": [],
+          "executionCount": 7
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"id\": \"keep-me\",\n   \"metadata\": {\n    \"scrolled\": true\n   },\n   \"source\": [\n    \"a = 2\"\n   ],\n   \"attachments\": {},\n   \"outputs\": [],\n   \"execution_count\": 7,\n   \"unheard_of\": {\n    \"z\": 1,\n    \"a\": 2\n   }\n  }\n ],\n \"metadata\": {\n  \"widgets\": {\n   \"state\": {}\n  },\n  \"authors\": [\n   {\n    \"name\": \"somebody\"\n   }\n  ]\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5,\n \"extra\": [\n  1,\n  2,\n  3\n ]\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a source edited in a notebook with no cell ids",
+    "source": "[{\"op\": \"source\", \"at\": 0, \"text\": \"x = 2\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"metadata\": {},\n   \"outputs\": [],\n   \"source\": [\n    \"x = 1\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"metadata\": {},\n   \"source\": [\n    \"one\\n\",\n    \"two\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"language\": \"julia\",\n   \"name\": \"julia-1.10\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 0\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "cell@0",
+          "type": "code",
+          "source": "x = 2",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "cell@1",
+          "type": "markdown",
+          "source": "one\ntwo",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "julia"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"metadata\": {},\n   \"outputs\": [],\n   \"source\": [\n    \"x = 2\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"metadata\": {},\n   \"source\": [\n    \"one\\n\",\n    \"two\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"language\": \"julia\",\n   \"name\": \"julia-1.10\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 0\n}\n",
+    "language": "julia"
+  },
+  {
+    "name": "a source edited with no trailing newline on the file",
+    "source": "[{\"op\": \"source\", \"at\": 0, \"text\": \"print('other')\\n\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('other')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('other')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}",
+    "language": "python"
+  },
+  {
+    "name": "a cell switched to markdown",
+    "source": "[{\"op\": \"type\", \"at\": 0, \"type\": \"markdown\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "markdown",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a cell switched to code",
+    "source": "[{\"op\": \"type\", \"at\": 1, \"type\": \"code\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "code",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"outputs\": [],\n   \"source\": [\n    \"# Title\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a cell switched to raw",
+    "source": "[{\"op\": \"type\", \"at\": 0, \"type\": \"raw\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "raw",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "an execution count set",
+    "source": "[{\"op\": \"count\", \"at\": 0, \"count\": 9}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 9
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 9,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "an execution count cleared",
+    "source": "[{\"op\": \"count\", \"at\": 0, \"count\": null}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": null
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "an execution count set where the file had none",
+    "source": "[{\"op\": \"count\", \"at\": 0, \"count\": 1}]\u0001{\"nbformat\":4,\"cells\":[{\"cell_type\":\"code\",\"source\":\"x\"}]}",
+    "parsed": {
+      "cells": [
+        {
+          "id": "cell@0",
+          "type": "code",
+          "source": "x",
+          "outputs": [],
+          "executionCount": 1
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"nbformat\": 4,\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"source\": \"x\",\n   \"execution_count\": 1\n  }\n ]\n}",
+    "language": "python"
+  },
+  {
+    "name": "outputs cleared",
+    "source": "[{\"op\": \"clear\", \"at\": 0}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "outputs cleared where there were none",
+    "source": "[{\"op\": \"clear\", \"at\": 0}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"metadata\": {},\n   \"outputs\": [],\n   \"source\": [\n    \"x = 1\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"metadata\": {},\n   \"source\": [\n    \"one\\n\",\n    \"two\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"language\": \"julia\",\n   \"name\": \"julia-1.10\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 0\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "cell@0",
+          "type": "code",
+          "source": "x = 1",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "cell@1",
+          "type": "markdown",
+          "source": "one\ntwo",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "julia"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"metadata\": {},\n   \"outputs\": [],\n   \"source\": [\n    \"x = 1\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"metadata\": {},\n   \"source\": [\n    \"one\\n\",\n    \"two\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"language\": \"julia\",\n   \"name\": \"julia-1.10\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 0\n}\n",
+    "language": "julia"
+  },
+  {
+    "name": "outputs trimmed to the first",
+    "source": "[{\"op\": \"keep\", \"at\": 0, \"to\": 1}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "outputs trimmed to all but the last",
+    "source": "[{\"op\": \"keep\", \"at\": 0, \"to\": 4}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"warned\\n\"\n     ]\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a cell dropped",
+    "source": "[{\"op\": \"drop\", \"at\": 1}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "every cell dropped",
+    "source": "[{\"op\": \"drop\", \"at\": 0}, {\"op\": \"drop\", \"at\": 0}, {\"op\": \"drop\", \"at\": 0}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a cell added",
+    "source": "[{\"op\": \"add\", \"at\": 1, \"type\": \"code\", \"id\": \"new1\", \"text\": \"y = 2\\n\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "new1",
+          "type": "code",
+          "source": "y = 2\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"new1\",\n   \"metadata\": {},\n   \"outputs\": [],\n   \"source\": [\n    \"y = 2\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a markdown cell added",
+    "source": "[{\"op\": \"add\", \"at\": 0, \"type\": \"markdown\", \"id\": \"new2\", \"text\": \"## Later\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "new2",
+          "type": "markdown",
+          "source": "## Later",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"new2\",\n   \"metadata\": {},\n   \"source\": [\n    \"## Later\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a cell added to a notebook with no ids",
+    "source": "[{\"op\": \"add\", \"at\": 2, \"type\": \"code\", \"id\": \"new3\", \"text\": \"z = 3\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"metadata\": {},\n   \"outputs\": [],\n   \"source\": [\n    \"x = 1\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"metadata\": {},\n   \"source\": [\n    \"one\\n\",\n    \"two\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"language\": \"julia\",\n   \"name\": \"julia-1.10\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 0\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "cell@0",
+          "type": "code",
+          "source": "x = 1",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "cell@1",
+          "type": "markdown",
+          "source": "one\ntwo",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "new3",
+          "type": "code",
+          "source": "z = 3",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "julia"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"metadata\": {},\n   \"outputs\": [],\n   \"source\": [\n    \"x = 1\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"metadata\": {},\n   \"source\": [\n    \"one\\n\",\n    \"two\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"metadata\": {},\n   \"outputs\": [],\n   \"source\": [\n    \"z = 3\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"language\": \"julia\",\n   \"name\": \"julia-1.10\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 0\n}\n",
+    "language": "julia"
+  },
+  {
+    "name": "cells moved",
+    "source": "[{\"op\": \"move\", \"at\": 0, \"to\": 2}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "a1b2",
+          "type": "code",
+          "source": "print('hello')\nprint('world')\n",
+          "outputs": [
+            {
+              "kind": "stream",
+              "name": "stdout",
+              "text": "hello\nworld\n"
+            },
+            {
+              "kind": "stream",
+              "name": "stderr",
+              "text": "warned\n"
+            },
+            {
+              "kind": "error",
+              "ename": "ValueError",
+              "evalue": "bad",
+              "traceback": [
+                "\u001b[0;31mValueError\u001b[0m",
+                "  line two"
+              ]
+            },
+            {
+              "kind": "display",
+              "data": {
+                "text/plain": [
+                  "42"
+                ],
+                "text/html": [
+                  "<b>42</b>"
+                ]
+              },
+              "executionCount": 3
+            },
+            {
+              "kind": "display",
+              "data": {
+                "image/png": "iVBOR"
+              },
+              "executionCount": null
+            }
+          ],
+          "executionCount": 3
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  },
+  {
+    "name": "a cell dropped and another added",
+    "source": "[{\"op\": \"drop\", \"at\": 0}, {\"op\": \"add\", \"at\": 0, \"type\": \"code\", \"id\": \"new4\", \"text\": \"q\"}]\u0001{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": 3,\n   \"id\": \"a1b2\",\n   \"metadata\": {\n    \"tags\": [\n     \"keep\"\n    ],\n    \"collapsed\": false\n   },\n   \"outputs\": [\n    {\n     \"name\": \"stdout\",\n     \"output_type\": \"stream\",\n     \"text\": [\n      \"hello\\n\",\n      \"world\\n\"\n     ]\n    },\n    {\n     \"name\": \"stderr\",\n     \"output_type\": \"stream\",\n     \"text\": \"warned\\n\"\n    },\n    {\n     \"ename\": \"ValueError\",\n     \"evalue\": \"bad\",\n     \"output_type\": \"error\",\n     \"traceback\": [\n      \"\\u001b[0;31mValueError\\u001b[0m\",\n      \"  line two\"\n     ]\n    },\n    {\n     \"data\": {\n      \"text/plain\": [\n       \"42\"\n      ],\n      \"text/html\": [\n       \"<b>42</b>\"\n      ]\n     },\n     \"execution_count\": 3,\n     \"metadata\": {},\n     \"output_type\": \"execute_result\"\n    },\n    {\n     \"data\": {\n      \"image/png\": \"iVBOR\"\n     },\n     \"metadata\": {\n      \"needs_background\": \"light\"\n     },\n     \"output_type\": \"display_data\"\n    }\n   ],\n   \"source\": [\n    \"print('hello')\\n\",\n    \"print('world')\\n\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "parsed": {
+      "cells": [
+        {
+          "id": "new4",
+          "type": "code",
+          "source": "q",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "c3d4",
+          "type": "markdown",
+          "source": "# Title\n",
+          "outputs": [],
+          "executionCount": null
+        },
+        {
+          "id": "e5f6",
+          "type": "raw",
+          "source": "",
+          "outputs": [],
+          "executionCount": null
+        }
+      ],
+      "language": "python"
+    },
+    "serialized": "{\n \"cells\": [\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"new4\",\n   \"metadata\": {},\n   \"outputs\": [],\n   \"source\": [\n    \"q\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"c3d4\",\n   \"metadata\": {},\n   \"source\": \"# Title\\n\"\n  },\n  {\n   \"cell_type\": \"raw\",\n   \"id\": \"e5f6\",\n   \"metadata\": {\n    \"format\": \"text/latex\"\n   },\n   \"source\": []\n  }\n ],\n \"metadata\": {\n  \"kernelspec\": {\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\",\n   \"name\": \"python3\"\n  },\n  \"language_info\": {\n   \"name\": \"python\",\n   \"version\": \"3.12.1\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n",
+    "language": "python"
+  }
+]

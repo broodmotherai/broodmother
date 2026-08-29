@@ -78,9 +78,10 @@ reach it, spelled once in `tsconfig.json` and once in `vitest.config.ts` because
 tsconfig paths and vite does not:
 
 ```
-@broodmother/types/*  ->  ../daemon/src/types/*
-@broodmother/*        ->  ../daemon/src/utils/*
-@daemon/*             ->  ../daemon/src/*
+@shared/*             ->  ../shared/src/*
+@broodmother/types/*  ->  ../shared/src/types/*
+@broodmother/*        ->  ../shared/src/utils/*
+@daemon/*             ->  ../shared/src/*
 ```
 
 The first two are what this app writes; the third is the daemon's own alias, which resolves
@@ -97,7 +98,7 @@ What keeps a browser out of `node:fs` is no longer where a file sits, because th
 graph now crosses into a package full of them. `__tests__/NoNodeApis.test.ts` follows the
 imports instead: from every shipped source, through the three aliases and the relative steps
 taken inside the daemon's tree, and it reads whatever it reaches — 45 daemon modules, today.
-`daemon/src/types/` is written to be reachable: a declaration shared with the browser lives
+`shared/src/types/` is written to be reachable: a declaration shared with the browser lives
 there, and the module that talks to git re-exports it.
 
 The alias table above is repeated in that test, and has to stay in step with the two configs.

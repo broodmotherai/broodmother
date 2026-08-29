@@ -7,8 +7,8 @@ const config: NextConfig = {
   devIndicators: false,
   // Next writes AGENTS.md/CLAUDE.md into the app root otherwise.
   agentRules: false,
-  // The repo root, not this app: the shared domain layer is the daemon's, so the module
-  // graph reaches a sibling package and turbopack has to be rooted where both live.
+  // The repo root, not this app: the shared domain layer is `shared/`, so the module graph
+  // reaches a sibling package and turbopack has to be rooted where both live.
   turbopack: { root: repo },
   // The desktop app ships this site as a server it starts itself, so the build has to
   // carry its own node_modules.

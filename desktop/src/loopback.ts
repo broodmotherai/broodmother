@@ -14,8 +14,8 @@ const SCHEMES = new Set(['http:', 'https:'])
  * the preview iframe is held off it — so a page that reached it could ask it for anything.
  *
  * This is a second copy of the rule the address bar applies, deliberately: the bar is in the
- * renderer, and a check the thing being checked can edit is not a check. `daemon`'s copy and
- * this one are held against each other in `daemon/__tests__/utils/loopback.test.ts`.
+ * renderer, and a check the thing being checked can edit is not a check. `shared`'s copy and this
+ * one are held against each other in `frontend/__tests__/shared/loopback.test.ts`.
  */
 export function isBrowsable(url: string): boolean {
   let parsed: URL

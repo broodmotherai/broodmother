@@ -1,0 +1,130 @@
+[
+  {
+    "name": "nothing",
+    "source": "[]",
+    "parsed": {
+      "message": "docs: update"
+    },
+    "serialized": "{\n  \"message\": \"docs: update\"\n}\n"
+  },
+  {
+    "name": "one document",
+    "source": "[\"notes/sync.md\"]",
+    "parsed": {
+      "message": "docs: update notes/sync"
+    },
+    "serialized": "{\n  \"message\": \"docs: update notes/sync\"\n}\n"
+  },
+  {
+    "name": "one document at the root",
+    "source": "[\"sync.md\"]",
+    "parsed": {
+      "message": "docs: update sync"
+    },
+    "serialized": "{\n  \"message\": \"docs: update sync\"\n}\n"
+  },
+  {
+    "name": "one document, uppercase extension",
+    "source": "[\"notes/Sync.MD\"]",
+    "parsed": {
+      "message": "docs: update notes/Sync"
+    },
+    "serialized": "{\n  \"message\": \"docs: update notes/Sync\"\n}\n"
+  },
+  {
+    "name": "one that is not markdown",
+    "source": "[\"logo.png\"]",
+    "parsed": {
+      "message": "docs: update logo.png"
+    },
+    "serialized": "{\n  \"message\": \"docs: update logo.png\"\n}\n"
+  },
+  {
+    "name": "two in the same folder",
+    "source": "[\"notes/a.md\", \"notes/b.md\"]",
+    "parsed": {
+      "message": "docs: update notes"
+    },
+    "serialized": "{\n  \"message\": \"docs: update notes\"\n}\n"
+  },
+  {
+    "name": "two in nested folders sharing a stem",
+    "source": "[\"notes/deep/a.md\", \"notes/deep/b.md\"]",
+    "parsed": {
+      "message": "docs: update notes/deep"
+    },
+    "serialized": "{\n  \"message\": \"docs: update notes/deep\"\n}\n"
+  },
+  {
+    "name": "two sharing only the first folder",
+    "source": "[\"notes/a/x.md\", \"notes/b/y.md\"]",
+    "parsed": {
+      "message": "docs: update notes"
+    },
+    "serialized": "{\n  \"message\": \"docs: update notes\"\n}\n"
+  },
+  {
+    "name": "two sharing nothing",
+    "source": "[\"a.md\", \"b.md\"]",
+    "parsed": {
+      "message": "docs: update 2 files"
+    },
+    "serialized": "{\n  \"message\": \"docs: update 2 files\"\n}\n"
+  },
+  {
+    "name": "two, one at the root",
+    "source": "[\"notes/a.md\", \"b.md\"]",
+    "parsed": {
+      "message": "docs: update 2 files"
+    },
+    "serialized": "{\n  \"message\": \"docs: update 2 files\"\n}\n"
+  },
+  {
+    "name": "many in one folder",
+    "source": "[\"docs/a.md\", \"docs/b.md\", \"docs/c.md\", \"docs/d.md\"]",
+    "parsed": {
+      "message": "docs: update docs"
+    },
+    "serialized": "{\n  \"message\": \"docs: update docs\"\n}\n"
+  },
+  {
+    "name": "many sharing nothing",
+    "source": "[\"a.md\", \"b.md\", \"c.md\", \"d.md\", \"e.md\"]",
+    "parsed": {
+      "message": "docs: update 5 files"
+    },
+    "serialized": "{\n  \"message\": \"docs: update 5 files\"\n}\n"
+  },
+  {
+    "name": "a deep shared path",
+    "source": "[\"a/b/c/one.md\", \"a/b/c/two.md\"]",
+    "parsed": {
+      "message": "docs: update a/b/c"
+    },
+    "serialized": "{\n  \"message\": \"docs: update a/b/c\"\n}\n"
+  },
+  {
+    "name": "one path is the prefix of the other's folder",
+    "source": "[\"a/b/one.md\", \"a/b/c/two.md\"]",
+    "parsed": {
+      "message": "docs: update a/b"
+    },
+    "serialized": "{\n  \"message\": \"docs: update a/b\"\n}\n"
+  },
+  {
+    "name": "unicode paths",
+    "source": "[\"notes/\\u65e5\\u672c\\u8a9e/a.md\", \"notes/\\u65e5\\u672c\\u8a9e/b.md\"]",
+    "parsed": {
+      "message": "docs: update notes/日本語"
+    },
+    "serialized": "{\n  \"message\": \"docs: update notes/日本語\"\n}\n"
+  },
+  {
+    "name": "a path with spaces",
+    "source": "[\"notes/a file.md\"]",
+    "parsed": {
+      "message": "docs: update notes/a file"
+    },
+    "serialized": "{\n  \"message\": \"docs: update notes/a file\"\n}\n"
+  }
+]

@@ -66,8 +66,19 @@ async function shellPath(): Promise<string | null> {
   }
 }
 
-/** One child, wired to this process's output so its log is the app's log, and remembered so
- *  that quitting takes it with us. */
+/** The daemon, which is a binary of its own rather than something run on Electron's Node. */
+function spawnDaemon(binary: string, env: NodeJS.ProcessEnv) {
+  const child = spawn(binary, [], {
+    cwd: path.dirname(binary),
+    env: { ...process.env, ...env },
+    stdio: 'inherit',
+  })
+  child.on('error', (cause) => console.error(`could not start ${binary}:`, cause))
+  started.push(child)
+}
+
+/** One child on Electron's own Node, wired to this process's output so its log is the app's
+ *  log, and remembered so that quitting takes it with us. */
 function run(directory: string, args: string[], env: NodeJS.ProcessEnv) {
   const child = spawn(process.execPath, args, {
     cwd: directory,
@@ -79,10 +90,9 @@ function run(directory: string, args: string[], env: NodeJS.ProcessEnv) {
 }
 
 /**
- * Both servers, unless something is already answering where they would go. `--import tsx` is
- * how the daemon runs: it is TypeScript on disk, the same files the repo runs, compiled in
- * memory at boot. Shipping a build of it would mean a second toolchain in here to keep the
- * path aliases working, and the transpile costs a second once.
+ * Both servers, unless something is already answering where they would go. The daemon is one
+ * compiled binary — it brings no runtime and needs none — and the site is a Next standalone
+ * server, which runs on the Node inside Electron.
  */
 export async function serve(): Promise<void> {
   if (!app.isPackaged) return
@@ -94,7 +104,7 @@ export async function serve(): Promise<void> {
   const inherited = PATH ? { PATH } : {}
 
   if (!(await held(API_PORT)))
-    run(daemon, ['--import', 'tsx', path.join(daemon, 'src', 'main.ts')], {
+    spawnDaemon(path.join(daemon, 'broodmotherd'), {
       ...inherited,
       BROODMOTHER_PORT: String(API_PORT),
       BROODMOTHER_WEB_ORIGINS: `http://127.0.0.1:${SITE_PORT},http://localhost:${SITE_PORT}`,

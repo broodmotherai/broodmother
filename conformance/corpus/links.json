@@ -1,0 +1,402 @@
+[
+  {
+    "name": "extract: nothing",
+    "source": "extract\u0001just prose\n",
+    "parsed": [],
+    "serialized": "[]\n"
+  },
+  {
+    "name": "extract: a wikilink",
+    "source": "extract\u0001see [[notes/sync]] for more\n",
+    "parsed": [
+      {
+        "kind": "wiki",
+        "target": "notes/sync",
+        "raw": "[[notes/sync]]",
+        "context": "see [[notes/sync]] for more"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"see [[notes/sync]] for more\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[notes/sync]]\",\n    \"target\": \"notes/sync\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: a wikilink with an alias",
+    "source": "extract\u0001see [[notes/sync|the sync note]]\n",
+    "parsed": [
+      {
+        "kind": "wiki",
+        "target": "notes/sync",
+        "raw": "[[notes/sync|the sync note]]",
+        "context": "see [[notes/sync|the sync note]]"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"see [[notes/sync|the sync note]]\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[notes/sync|the sync note]]\",\n    \"target\": \"notes/sync\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: a wikilink to a heading",
+    "source": "extract\u0001see [[notes/sync#today]]\n",
+    "parsed": [
+      {
+        "kind": "wiki",
+        "target": "notes/sync",
+        "raw": "[[notes/sync#today]]",
+        "context": "see [[notes/sync#today]]"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"see [[notes/sync#today]]\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[notes/sync#today]]\",\n    \"target\": \"notes/sync\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: a wikilink to a block",
+    "source": "extract\u0001see [[notes/sync^abc123]]\n",
+    "parsed": [
+      {
+        "kind": "wiki",
+        "target": "notes/sync",
+        "raw": "[[notes/sync^abc123]]",
+        "context": "see [[notes/sync^abc123]]"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"see [[notes/sync^abc123]]\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[notes/sync^abc123]]\",\n    \"target\": \"notes/sync\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: a wikilink with padding inside",
+    "source": "extract\u0001see [[  notes/sync  ]]\n",
+    "parsed": [
+      {
+        "kind": "wiki",
+        "target": "notes/sync",
+        "raw": "[[  notes/sync  ]]",
+        "context": "see [[  notes/sync  ]]"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"see [[  notes/sync  ]]\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[  notes/sync  ]]\",\n    \"target\": \"notes/sync\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: an empty wikilink",
+    "source": "extract\u0001see [[]] and [[   ]]\n",
+    "parsed": [],
+    "serialized": "[]\n"
+  },
+  {
+    "name": "extract: two on one line",
+    "source": "extract\u0001[[a]] and [[b]]\n",
+    "parsed": [
+      {
+        "kind": "wiki",
+        "target": "a",
+        "raw": "[[a]]",
+        "context": "[[a]] and [[b]]"
+      },
+      {
+        "kind": "wiki",
+        "target": "b",
+        "raw": "[[b]]",
+        "context": "[[a]] and [[b]]"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"[[a]] and [[b]]\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[a]]\",\n    \"target\": \"a\"\n  },\n  {\n    \"context\": \"[[a]] and [[b]]\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[b]]\",\n    \"target\": \"b\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: a markdown link",
+    "source": "extract\u0001see [the note](notes/sync.md)\n",
+    "parsed": [
+      {
+        "kind": "md",
+        "target": "notes/sync.md",
+        "raw": "[the note](notes/sync.md)",
+        "context": "see [the note](notes/sync.md)"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"see [the note](notes/sync.md)\",\n    \"kind\": \"md\",\n    \"raw\": \"[the note](notes/sync.md)\",\n    \"target\": \"notes/sync.md\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: a markdown link with a title",
+    "source": "extract\u0001[the note](notes/sync.md \"hover\")\n",
+    "parsed": [
+      {
+        "kind": "md",
+        "target": "notes/sync.md",
+        "raw": "[the note](notes/sync.md \"hover\")",
+        "context": "[the note](notes/sync.md \"hover\")"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"[the note](notes/sync.md \\\"hover\\\")\",\n    \"kind\": \"md\",\n    \"raw\": \"[the note](notes/sync.md \\\"hover\\\")\",\n    \"target\": \"notes/sync.md\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: a markdown link to a heading",
+    "source": "extract\u0001[x](notes/sync.md#today)\n",
+    "parsed": [
+      {
+        "kind": "md",
+        "target": "notes/sync.md",
+        "raw": "[x](notes/sync.md#today)",
+        "context": "[x](notes/sync.md#today)"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"[x](notes/sync.md#today)\",\n    \"kind\": \"md\",\n    \"raw\": \"[x](notes/sync.md#today)\",\n    \"target\": \"notes/sync.md\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: a markdown link that is only a heading",
+    "source": "extract\u0001[x](#today)\n",
+    "parsed": [],
+    "serialized": "[]\n"
+  },
+  {
+    "name": "extract: a markdown link to the web",
+    "source": "extract\u0001[x](https://example.invalid/a)\n",
+    "parsed": [],
+    "serialized": "[]\n"
+  },
+  {
+    "name": "extract: a markdown link with a scheme of its own",
+    "source": "extract\u0001[x](mailto:a@b)\n",
+    "parsed": [],
+    "serialized": "[]\n"
+  },
+  {
+    "name": "extract: a markdown link with an escape in it",
+    "source": "extract\u0001[x](notes/a%20file.md)\n",
+    "parsed": [
+      {
+        "kind": "md",
+        "target": "notes/a file.md",
+        "raw": "[x](notes/a%20file.md)",
+        "context": "[x](notes/a%20file.md)"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"[x](notes/a%20file.md)\",\n    \"kind\": \"md\",\n    \"raw\": \"[x](notes/a%20file.md)\",\n    \"target\": \"notes/a file.md\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: a markdown link with a broken escape",
+    "source": "extract\u0001[x](notes/100%25.md)\n",
+    "parsed": [
+      {
+        "kind": "md",
+        "target": "notes/100%.md",
+        "raw": "[x](notes/100%25.md)",
+        "context": "[x](notes/100%25.md)"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"[x](notes/100%25.md)\",\n    \"kind\": \"md\",\n    \"raw\": \"[x](notes/100%25.md)\",\n    \"target\": \"notes/100%.md\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: both kinds together",
+    "source": "extract\u0001[[a]] then [b](c.md)\n",
+    "parsed": [
+      {
+        "kind": "wiki",
+        "target": "a",
+        "raw": "[[a]]",
+        "context": "[[a]] then [b](c.md)"
+      },
+      {
+        "kind": "md",
+        "target": "c.md",
+        "raw": "[b](c.md)",
+        "context": "[[a]] then [b](c.md)"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"[[a]] then [b](c.md)\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[a]]\",\n    \"target\": \"a\"\n  },\n  {\n    \"context\": \"[[a]] then [b](c.md)\",\n    \"kind\": \"md\",\n    \"raw\": \"[b](c.md)\",\n    \"target\": \"c.md\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: the context is the trimmed line",
+    "source": "extract\u0001   - see [[a]]   \n",
+    "parsed": [
+      {
+        "kind": "wiki",
+        "target": "a",
+        "raw": "[[a]]",
+        "context": "- see [[a]]"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"- see [[a]]\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[a]]\",\n    \"target\": \"a\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: across lines",
+    "source": "extract\u0001[[a]]\n\n[[b]]\n",
+    "parsed": [
+      {
+        "kind": "wiki",
+        "target": "a",
+        "raw": "[[a]]",
+        "context": "[[a]]"
+      },
+      {
+        "kind": "wiki",
+        "target": "b",
+        "raw": "[[b]]",
+        "context": "[[b]]"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"[[a]]\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[a]]\",\n    \"target\": \"a\"\n  },\n  {\n    \"context\": \"[[b]]\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[b]]\",\n    \"target\": \"b\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: a link inside a code fence is still a link here",
+    "source": "extract\u0001```\n[[a]]\n```\n",
+    "parsed": [
+      {
+        "kind": "wiki",
+        "target": "a",
+        "raw": "[[a]]",
+        "context": "[[a]]"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"[[a]]\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[a]]\",\n    \"target\": \"a\"\n  }\n]\n"
+  },
+  {
+    "name": "extract: unicode targets",
+    "source": "extract\u0001[[notes/日本語]] and [x](notes/préséntation.md)\n",
+    "parsed": [
+      {
+        "kind": "wiki",
+        "target": "notes/日本語",
+        "raw": "[[notes/日本語]]",
+        "context": "[[notes/日本語]] and [x](notes/préséntation.md)"
+      },
+      {
+        "kind": "md",
+        "target": "notes/préséntation.md",
+        "raw": "[x](notes/préséntation.md)",
+        "context": "[[notes/日本語]] and [x](notes/préséntation.md)"
+      }
+    ],
+    "serialized": "[\n  {\n    \"context\": \"[[notes/日本語]] and [x](notes/préséntation.md)\",\n    \"kind\": \"wiki\",\n    \"raw\": \"[[notes/日本語]]\",\n    \"target\": \"notes/日本語\"\n  },\n  {\n    \"context\": \"[[notes/日本語]] and [x](notes/préséntation.md)\",\n    \"kind\": \"md\",\n    \"raw\": \"[x](notes/préséntation.md)\",\n    \"target\": \"notes/préséntation.md\"\n  }\n]\n"
+  },
+  {
+    "name": "resolve: an exact path",
+    "source": "resolve\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001notes/sync.md",
+    "parsed": {
+      "target": "notes/sync.md",
+      "resolved": "notes/sync.md"
+    },
+    "serialized": "{\n  \"resolved\": \"notes/sync.md\",\n  \"target\": \"notes/sync.md\"\n}\n"
+  },
+  {
+    "name": "resolve: a path without the extension",
+    "source": "resolve\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001notes/sync",
+    "parsed": {
+      "target": "notes/sync",
+      "resolved": "notes/sync.md"
+    },
+    "serialized": "{\n  \"resolved\": \"notes/sync.md\",\n  \"target\": \"notes/sync\"\n}\n"
+  },
+  {
+    "name": "resolve: a bare filename",
+    "source": "resolve\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001sync.md",
+    "parsed": {
+      "target": "sync.md",
+      "resolved": "sync.md"
+    },
+    "serialized": "{\n  \"resolved\": \"sync.md\",\n  \"target\": \"sync.md\"\n}\n"
+  },
+  {
+    "name": "resolve: a bare filename with no extension",
+    "source": "resolve\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001sync",
+    "parsed": {
+      "target": "sync",
+      "resolved": "sync.md"
+    },
+    "serialized": "{\n  \"resolved\": \"sync.md\",\n  \"target\": \"sync\"\n}\n"
+  },
+  {
+    "name": "resolve: the shortest wins where more than one answers",
+    "source": "resolve\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001a",
+    "parsed": {
+      "target": "a",
+      "resolved": "a.md"
+    },
+    "serialized": "{\n  \"resolved\": \"a.md\",\n  \"target\": \"a\"\n}\n"
+  },
+  {
+    "name": "resolve: nothing answers",
+    "source": "resolve\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001nowhere",
+    "parsed": {
+      "target": "nowhere",
+      "resolved": null
+    },
+    "serialized": "{\n  \"resolved\": null,\n  \"target\": \"nowhere\"\n}\n"
+  },
+  {
+    "name": "resolve: an empty target",
+    "source": "resolve\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001",
+    "parsed": {
+      "target": "",
+      "resolved": null
+    },
+    "serialized": "{\n  \"resolved\": null,\n  \"target\": \"\"\n}\n"
+  },
+  {
+    "name": "resolve: no documents at all",
+    "source": "resolve\u0001[]\u0001a",
+    "parsed": {
+      "target": "a",
+      "resolved": null
+    },
+    "serialized": "{\n  \"resolved\": null,\n  \"target\": \"a\"\n}\n"
+  },
+  {
+    "name": "resolve: a tie broken by the browser's order",
+    "source": "resolve\u0001[\"Ba.md\", \"aa.md\", \"ab.md\"]\u0001x",
+    "parsed": {
+      "target": "x",
+      "resolved": null
+    },
+    "serialized": "{\n  \"resolved\": null,\n  \"target\": \"x\"\n}\n"
+  },
+  {
+    "name": "resolve: case matters",
+    "source": "resolve\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001SYNC",
+    "parsed": {
+      "target": "SYNC",
+      "resolved": null
+    },
+    "serialized": "{\n  \"resolved\": null,\n  \"target\": \"SYNC\"\n}\n"
+  },
+  {
+    "name": "rewrite: a bare wikilink stays bare",
+    "source": "rewrite\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001notes/sync.md\u0001notes/archive/sync.md\u0001see [[sync]]\n",
+    "parsed": "see [[sync]]\n",
+    "serialized": "\"see [[sync]]\\n\"\n"
+  },
+  {
+    "name": "rewrite: a pathed wikilink keeps its path",
+    "source": "rewrite\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001notes/sync.md\u0001notes/archive/sync.md\u0001see [[notes/sync]]\n",
+    "parsed": "see [[notes/archive/sync]]\n",
+    "serialized": "\"see [[notes/archive/sync]]\\n\"\n"
+  },
+  {
+    "name": "rewrite: an alias survives",
+    "source": "rewrite\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001notes/sync.md\u0001notes/archive/sync.md\u0001see [[notes/sync|the note]]\n",
+    "parsed": "see [[notes/archive/sync|the note]]\n",
+    "serialized": "\"see [[notes/archive/sync|the note]]\\n\"\n"
+  },
+  {
+    "name": "rewrite: a markdown link is re-encoded",
+    "source": "rewrite\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001notes/sync.md\u0001notes/a file.md\u0001see [x](notes/sync.md)\n",
+    "parsed": "see [x](notes/a%20file.md)\n",
+    "serialized": "\"see [x](notes/a%20file.md)\\n\"\n"
+  },
+  {
+    "name": "rewrite: a link that points elsewhere is left alone",
+    "source": "rewrite\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001notes/sync.md\u0001b.md\u0001see [[a]] and [x](https://e.invalid)\n",
+    "parsed": "see [[a]] and [x](https://e.invalid)\n",
+    "serialized": "\"see [[a]] and [x](https://e.invalid)\\n\"\n"
+  },
+  {
+    "name": "rewrite: the same link twice",
+    "source": "rewrite\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001notes/sync.md\u0001moved.md\u0001[[notes/sync]] and again [[notes/sync]]\n",
+    "parsed": "[[moved]] and again [[moved]]\n",
+    "serialized": "\"[[moved]] and again [[moved]]\\n\"\n"
+  },
+  {
+    "name": "rewrite: nothing to rewrite",
+    "source": "rewrite\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001notes/sync.md\u0001moved.md\u0001just prose\n",
+    "parsed": "just prose\n",
+    "serialized": "\"just prose\\n\"\n"
+  },
+  {
+    "name": "rewrite: a unicode destination",
+    "source": "rewrite\u0001[\"notes/sync.md\", \"sync.md\", \"docs/plans/sync.md\", \"a.md\", \"deep/deeper/a.md\"]\u0001notes/sync.md\u0001notes/日本語.md\u0001see [x](notes/sync.md)\n",
+    "parsed": "see [x](notes/%E6%97%A5%E6%9C%AC%E8%AA%9E.md)\n",
+    "serialized": "\"see [x](notes/%E6%97%A5%E6%9C%AC%E8%AA%9E.md)\\n\"\n"
+  }
+]

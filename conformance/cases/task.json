@@ -1,0 +1,366 @@
+[
+  {
+    "name": "empty file",
+    "source": ""
+  },
+  {
+    "name": "whitespace only",
+    "source": "   \n  "
+  },
+  {
+    "name": "not JSON",
+    "source": "{version:1}"
+  },
+  {
+    "name": "a list rather than a task",
+    "source": "[]"
+  },
+  {
+    "name": "the task every task starts as",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"trigger\", \"kind\": \"trigger.manual\", \"name\": \"Trigger manually\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "the legacy manual name is taken forward",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"trigger\", \"kind\": \"trigger.manual\", \"name\": \"When run\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "a manual trigger named by hand keeps its name",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"trigger\", \"kind\": \"trigger.manual\", \"name\": \"Run the nightly\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "no nodes at all",
+    "source": "{\"version\": 1, \"nodes\": [], \"edges\": []}"
+  },
+  {
+    "name": "a node switched off",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"go\", \"off\": true}], \"edges\": []}"
+  },
+  {
+    "name": "off written as false is written as nothing",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"go\", \"off\": false}], \"edges\": []}"
+  },
+  {
+    "name": "off is not a boolean",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"go\", \"off\": \"yes\"}], \"edges\": []}"
+  },
+  {
+    "name": "interval trigger",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"interval-1\", \"kind\": \"trigger.interval\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"minutes\": 30}], \"edges\": []}"
+  },
+  {
+    "name": "interval of one minute",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"interval-1\", \"kind\": \"trigger.interval\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"minutes\": 1}], \"edges\": []}"
+  },
+  {
+    "name": "interval under a minute",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"interval-1\", \"kind\": \"trigger.interval\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"minutes\": 0}], \"edges\": []}"
+  },
+  {
+    "name": "interval of a fraction",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"interval-1\", \"kind\": \"trigger.interval\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"minutes\": 1.5}], \"edges\": []}"
+  },
+  {
+    "name": "interval with no minutes",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"interval-1\", \"kind\": \"trigger.interval\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "interval minutes as a string",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"interval-1\", \"kind\": \"trigger.interval\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"minutes\": \"30\"}], \"edges\": []}"
+  },
+  {
+    "name": "time trigger",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"time-1\", \"kind\": \"trigger.time\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"at\": \"09:00\"}], \"edges\": []}"
+  },
+  {
+    "name": "time trigger on days",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"time-1\", \"kind\": \"trigger.time\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"at\": \"23:59\", \"days\": [\"mon\", \"fri\"]}], \"edges\": []}"
+  },
+  {
+    "name": "an empty day list is written as nothing",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"time-1\", \"kind\": \"trigger.time\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"at\": \"09:00\", \"days\": []}], \"edges\": []}"
+  },
+  {
+    "name": "time at midnight",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"time-1\", \"kind\": \"trigger.time\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"at\": \"00:00\"}], \"edges\": []}"
+  },
+  {
+    "name": "time past midnight",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"time-1\", \"kind\": \"trigger.time\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"at\": \"24:00\"}], \"edges\": []}"
+  },
+  {
+    "name": "time without a leading zero",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"time-1\", \"kind\": \"trigger.time\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"at\": \"9:00\"}], \"edges\": []}"
+  },
+  {
+    "name": "days that is not a list",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"time-1\", \"kind\": \"trigger.time\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"at\": \"09:00\", \"days\": \"mon\"}], \"edges\": []}"
+  },
+  {
+    "name": "an unknown day",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"time-1\", \"kind\": \"trigger.time\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"at\": \"09:00\", \"days\": [\"monday\"]}], \"edges\": []}"
+  },
+  {
+    "name": "file trigger",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"file-1\", \"kind\": \"trigger.file\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"path\": \"notes/sync.md\"}], \"edges\": []}"
+  },
+  {
+    "name": "file trigger with no path",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"file-1\", \"kind\": \"trigger.file\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "issue watch, bare",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"issue-1\", \"kind\": \"trigger.github.issue\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "issue watch, every option",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"issue-1\", \"kind\": \"trigger.github.issue\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"repo\": \"broodmotherai/broodmother\", \"query\": \"label:bug\", \"minutes\": 15}], \"edges\": []}"
+  },
+  {
+    "name": "issue watch with an empty query",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"issue-1\", \"kind\": \"trigger.github.issue\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"query\": \"\"}], \"edges\": []}"
+  },
+  {
+    "name": "pull watch, every option",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"pull-1\", \"kind\": \"trigger.github.pull\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"repo\": \"broodmotherai/broodmother\", \"query\": \"review-requested:@me\", \"minutes\": 5}], \"edges\": []}"
+  },
+  {
+    "name": "mention watch",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"mention-1\", \"kind\": \"trigger.github.mention\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"minutes\": 10}], \"edges\": []}"
+  },
+  {
+    "name": "check watch",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"check-1\", \"kind\": \"trigger.github.check\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"branch\": \"main\", \"minutes\": 5}], \"edges\": []}"
+  },
+  {
+    "name": "a repo that is not an owner/name",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"issue-1\", \"kind\": \"trigger.github.issue\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"repo\": \"broodmother\"}], \"edges\": []}"
+  },
+  {
+    "name": "a repo with three parts",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"issue-1\", \"kind\": \"trigger.github.issue\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"repo\": \"a/b/c\"}], \"edges\": []}"
+  },
+  {
+    "name": "a repo with dots and dashes",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"issue-1\", \"kind\": \"trigger.github.issue\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"repo\": \"some-org/a.repo_name\"}], \"edges\": []}"
+  },
+  {
+    "name": "claude step, bare",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"Write the release notes\"}], \"edges\": []}"
+  },
+  {
+    "name": "claude step, every option",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"go\", \"persona\": \"dev/chad-manager\", \"minutes\": 20, \"retries\": 2}], \"edges\": []}"
+  },
+  {
+    "name": "retries of zero is written as nothing",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"go\", \"retries\": 0}], \"edges\": []}"
+  },
+  {
+    "name": "retries of a fraction",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"go\", \"retries\": 1.5}], \"edges\": []}"
+  },
+  {
+    "name": "negative retries",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"go\", \"retries\": -1}], \"edges\": []}"
+  },
+  {
+    "name": "claude step with no prompt",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "muse step, every option",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"muse-1\", \"kind\": \"agent.muse\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"go\", \"persona\": \"productivity/librarian\", \"minutes\": 5, \"retries\": 1}], \"edges\": []}"
+  },
+  {
+    "name": "shell step",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"shell-1\", \"kind\": \"agent.shell\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"command\": \"make test\", \"minutes\": 30, \"retries\": 3}], \"edges\": []}"
+  },
+  {
+    "name": "shell step with no command",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"shell-1\", \"kind\": \"agent.shell\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "approve step, bare",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"approve-1\", \"kind\": \"agent.approve\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "approve step with a question",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"approve-1\", \"kind\": \"agent.approve\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"question\": \"Ship it?\"}], \"edges\": []}"
+  },
+  {
+    "name": "notify step",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"notify-1\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "http step, every option",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"http-1\", \"kind\": \"agent.http\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"url\": \"https://example.invalid/hook\", \"method\": \"POST\", \"header\": \"Authorization: Bearer x\", \"minutes\": 2}], \"edges\": []}"
+  },
+  {
+    "name": "a lowercase method is taken uppercase",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"http-1\", \"kind\": \"agent.http\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"url\": \"u\", \"method\": \"get\"}], \"edges\": []}"
+  },
+  {
+    "name": "an unknown method",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"http-1\", \"kind\": \"agent.http\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"url\": \"u\", \"method\": \"fetch\"}], \"edges\": []}"
+  },
+  {
+    "name": "comment step, bare",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"comment-1\", \"kind\": \"agent.github.comment\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "comment step on a number",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"comment-1\", \"kind\": \"agent.github.comment\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"repo\": \"broodmotherai/broodmother\", \"number\": 42}], \"edges\": []}"
+  },
+  {
+    "name": "comment step on issue zero",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"comment-1\", \"kind\": \"agent.github.comment\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"number\": 0}], \"edges\": []}"
+  },
+  {
+    "name": "comment step on a fractional number",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"comment-1\", \"kind\": \"agent.github.comment\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"number\": 1.5}], \"edges\": []}"
+  },
+  {
+    "name": "pull step, every option",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"pull-1\", \"kind\": \"agent.github.pull\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"repo\": \"broodmotherai/broodmother\", \"base\": \"main\", \"head\": \"refactor\", \"title\": \"The port\", \"draft\": true}], \"edges\": []}"
+  },
+  {
+    "name": "draft written as false is still written",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"pull-1\", \"kind\": \"agent.github.pull\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"draft\": false}], \"edges\": []}"
+  },
+  {
+    "name": "draft that is not a boolean",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"pull-1\", \"kind\": \"agent.github.pull\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"draft\": \"yes\"}], \"edges\": []}"
+  },
+  {
+    "name": "gate step",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"gate-1\", \"kind\": \"agent.gate\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"pattern\": \"^FLAG\"}], \"edges\": []}"
+  },
+  {
+    "name": "gate step with an empty pattern",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"gate-1\", \"kind\": \"agent.gate\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"pattern\": \"\"}], \"edges\": []}"
+  },
+  {
+    "name": "gate step with a broken pattern",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"gate-1\", \"kind\": \"agent.gate\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"pattern\": \"[\"}], \"edges\": []}"
+  },
+  {
+    "name": "note step",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"note-1\", \"kind\": \"agent.note\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"path\": \"notes/log.md\", \"append\": true}], \"edges\": []}"
+  },
+  {
+    "name": "append written as false is still written",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"note-1\", \"kind\": \"agent.note\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"path\": \"notes/log.md\", \"append\": false}], \"edges\": []}"
+  },
+  {
+    "name": "an unknown kind",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"x-1\", \"kind\": \"agent.telepathy\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "a kind that is not there",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"x-1\", \"name\": \"A step\", \"x\": 0, \"y\": 0}], \"edges\": []}"
+  },
+  {
+    "name": "a kind that is not a string",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"x-1\", \"kind\": 5, \"name\": \"A step\", \"x\": 0, \"y\": 0}], \"edges\": []}"
+  },
+  {
+    "name": "no name",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"x-1\", \"kind\": \"agent.notify\", \"x\": 0, \"y\": 0}], \"edges\": []}"
+  },
+  {
+    "name": "x is not a number",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"x-1\", \"kind\": \"agent.notify\", \"name\": \"n\", \"x\": \"0\", \"y\": 0}], \"edges\": []}"
+  },
+  {
+    "name": "no id",
+    "source": "{\"version\": 1, \"nodes\": [{\"kind\": \"agent.notify\", \"name\": \"n\", \"x\": 0, \"y\": 0}], \"edges\": []}"
+  },
+  {
+    "name": "a node that is not an object",
+    "source": "{\"version\": 1, \"nodes\": [5], \"edges\": []}"
+  },
+  {
+    "name": "fractional coordinates",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"notify-1\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 0.5, \"y\": -0.25}], \"edges\": []}"
+  },
+  {
+    "name": "a coordinate past the exponent threshold",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"notify-1\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 1e+21, \"y\": -1e-07}], \"edges\": []}"
+  },
+  {
+    "name": "version two",
+    "source": "{\"version\": 2, \"nodes\": [{\"id\": \"notify-1\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "version as a string",
+    "source": "{\"version\": \"1\", \"nodes\": [{\"id\": \"notify-1\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "no version",
+    "source": "{\"nodes\":[],\"edges\":[]}"
+  },
+  {
+    "name": "nodes is not a list",
+    "source": "{\"version\":1,\"nodes\":{},\"edges\":[]}"
+  },
+  {
+    "name": "edges is not a list",
+    "source": "{\"version\":1,\"nodes\":[],\"edges\":{}}"
+  },
+  {
+    "name": "no edges",
+    "source": "{\"version\":1,\"nodes\":[]}"
+  },
+  {
+    "name": "node ids repeat",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"a\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}, {\"id\": \"a\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": []}"
+  },
+  {
+    "name": "a chain",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"trigger\", \"kind\": \"trigger.interval\", \"name\": \"Every 30 minutes\", \"x\": 80, \"y\": 120, \"minutes\": 30}, {\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"go\"}, {\"id\": \"notify-1\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": [{\"from\": \"trigger\", \"to\": \"claude-1\"}, {\"from\": \"claude-1\", \"to\": \"notify-1\"}]}"
+  },
+  {
+    "name": "an edge pointing at a missing node",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"a\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": [{\"from\": \"a\", \"to\": \"b\"}]}"
+  },
+  {
+    "name": "an edge pointing at itself",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"a\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": [{\"from\": \"a\", \"to\": \"a\"}]}"
+  },
+  {
+    "name": "an edge that is not an object",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"a\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": [5]}"
+  },
+  {
+    "name": "an edge with no from",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"a\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}, {\"id\": \"b\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": [{\"to\": \"b\"}]}"
+  },
+  {
+    "name": "an edge carrying more than it needs",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"a\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}, {\"id\": \"b\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": [{\"from\": \"a\", \"to\": \"b\", \"label\": \"then\"}]}"
+  },
+  {
+    "name": "a cycle, which the codec takes and the run refuses",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"a\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}, {\"id\": \"b\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120}], \"edges\": [{\"from\": \"a\", \"to\": \"b\"}, {\"from\": \"b\", \"to\": \"a\"}]}"
+  },
+  {
+    "name": "a prompt with angle brackets and an ampersand",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"if a < b && c > d, say <ok>\"}], \"edges\": []}"
+  },
+  {
+    "name": "a prompt with newlines and quotes",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"line one\\nline \\\"two\\\"\\ttabbed\"}], \"edges\": []}"
+  },
+  {
+    "name": "a prompt with unicode",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"préséntation — ✅ 日本語\"}], \"edges\": []}"
+  },
+  {
+    "name": "a name with a slash in it",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"claude-1\", \"kind\": \"agent.claude\", \"name\": \"notes/sync — nightly\", \"x\": 80, \"y\": 120, \"prompt\": \"go\"}], \"edges\": []}"
+  },
+  {
+    "name": "fields a kind does not carry are dropped",
+    "source": "{\"version\": 1, \"nodes\": [{\"id\": \"notify-1\", \"kind\": \"agent.notify\", \"name\": \"A step\", \"x\": 80, \"y\": 120, \"prompt\": \"go\", \"minutes\": 5, \"repo\": \"a/b\"}], \"edges\": []}"
+  }
+]

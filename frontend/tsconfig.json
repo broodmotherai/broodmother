@@ -17,9 +17,10 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./*"],
-      "@daemon/*": ["../daemon/src/*"],
-      "@broodmother/types/*": ["../daemon/src/types/*"],
-      "@broodmother/*": ["../daemon/src/utils/*"]
+      "@shared/*": ["../shared/src/*"],
+      "@daemon/*": ["../shared/src/*"],
+      "@broodmother/types/*": ["../shared/src/types/*"],
+      "@broodmother/*": ["../shared/src/utils/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.mts", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],

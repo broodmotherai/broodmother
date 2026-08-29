@@ -10,9 +10,10 @@ export default defineConfig({
   // next reads the tsconfig paths; vite does not, so it is spelled out here.
   resolve: {
     alias: [
-      { find: /^@daemon\/(.*)$/, replacement: `${here}/../daemon/src/$1.ts` },
-      { find: /^@broodmother\/types\/(.*)$/, replacement: `${here}/../daemon/src/types/$1.ts` },
-      { find: /^@broodmother\/(.*)$/, replacement: `${here}/../daemon/src/utils/$1.ts` },
+      { find: /^@shared\/(.*)$/, replacement: `${here}/../shared/src/$1.ts` },
+      { find: /^@daemon\/(.*)$/, replacement: `${here}/../shared/src/$1.ts` },
+      { find: /^@broodmother\/types\/(.*)$/, replacement: `${here}/../shared/src/types/$1.ts` },
+      { find: /^@broodmother\/(.*)$/, replacement: `${here}/../shared/src/utils/$1.ts` },
       { find: /^@\/(.*)$/, replacement: `${here}/$1` },
     ],
   },

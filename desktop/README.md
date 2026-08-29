@@ -34,7 +34,7 @@ Alone it loads `http://127.0.0.1:4243` — the frontend on its default port, whi
 daemon on `4242` — so the two of them have to be up beside it:
 
 ```sh
-(cd ../daemon && npm run dev)
+(cd ../daemon-go && make dev)
 (cd ../frontend && npm run dev)
 ```
 

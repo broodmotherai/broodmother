@@ -3,14 +3,15 @@ import { dirname, join, resolve } from 'node:path'
 import { expect, it } from 'vitest'
 
 const root = join(import.meta.dirname, '..')
-const daemonSrc = join(root, '..', 'daemon', 'src')
+const sharedSrc = join(root, '..', 'shared', 'src')
 const banned = /['"](node:)?(fs|fs\/promises|child_process)['"]/
 
 /** Longest first: `@broodmother/types/` is a prefix of `@broodmother/`. */
 const ALIASES: [string, string][] = [
-  ['@broodmother/types/', join(daemonSrc, 'types')],
-  ['@broodmother/', join(daemonSrc, 'utils')],
-  ['@daemon/', daemonSrc],
+  ['@broodmother/types/', join(sharedSrc, 'types')],
+  ['@broodmother/', join(sharedSrc, 'utils')],
+  ['@shared/', sharedSrc],
+  ['@daemon/', sharedSrc],
 ]
 
 function sources(dir: string): string[] {
@@ -52,7 +53,7 @@ function target(file: string, specifier: string): string | null {
   for (const [alias, tree] of ALIASES)
     if (specifier.startsWith(alias))
       return `${join(tree, specifier.slice(alias.length))}.ts`
-  if (specifier.startsWith('.') && file.startsWith(daemonSrc))
+  if (specifier.startsWith('.') && file.startsWith(sharedSrc))
     return `${resolve(dirname(file), specifier)}.ts`
   return null
 }

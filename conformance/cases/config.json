@@ -1,0 +1,194 @@
+[
+  {
+    "name": "a config as it is written",
+    "source": "{\"projectPath\": \"/tmp/a\", \"profile\": \"Michael\", \"checkouts\": {\"/tmp/a\": \"local\"}, \"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000, \"trailers\": false}}, \"repo\": {\"/tmp/a\": null}, \"repoBranch\": {\"/tmp/a#broodmother\": \"refactor\"}}"
+  },
+  {
+    "name": "a first run",
+    "source": "{\"projectPath\": null, \"profile\": null, \"checkouts\": {}, \"git\": {}, \"repo\": {}, \"repoBranch\": {}}"
+  },
+  {
+    "name": "nothing at all",
+    "source": ""
+  },
+  {
+    "name": "not JSON",
+    "source": "{projectPath: null}"
+  },
+  {
+    "name": "a list rather than a config",
+    "source": "[]"
+  },
+  {
+    "name": "a number rather than a config",
+    "source": "42"
+  },
+  {
+    "name": "null rather than a config",
+    "source": "null"
+  },
+  {
+    "name": "an empty object",
+    "source": "{}"
+  },
+  {
+    "name": "every field of the wrong type",
+    "source": "{\"projectPath\": 1, \"profile\": [], \"checkouts\": \"x\", \"git\": 2, \"repo\": false, \"repoBranch\": null}"
+  },
+  {
+    "name": "a project path that is empty",
+    "source": "{\"projectPath\": \"\"}"
+  },
+  {
+    "name": "a profile that is null",
+    "source": "{\"profile\": null}"
+  },
+  {
+    "name": "more than one project",
+    "source": "{\"projectPath\": \"/tmp/a\", \"profile\": \"Michael\", \"checkouts\": {\"/tmp/a\": \"local\", \"/tmp/b\": \"refactor\", \"/tmp/c\": \"main\"}, \"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000, \"trailers\": false}}, \"repo\": {\"/tmp/a\": null}, \"repoBranch\": {\"/tmp/a#broodmother\": \"refactor\"}}"
+  },
+  {
+    "name": "a checkout with an empty key",
+    "source": "{\"checkouts\": {\"\": \"local\"}}"
+  },
+  {
+    "name": "a checkout with an empty value",
+    "source": "{\"checkouts\": {\"/tmp/a\": \"\"}}"
+  },
+  {
+    "name": "a checkout whose value is not a string",
+    "source": "{\"checkouts\": {\"/tmp/a\": 3}}"
+  },
+  {
+    "name": "git settings with no trailers",
+    "source": "{\"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000}}}"
+  },
+  {
+    "name": "git settings with trailers on",
+    "source": "{\"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": false, \"pull\": false, \"push\": false, \"idleMs\": 2000, \"trailers\": true}}}"
+  },
+  {
+    "name": "git settings under a second",
+    "source": "{\"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 999}}}"
+  },
+  {
+    "name": "git settings at exactly a second",
+    "source": "{\"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 1000}}}"
+  },
+  {
+    "name": "git settings with a fractional idle",
+    "source": "{\"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 1000.5}}}"
+  },
+  {
+    "name": "git settings missing a switch",
+    "source": "{\"git\": {\"/tmp/a\": {\"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000}}}"
+  },
+  {
+    "name": "git settings with a key nobody asked for",
+    "source": "{\"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000, \"trailers\": false, \"remote\": \"origin\"}}}"
+  },
+  {
+    "name": "git settings that are not an object",
+    "source": "{\"git\": {\"/tmp/a\": true}}"
+  },
+  {
+    "name": "a repo scoped to the project itself",
+    "source": "{\"repo\": {\"/tmp/a\": null}}"
+  },
+  {
+    "name": "a repo scoped to a repo",
+    "source": "{\"repo\": {\"/tmp/a\": \"broodmother\"}}"
+  },
+  {
+    "name": "a repo scoped to an empty name",
+    "source": "{\"repo\": {\"/tmp/a\": \"\"}}"
+  },
+  {
+    "name": "one bad field costs only itself",
+    "source": "{\"projectPath\": \"/tmp/a\", \"profile\": \"Michael\", \"checkouts\": 7, \"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000, \"trailers\": false}}, \"repo\": {\"/tmp/a\": null}, \"repoBranch\": {\"/tmp/a#broodmother\": \"refactor\"}}"
+  },
+  {
+    "name": "two bad fields",
+    "source": "{\"projectPath\": \"/tmp/a\", \"profile\": \"Michael\", \"checkouts\": 7, \"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000, \"trailers\": false}}, \"repo\": 9, \"repoBranch\": {\"/tmp/a#broodmother\": \"refactor\"}}"
+  },
+  {
+    "name": "the older name for the open project",
+    "source": "{\"vaultPath\": \"/tmp/legacy\"}"
+  },
+  {
+    "name": "the older name is ignored where the current one is said",
+    "source": "{\"projectPath\": null, \"vaultPath\": \"/tmp/legacy\"}"
+  },
+  {
+    "name": "the older name is ignored where the current one has a value",
+    "source": "{\"projectPath\": \"/tmp/a\", \"vaultPath\": \"/tmp/legacy\"}"
+  },
+  {
+    "name": "the older name, empty",
+    "source": "{\"vaultPath\": \"\"}"
+  },
+  {
+    "name": "the older names for the repo fields",
+    "source": "{\"project\": {\"/tmp/a\": \"broodmother\"}, \"projectBranch\": {\"/tmp/a#broodmother\": \"refactor\"}}"
+  },
+  {
+    "name": "the older repo names are ignored where the current ones are said",
+    "source": "{\"repo\": {}, \"repoBranch\": {}, \"project\": {\"/tmp/a\": \"x\"}, \"projectBranch\": {\"/tmp/a#x\": \"y\"}}"
+  },
+  {
+    "name": "the older repo names, malformed",
+    "source": "{\"project\": 5, \"projectBranch\": {\"\": \"y\"}}"
+  },
+  {
+    "name": "sync as one switch for the whole machine",
+    "source": "{\"projectPath\": \"/tmp/a\", \"syncEnabled\": true, \"syncIdleMs\": 30000}"
+  },
+  {
+    "name": "sync switched off, machine-wide",
+    "source": "{\"projectPath\": \"/tmp/a\", \"syncEnabled\": false}"
+  },
+  {
+    "name": "a machine-wide idle and nothing else",
+    "source": "{\"projectPath\": \"/tmp/a\", \"syncIdleMs\": 45000}"
+  },
+  {
+    "name": "the newer idle name wins over the older",
+    "source": "{\"projectPath\": \"/tmp/a\", \"idleMs\": 20000, \"syncIdleMs\": 45000}"
+  },
+  {
+    "name": "an idle of null falls through to the older name",
+    "source": "{\"projectPath\": \"/tmp/a\", \"idleMs\": null, \"syncIdleMs\": 45000}"
+  },
+  {
+    "name": "a machine-wide idle under a second",
+    "source": "{\"projectPath\": \"/tmp/a\", \"syncEnabled\": true, \"syncIdleMs\": 500}"
+  },
+  {
+    "name": "a machine-wide idle with a fraction",
+    "source": "{\"projectPath\": \"/tmp/a\", \"syncIdleMs\": 45000.7}"
+  },
+  {
+    "name": "a machine-wide idle that is not a number",
+    "source": "{\"projectPath\": \"/tmp/a\", \"syncIdleMs\": \"45000\"}"
+  },
+  {
+    "name": "machine-wide sync where the project already has its own",
+    "source": "{\"projectPath\": \"/tmp/a\", \"profile\": \"Michael\", \"checkouts\": {\"/tmp/a\": \"local\"}, \"git\": {\"/tmp/a\": {\"enabled\": true, \"autoCommit\": true, \"pull\": true, \"push\": true, \"idleMs\": 10000, \"trailers\": false}}, \"repo\": {\"/tmp/a\": null}, \"repoBranch\": {\"/tmp/a#broodmother\": \"refactor\"}, \"syncEnabled\": false, \"syncIdleMs\": 45000}"
+  },
+  {
+    "name": "machine-wide sync with no project open",
+    "source": "{\"syncEnabled\": true, \"syncIdleMs\": 30000}"
+  },
+  {
+    "name": "the bindings a project had before it sat in a profile",
+    "source": "{\"profiles\": {\"/tmp/a\": \"Michael\", \"/tmp/b\": \"Someone\"}}"
+  },
+  {
+    "name": "bindings that are not a map",
+    "source": "{\"profiles\": 5}"
+  },
+  {
+    "name": "bindings with an empty name",
+    "source": "{\"profiles\": {\"/tmp/a\": \"\"}}"
+  }
+]

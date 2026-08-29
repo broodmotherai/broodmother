@@ -23,9 +23,8 @@ vet:
 test: vet
 
 # What the .app carries besides the window. The site is built as a Next standalone server —
-# its own `node_modules`, its own `server.js` — and the daemon goes in as the source it is,
-# because `tsx` is what runs it here the same as in a checkout. Neither tree brings a Node:
-# Electron already has one, and `serve.ts` starts both children on it.
+# its own `node_modules`, its own `server.js` — and runs on the Node inside Electron. The
+# daemon is one compiled binary and brings nothing at all.
 bundle: build/icon.icns
 	rm -rf build/site build/daemon
 	mkdir -p build/site build/daemon
@@ -33,8 +32,7 @@ bundle: build/icon.icns
 	cp -R ../frontend/.next/standalone/. build/site/
 	cp -R ../frontend/.next/static build/site/frontend/.next/static
 	cp -R ../frontend/public build/site/frontend/public
-	cp -R ../daemon/src ../daemon/package.json ../daemon/tsconfig.json build/daemon/
-	cp -R ../daemon/node_modules build/daemon/node_modules
+	cd ../daemon-go && go build -o ../desktop/build/daemon/broodmotherd ./cmd/daemon
 
 # The app's own mark, at every size the Finder asks for. `sips` and `iconutil` are macOS's
 # own, so the icon costs the repo no dependency.
