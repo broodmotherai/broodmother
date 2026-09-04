@@ -20,9 +20,7 @@ import (
 	"github.com/broodmotherai/broodmother/daemon/internal/tree"
 )
 
-// Root is the tree a request named: the project's, or one of its repos'. A repo is opened on
-// demand rather than held — its tree is a folder on disk either way, and until there is a watcher
-// there is nothing to keep open between requests.
+// Root is the tree a request named: the project's, or one of its repos'.
 func (c *Context) Root(root doc.Root) (*Open, error) {
 	if name, isRepo := root.Repo(); isRepo {
 		return c.Repo(name)
@@ -37,7 +35,8 @@ func (c *Context) Root(root doc.Root) (*Open, error) {
 }
 
 // Repo is one of the open project's repos, standing on whichever checkout the config has it
-// open on.
+// open on. The held one, with its watchers, where the project has been opened since the config
+// last moved; opened on demand where a request lands in the moment between.
 func (c *Context) Repo(name string) (*Open, error) {
 	open, err := c.Workspace.RequireProject()
 	if err != nil {
@@ -46,14 +45,18 @@ func (c *Context) Repo(name string) (*Open, error) {
 	if repo.Find(open.Path, name) == nil {
 		return nil, apperr.NoRepof("no repo named %q in this project", name)
 	}
-	return openProject(c.Workspace.RepoCheckout(open.Path, name)), nil
+	checkout := c.Workspace.RepoCheckout(open.Path, name)
+	c.mutex.RLock()
+	held := c.repos[name]
+	c.mutex.RUnlock()
+	if held != nil && held.Path == checkout {
+		return held, nil
+	}
+	return openProject(checkout), nil
 }
 
 // Sites is every checkout a board can live in: the project, and every repo it holds. Tasks run
 // from them and diagrams are drawn in them, and both are found the same way.
-//
-// A repo's is opened here rather than held, which is what a repo's tree is everywhere else in
-// this daemon.
 func (c *Context) Sites() []diagrams.Site {
 	sites := []diagrams.Site{}
 	open, err := c.Root(doc.Project)

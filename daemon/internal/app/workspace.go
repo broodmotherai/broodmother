@@ -247,6 +247,7 @@ func (w *Workspace) AddRepo(input repo.New) (repo.Summary, error) {
 	if _, err := w.SetScope(doc.RepoRoot(made.Name)); err != nil {
 		return repo.Summary{}, err
 	}
+	w.deps.Reopen()
 	return made, nil
 }
 
@@ -265,8 +266,11 @@ func (w *Workspace) RemoveRepo(name string) error {
 	if scoped, said := next.Repo[open.Path]; said && scoped != nil && *scoped == name {
 		next.Repo[open.Path] = nil
 	}
-	_, err = w.deps.Store.Save(next)
-	return err
+	if _, err := w.deps.Store.Save(next); err != nil {
+		return err
+	}
+	w.deps.Reopen()
+	return nil
 }
 
 // SetScope records which tree the tabs are about: the project itself, or one of its repos.

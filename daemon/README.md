@@ -222,16 +222,9 @@ It syncs. The loop wakes every second, commits once the project has been quiet f
 period, pulls, pushes, and latches a conflict until it is cleared — held to the TypeScript by
 running both against their own remotes and diffing the histories they wrote.
 
-A repo's tree opens on demand rather than being held between requests: it is a folder on disk
-either way, and until there is a watcher there is nothing to keep open. That is the whole of what
-a `repo:` root costs here — it is answered for the same as the project's, and the one place it
-shows is `GET /api/tree`, which reports the trees it holds and so reports no repos at all.
+A repo's tree is held and watched the way the project's is, one per repo on whichever checkout the config has it open on, because the sidebar draws all of them at once and a commit made in one from a shell has to reach its rows. The folder the repos live in is watched too, so a repository cloned into it by hand is listed without anybody telling the daemon. A `repo:` root is answered for the same as the project's; what it does not get is the link index and the sync loop, which are the project's idea.
 
-It watches, and it reports. A document changed behind the daemon's back updates the link index
-and reaches every open `/ws` socket, and so does the sync loop's status. The tree's watcher is
-fsnotify where the TypeScript's was chokidar; the repository's polls `index` and `HEAD`, which is
-what the TypeScript already did and for the reason it gave — git replaces the index by renaming
-a lockfile over it, and an event watch follows the orphaned inode into silence.
+It watches, and it reports. A document changed behind the daemon's back updates the link index and reaches every open `/ws` socket, and so does the sync loop's status. The tree's watcher is fsnotify where the TypeScript's was chokidar; the repository's polls `index`, `HEAD`, the branch HEAD names and `packed-refs`, for the reason the TypeScript gave about the first of them — git replaces the index by renaming a lockfile over it, and an event watch follows the orphaned inode into silence. The branch is polled as well because a reset or an amend moves it and nothing else, and the letters in the sidebar move with it.
 
 Every write files an act, and a commit carries the trailers the ledger asks for where the project
 has turned them on. `ledger/say.go` is the ledger in words — the line under a document — so what

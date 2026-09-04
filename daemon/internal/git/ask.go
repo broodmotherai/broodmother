@@ -46,6 +46,12 @@ func (g *Git) RemoteURL() string { return g.first("remote", "get-url", "origin")
 // which is what a worktree's `.git` file points at. Empty where there is no repository.
 func (g *Git) GitDir() string { return g.first("rev-parse", "--absolute-git-dir") }
 
+// CommonDir is where the refs are: the clone's own `.git`, which a worktree's GitDir is a folder
+// inside of. Empty where there is no repository.
+func (g *Git) CommonDir() string {
+	return g.first("rev-parse", "--path-format=absolute", "--git-common-dir")
+}
+
 func (g *Git) first(args ...string) string {
 	out, err := g.Run(args...)
 	if err != nil || out.failed() {

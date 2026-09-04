@@ -2,8 +2,11 @@ package watch
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -175,5 +178,120 @@ func TestIsSkippedAsksEveryAncestor(t *testing.T) {
 		if got := IsSkipped(root, one.path, skipped); got != one.want {
 			t.Errorf("IsSkipped(%q) = %v, want %v", one.path, got, one.want)
 		}
+	}
+}
+
+// A repository to watch, made the way the git package's own tests make one.
+func repository(t *testing.T, dir string) {
+	t.Helper()
+	for _, args := range [][]string{
+		{"init", "-q", "-b", "main", "."},
+		{"config", "user.name", "M"},
+		{"config", "user.email", "m@x"},
+		{"commit", "-q", "--allow-empty", "-m", "one"},
+		{"commit", "-q", "--allow-empty", "-m", "two"},
+	} {
+		run(t, dir, args...)
+	}
+}
+
+func run(t *testing.T, dir string, args ...string) string {
+	t.Helper()
+	command := exec.Command("git", args...)
+	command.Dir = dir
+	out, err := command.CombinedOutput()
+	if err != nil {
+		t.Fatalf("git %v: %v %s", args, err, out)
+	}
+	return strings.TrimSpace(string(out))
+}
+
+// counted is how many times a watch said something, asked for once it has had time to.
+type counted struct{ hits atomic.Int32 }
+
+func (c *counted) hit() { c.hits.Add(1) }
+
+func (c *counted) settled() int32 {
+	time.Sleep(3 * poll)
+	return c.hits.Load()
+}
+
+// A soft reset moves the branch and nothing else — not the index, not HEAD — and the letters in
+// the sidebar change with it, so the poll has to be looking at the branch too.
+func TestNoticesTheBranchMovingUnderneathTheCheckout(t *testing.T) {
+	dir := t.TempDir()
+	repository(t, dir)
+	told := &counted{}
+	held := WatchRepo(dir, told.hit)
+	if held == nil {
+		t.Fatal("no watch over a repository")
+	}
+	t.Cleanup(held.Close)
+	told.settled()
+
+	run(t, dir, "reset", "-q", "--soft", "HEAD~1")
+	if told.settled() == 0 {
+		t.Error("the branch moved and nothing was said")
+	}
+}
+
+// A worktree's refs live in the clone it was cut from, beside somebody else's index.
+func TestFollowsAWorktreesBranchIntoTheCloneItCameFrom(t *testing.T) {
+	clone := t.TempDir()
+	repository(t, clone)
+	worktree := filepath.Join(t.TempDir(), "other")
+	run(t, clone, "worktree", "add", "-q", "-b", "other", worktree)
+	told := &counted{}
+	held := WatchRepo(worktree, told.hit)
+	if held == nil {
+		t.Fatal("no watch over a worktree")
+	}
+	t.Cleanup(held.Close)
+	told.settled()
+
+	earlier := run(t, worktree, "rev-parse", "HEAD~1")
+	run(t, worktree, "update-ref", "refs/heads/other", earlier)
+	if told.settled() == 0 {
+		t.Error("the worktree's branch moved and nothing was said")
+	}
+}
+
+func TestAFolderWithNoRepositoryHasNothingToWatch(t *testing.T) {
+	if held := WatchRepo(t.TempDir(), func() {}); held != nil {
+		held.Close()
+		t.Error("stood a watch over a folder with no git in it")
+	}
+}
+
+// The folder watcher says that the listing moved, and nothing about what is inside anything
+// listed.
+func TestReportsAFolderAppearingAndNothingInsideIt(t *testing.T) {
+	dir := t.TempDir()
+	told := &counted{}
+	held, err := WatchFolder(dir, told.hit)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { held.Close() })
+	time.Sleep(100 * time.Millisecond)
+
+	if err := os.MkdirAll(filepath.Join(dir, "api"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(settle + 200*time.Millisecond)
+	if told.hits.Load() != 1 {
+		t.Fatalf("a folder appeared and it was said %d times", told.hits.Load())
+	}
+
+	write(t, dir, "api/local/README.md", "x\n")
+	time.Sleep(settle + 200*time.Millisecond)
+	if told.hits.Load() != 1 {
+		t.Errorf("a write inside a listed folder was reported as the listing moving")
+	}
+}
+
+func TestCannotWatchAFolderThatIsNotThere(t *testing.T) {
+	if _, err := WatchFolder(filepath.Join(t.TempDir(), "missing"), func() {}); err == nil {
+		t.Error("stood a watch over a folder that does not exist")
 	}
 }

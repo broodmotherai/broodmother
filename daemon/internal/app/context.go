@@ -15,6 +15,7 @@ import (
 	"github.com/broodmotherai/broodmother/daemon/internal/chat"
 	"github.com/broodmotherai/broodmother/daemon/internal/chats"
 	"github.com/broodmotherai/broodmother/daemon/internal/config"
+	"github.com/broodmotherai/broodmother/daemon/internal/constants"
 	"github.com/broodmotherai/broodmother/daemon/internal/doc"
 	"github.com/broodmotherai/broodmother/daemon/internal/entities"
 	"github.com/broodmotherai/broodmother/daemon/internal/git"
@@ -33,6 +34,7 @@ import (
 	"github.com/broodmotherai/broodmother/daemon/internal/tasks"
 	"github.com/broodmotherai/broodmother/daemon/internal/terminal"
 	"github.com/broodmotherai/broodmother/daemon/internal/tree"
+	"github.com/broodmotherai/broodmother/daemon/internal/watch"
 )
 
 // Home is where broodmother keeps everything. It lives with the profiles, which is what is kept
@@ -105,7 +107,17 @@ type Context struct {
 
 	mutex sync.RWMutex
 	open  *Open
-	sync  *syncloop.Loop
+	// repos is every repo of the open project, each standing on the checkout the config names
+	// for it and watched the way the project is — the sidebar draws all of them at once, and a
+	// commit made in one from a shell has to reach its rows.
+	repos map[string]*Open
+	// reposWatch follows the folder the repos live in, so one cloned into it by hand is listed
+	// without anybody telling the daemon.
+	reposWatch *watch.Folder
+	sync       *syncloop.Loop
+	// reopening serialises the repos being opened: the config moving and the folder moving can
+	// say so in the same moment, and two openings of one repo would be two watchers over it.
+	reopening sync.Mutex
 }
 
 func New(options Options) (*Context, error) {
@@ -132,7 +144,7 @@ func New(options Options) (*Context, error) {
 	if cron == nil {
 		cron = tasks.SystemCrontab()
 	}
-	ctx := &Context{Home: home, Store: store, Relay: relay.New()}
+	ctx := &Context{Home: home, Store: store, Relay: relay.New(), repos: map[string]*Open{}}
 	ctx.wire()
 	ctx.Entities = entities.NewStore(entities.Deps{
 		Tree:  func() *tree.Tree { return ctx.projectTree() },
@@ -331,11 +343,100 @@ func (c *Context) UseProject() {
 	if open != nil {
 		open.watch(c, doc.Project)
 	}
+	// The repos folder is watched afresh: the project may have moved, and a watch that was
+	// standing over a folder since deleted and made again is standing over nothing.
+	c.dropReposWatch()
+	c.useRepos()
 	// The project underneath changed, so what the status line says about syncing has to. A clone
 	// and a plain folder do not report the same thing.
 	if c.sync != nil {
 		c.sync.Refresh()
 	}
+}
+
+// useRepos opens every repo of the open project on the checkout the config names for it, drops
+// the ones that went or moved, and stands the watch over the folder they live in. Called whenever
+// the config moves under it and whenever that folder does; either is a reason to look again.
+func (c *Context) useRepos() {
+	c.reopening.Lock()
+	defer c.reopening.Unlock()
+
+	wanted := map[string]string{}
+	if open := c.Workspace.Project(); open != nil {
+		for _, one := range c.Workspace.Repos() {
+			wanted[one.Name] = c.Workspace.RepoCheckout(open.Path, one.Name)
+		}
+	}
+
+	c.mutex.RLock()
+	dropped := []*Open{}
+	missing := map[string]string{}
+	for name, held := range c.repos {
+		if wanted[name] != held.Path {
+			dropped = append(dropped, held)
+		}
+	}
+	for name, checkout := range wanted {
+		if held := c.repos[name]; held == nil || held.Path != checkout {
+			missing[name] = checkout
+		}
+	}
+	c.mutex.RUnlock()
+
+	opened := map[string]*Open{}
+	for name, checkout := range missing {
+		opened[name] = openProject(checkout)
+	}
+	c.mutex.Lock()
+	for name := range c.repos {
+		if _, still := wanted[name]; !still || opened[name] != nil {
+			delete(c.repos, name)
+		}
+	}
+	for name, one := range opened {
+		c.repos[name] = one
+	}
+	c.mutex.Unlock()
+
+	for _, one := range dropped {
+		one.close()
+	}
+	for name, one := range opened {
+		one.watch(c, doc.RepoRoot(name))
+	}
+	c.watchRepos()
+}
+
+// watchRepos stands the watch over the project's repos folder where none is standing. A project
+// with no repos has no folder to watch yet; the first repo made through the app reopens the
+// project, and that is when the watch opens.
+func (c *Context) watchRepos() {
+	open := c.Workspace.Project()
+	c.mutex.RLock()
+	standing := c.reposWatch != nil
+	c.mutex.RUnlock()
+	if open == nil || standing {
+		return
+	}
+	held, err := watch.WatchFolder(filepath.Join(open.Path, constants.ReposDir), func() {
+		c.useRepos()
+		// The sidebar is the whole sidebar, so what changed is that it should be read again.
+		c.Broadcast(relay.TreeEvent(doc.Project, doc.Event{Type: doc.Changed}))
+	})
+	if err != nil {
+		return
+	}
+	c.mutex.Lock()
+	c.reposWatch = held
+	c.mutex.Unlock()
+}
+
+func (c *Context) dropReposWatch() {
+	c.mutex.Lock()
+	before := c.reposWatch
+	c.reposWatch = nil
+	c.mutex.Unlock()
+	before.Close()
 }
 
 // Broadcast tells every open socket. Nothing above this has to know whether anybody is listening.
@@ -415,8 +516,14 @@ func (c *Context) Close() {
 	c.mutex.Lock()
 	open := c.open
 	c.open = nil
+	repos := c.repos
+	c.repos = map[string]*Open{}
 	c.mutex.Unlock()
 	open.close()
+	for _, one := range repos {
+		one.close()
+	}
+	c.dropReposWatch()
 	c.Relay.Close()
 	if c.Ledger != nil {
 		c.Ledger.Close()
