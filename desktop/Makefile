@@ -32,7 +32,7 @@ bundle: build/icon.icns
 	cp -R ../frontend/.next/standalone/. build/site/
 	cp -R ../frontend/.next/static build/site/frontend/.next/static
 	cp -R ../frontend/public build/site/frontend/public
-	cd ../daemon-go && go build -o ../desktop/build/daemon/broodmotherd ./cmd/daemon
+	cd ../daemon && go build -o ../desktop/build/daemon/broodmotherd ./cmd/daemon
 
 # The app's own mark, at every size the Finder asks for. `sips` and `iconutil` are macOS's
 # own, so the icon costs the repo no dependency.

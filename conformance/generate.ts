@@ -1,5 +1,5 @@
 /**
- * The corpus: what the browser's half of each shared grammar answers, which is what `daemon-go` is
+ * The corpus: what the browser's half of each shared grammar answers, which is what `daemon` is
  * held to.
  *
  * Two implementations of one grammar was the whole risk of the port: the browser parses a `.task`

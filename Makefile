@@ -6,7 +6,7 @@
 
 free_port = $$(node -e 'const s=require("net").createServer();s.listen(0,"127.0.0.1",()=>{console.log(s.address().port);s.close()})')
 
-daemon = (cd daemon-go && BROODMOTHER_PORT=$$api \
+daemon = (cd daemon && BROODMOTHER_PORT=$$api \
   BROODMOTHER_WEB_ORIGINS=http://127.0.0.1:$$web,http://localhost:$$web \
   go run ./cmd/daemon; kill 0)
 site = (cd frontend && PORT=$$web NEXT_PUBLIC_API_URL=http://127.0.0.1:$$api \
@@ -38,11 +38,11 @@ frontend/node_modules desktop/node_modules: %/node_modules: %/package-lock.json
 # Both halves. The daemon is Go and the browser is TypeScript, and `conformance/` is what holds
 # the first to the grammar the second reads.
 test: frontend/node_modules
-	cd daemon-go && go test ./...
+	cd daemon && go test ./...
 	cd frontend && npm run --silent typecheck && npm test
 
 # The conformance corpus, for the grammars the browser and the daemon both still parse. What it
-# writes is what `daemon-go` is held to, so regenerating changes what the app accepts — read the
+# writes is what `daemon` is held to, so regenerating changes what the app accepts — read the
 # diff before keeping it. `conformance/README.md` says which corpora are frozen and why.
 corpus: frontend/node_modules
 	cd frontend && npx tsx ../conformance/generate.ts

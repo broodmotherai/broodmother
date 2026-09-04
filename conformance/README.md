@@ -1,9 +1,9 @@
 # conformance
 
-What `daemon-go` is held to.
+What `daemon` is held to.
 
 `cases/*.json` is written by hand. `corpus/*.json` is the answer to every case, and
-`daemon-go/tests/conformance` runs each case through the Go and compares.
+`daemon/tests/conformance` runs each case through the Go and compares.
 
 ## Two implementations, and one
 
