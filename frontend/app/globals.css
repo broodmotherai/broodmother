@@ -242,10 +242,12 @@
   box-sizing: border-box;
 }
 
-/* Next's dev overlay ignores `devIndicators: false` once there is an error to badge, and
-   the badge sits exactly where the status line lives. The overlay mounts as this one
-   element, so hiding it is the whole fix; errors still land in the console. Production
-   never renders the element, so the rule matches nothing there. */
+/* Next's dev overlay ignores `devIndicators: false` — the mark and its error badge come up
+   anyway, over the corner the tree stands in. What actually stops it is
+   `NEXT_PRIVATE_DISABLE_DEV_OVERLAY_UX` on the dev script, which is what decides whether the
+   overlay is appended to the body at all; errors still land in the console. This is the
+   guard for the version that renames a private flag: the overlay mounts as this one element
+   wherever it mounts, and production never renders it, so the rule matches nothing there. */
 nextjs-portal {
   display: none;
 }
