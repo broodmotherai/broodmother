@@ -39,11 +39,26 @@ type pane struct {
 
 	mutex  sync.Mutex
 	closed bool
+	// holding is on between attaching and the backlog being written, and what the shell says
+	// in that window waits in `held` rather than going out. Attaching installs this watcher
+	// and hands the backlog back to be written a moment later, on this goroutine — while the
+	// shell's own goroutine is already free to write to it. Whichever reaches the socket first
+	// wins, and when it is the live output the backlog lands on top: a replayed screen carries
+	// the escapes that put its cursor where it wants it, so it repaints over what is already
+	// there and the rows come out of two drawings at once. Kept back, it cannot.
+	holding bool
+	held    []string
 }
 
 func (p *pane) send(message any) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
+	p.write(message)
+}
+
+// write says one frame, and is called with the mutex held: a socket takes its frames one at a
+// time, and the order they are written in is the order they were said.
+func (p *pane) write(message any) {
 	if p.closed {
 		return
 	}
@@ -55,7 +70,32 @@ func (p *pane) send(message any) {
 }
 
 func (p *pane) Output(data string) {
-	p.send(map[string]any{"type": "output", "data": data})
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	if p.holding {
+		p.held = append(p.held, data)
+		return
+	}
+	p.write(output(data))
+}
+
+// resume writes what the shell said while nobody was watching, and then what it said while that
+// was being written. After this the pane is live and output goes straight out.
+func (p *pane) resume(missed string) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	if missed != "" {
+		p.write(output(missed))
+	}
+	for _, data := range p.held {
+		p.write(output(data))
+	}
+	p.held = nil
+	p.holding = false
+}
+
+func output(data string) map[string]any {
+	return map[string]any{"type": "output", "data": data}
 }
 
 func (p *pane) Exit(code int) {
@@ -86,7 +126,7 @@ func terminalSocket(w http.ResponseWriter, r *http.Request, ctx *app.Context) {
 	defer cancel()
 
 	query := r.URL.Query()
-	watcher := &pane{socket: socket, ctx: held}
+	watcher := &pane{socket: socket, ctx: held, holding: true}
 	id, resumed, missed := ctx.Shells.Attach(watcher, terminal.Request{
 		Root:    query.Get("root"),
 		Session: query.Get("session"),
@@ -98,9 +138,7 @@ func terminalSocket(w http.ResponseWriter, r *http.Request, ctx *app.Context) {
 	})
 	watcher.send(map[string]any{"type": "ready", "session": id, "resumed": resumed})
 	// What it missed, before anything live can arrive on top of it.
-	if missed != "" {
-		watcher.Output(missed)
-	}
+	watcher.resume(missed)
 
 	for {
 		kind, body, err := socket.Read(r.Context())
