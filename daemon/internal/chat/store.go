@@ -88,6 +88,25 @@ var migrations = []func(*sql.DB){
 	// Who said it, where that is another agent rather than the person: an agent id. Null on
 	// everything the person typed, which is most of what is in here.
 	func(db *sql.DB) { addColumn(db, "messages", "from_agent", "TEXT") },
+	// How far into their thread the person has read: the id of the last message they were shown.
+	// A message id rather than a time, because ids are monotonic and two messages written in the
+	// same millisecond — a delivery and the empty row opened for its answer — cannot be told
+	// apart by a clock. Everything already said is marked read as the column arrives, once and
+	// only here: a file that predates the count opening to a badge of forty is a badge nobody
+	// believes. An agent made after this starts at nothing, over a thread with nothing in it.
+	readSoFar,
+}
+
+// readSoFar adds the read mark and, in the same breath, marks everything already said as read.
+// The backfill belongs to the moment the column arrives rather than to every open: run again over
+// an agent who has been messaged since, it would quietly mark the thing they said as read.
+func readSoFar(db *sql.DB) {
+	if hasColumn(db, "agents", "seen") {
+		return
+	}
+	db.Exec(`ALTER TABLE agents ADD COLUMN seen INTEGER`)
+	db.Exec(`UPDATE agents SET seen =
+		COALESCE((SELECT MAX(id) FROM messages WHERE messages.chat = agents.chat), 0)`)
 }
 
 func hasTable(db *sql.DB, table string) bool {

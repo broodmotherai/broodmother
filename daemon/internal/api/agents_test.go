@@ -143,6 +143,48 @@ func TestClearingAnAgentKeepsTheAgent(t *testing.T) {
 	refused(t, server, http.MethodPost, "/api/agent/clear", `{"agent":"agent-404"}`)
 }
 
+// The badge: what an agent said while nobody was looking is counted on their row, and opening
+// their thread is what takes it off.
+func TestCountsWhatAnAgentSaidUntilItIsRead(t *testing.T) {
+	server := hiring(t)
+	made := hire(t, server, "Priya", "librarian")
+	id, thread := made["id"].(string), made["chat"].(string)
+	store := server.Context.Chats
+
+	if listed := agents(t, server, "/api/agents"); listed[0]["unseen"] != float64(0) {
+		t.Fatalf("a new agent has already said something: %+v", listed[0])
+	}
+	store.Add(thread, "user", "how does sync stall?", 0, "")
+	store.Add(thread, "assistant", "the push is refused", 0, "")
+	if listed := agents(t, server, "/api/agents"); listed[0]["unseen"] != float64(1) {
+		t.Fatalf("unseen is %+v, want 1 — only what they said counts", listed[0]["unseen"])
+	}
+
+	answer := sent(t, server, http.MethodPost, "/api/agent/seen", `{"agent":`+quoted(id)+`}`)
+	seen, _ := answer["agent"].(map[string]any)
+	if seen == nil || seen["unseen"] != float64(0) {
+		t.Fatalf("read the thread and got %+v", answer)
+	}
+	if listed := agents(t, server, "/api/agents"); listed[0]["unseen"] != float64(0) {
+		t.Errorf("still unseen after reading: %+v", listed[0])
+	}
+	// The chart draws the same people and reads the same count.
+	if listed := agents(t, server, "/api/agents/org"); listed[0]["unseen"] != float64(0) {
+		t.Errorf("the chart says %+v", listed[0]["unseen"])
+	}
+
+	store.Add(thread, "assistant", "and here is why", 0, "")
+	if listed := agents(t, server, "/api/agents"); listed[0]["unseen"] != float64(1) {
+		t.Errorf("what they said after it was read is %+v, want 1", listed[0]["unseen"])
+	}
+	// Emptying the thread empties the count with it.
+	sent(t, server, http.MethodPost, "/api/agent/clear", `{"agent":`+quoted(id)+`}`)
+	if listed := agents(t, server, "/api/agents"); listed[0]["unseen"] != float64(0) {
+		t.Errorf("cleared the conversation and the count stayed: %+v", listed[0])
+	}
+	refused(t, server, http.MethodPost, "/api/agent/seen", `{"agent":"agent-404"}`)
+}
+
 // A forest, one lead each — and a line that would close on itself is refused, because a chart
 // asked who to escalate to would have no answer.
 func TestKeepsTheChartAForest(t *testing.T) {

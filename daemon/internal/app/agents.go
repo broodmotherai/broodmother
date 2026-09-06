@@ -11,6 +11,7 @@ import (
 	"github.com/broodmotherai/broodmother/daemon/internal/chat"
 	"github.com/broodmotherai/broodmother/daemon/internal/doc"
 	"github.com/broodmotherai/broodmother/daemon/internal/personas"
+	"github.com/broodmotherai/broodmother/daemon/internal/relay"
 )
 
 // AgentSummary is an agent as a list draws one.
@@ -20,6 +21,8 @@ type AgentSummary struct {
 	Working bool `json:"working"`
 	// LastAt is when the last thing was said in their thread, or nil when nothing has been.
 	LastAt *int64 `json:"lastAt"`
+	// Unseen is how much of their thread has not been read: the number the badge wears.
+	Unseen int `json:"unseen"`
 }
 
 // AgentInOrg is the same, with where they stand.
@@ -62,7 +65,12 @@ func (c *Context) Org() []AgentInOrg {
 
 func (c *Context) summarize(one chat.Agent) AgentSummary {
 	working := c.Live != nil && c.Live.Working(one.Chat)
-	return AgentSummary{Agent: one, Working: working, LastAt: c.Chats.LastSaidAt(one.Chat)}
+	return AgentSummary{
+		Agent:   one,
+		Working: working,
+		LastAt:  c.Chats.LastSaidAt(one.Chat),
+		Unseen:  c.Chats.Unseen(one.ID),
+	}
 }
 
 // AddAgent is a new colleague. The persona has to be one the project carries and the model one
@@ -120,6 +128,9 @@ func (c *Context) RemoveAgent(id string) error {
 		return err
 	}
 	c.Chats.RemoveAgent(held.ID)
+	// Somebody who is gone is owed nothing: a window holding a count for them would go on adding
+	// it to the badge until it next read the list.
+	c.Broadcast(relay.AgentState(held.ID, false, 0))
 	return nil
 }
 
@@ -130,7 +141,24 @@ func (c *Context) ClearAgent(id string) error {
 		return err
 	}
 	c.Live.Clear(held.Chat)
+	c.Broadcast(relay.AgentState(held.ID, false, 0))
 	return nil
+}
+
+// SeeAgent is their thread read up to where it stands now, which is what clears the badge. Answers
+// with them as they now are, so whoever asked does not have to list everybody again to redraw one
+// row.
+func (c *Context) SeeAgent(id string) (AgentSummary, error) {
+	held, err := c.requireAgent(id)
+	if err != nil {
+		return AgentSummary{}, err
+	}
+	c.Chats.MarkSeen(held.ID)
+	seen := c.summarize(held)
+	// The other windows are the reason this goes out: the badge they are drawing is about a thread
+	// somebody has just read, and nothing else would tell them.
+	c.Broadcast(relay.AgentState(seen.ID, seen.Working, seen.Unseen))
+	return seen, nil
 }
 
 // SetAgentModel is which model answers as them, changed on somebody who already exists. Refused

@@ -32,9 +32,13 @@ type Message struct {
 	// how to ask, and a payload would be a second answer to disagree with the first.
 	Title string `json:"title,omitempty"`
 	Body  string `json:"body,omitempty"`
-	// An agent's dot in the rail: who, and whether a reply of theirs is on its way.
+	// How an agent stands: who, whether a reply of theirs is on its way, and how much of their
+	// thread has not been read. The two travel together because they move at the same moments —
+	// a turn starting, a turn landing, a thread being read — and a window holding a dot from one
+	// instant beside a count from another would be drawing a state nothing was ever in.
 	Agent   string `json:"id,omitempty"`
 	Working *bool  `json:"working,omitempty"`
+	Unseen  *int   `json:"unseen,omitempty"`
 	// What Mother has surfaced, where anything survived the gate.
 	Suggestion *mother.Suggestion `json:"suggestion,omitempty"`
 }
@@ -62,9 +66,10 @@ func Notify(title, body string) Message {
 // TaskMoved is the nudge that tells the tasks page a run has moved.
 func TaskMoved() Message { return Message{Type: "task"} }
 
-// AgentWorking is an agent's dot in the rail: a reply of theirs starting or landing.
-func AgentWorking(agent string, working bool) Message {
-	return Message{Type: "agent", Agent: agent, Working: &working}
+// AgentState is an agent's dot in the rail and the count on their name: a reply of theirs starting
+// or landing, or their thread being read.
+func AgentState(agent string, working bool, unseen int) Message {
+	return Message{Type: "agent", Agent: agent, Working: &working, Unseen: &unseen}
 }
 
 // Suggested is something Mother has decided is worth interrupting for.

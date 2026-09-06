@@ -55,6 +55,12 @@ export interface App {
    *  they move while some other thread is on screen. What the socket has said since the page
    *  loaded; the list itself says where each stood when it was asked for. */
   agentsWorking: Record<string, boolean>
+  /** How much of each agent's thread nobody has read, by id — the count on the Agents row in
+   *  the sidebar and beside each name in the rail. Read once for the open project and moved by
+   *  the socket after, so the badge is right whether or not the agents page has ever been open. */
+  agentsUnseen: Record<string, number>
+  /** That agent's thread read up to where it stands now, which is what takes their badge off. */
+  seeAgent(agent: string): Promise<Failure>
   /** Bumped every time the server says a run moved. The tasks page watches it and asks
    *  again — a count rather than the runs themselves, because the page already knows how
    *  to fetch them and two answers could disagree. */
@@ -251,6 +257,7 @@ export function AppProvider({
   const [sync, setSync] = useState<SyncStatus>(idleSync)
   const [activity, setActivity] = useState<ActivityStates>({})
   const [agentsWorking, setAgentsWorking] = useState<Record<string, boolean>>({})
+  const [agentsUnseen, setAgentsUnseen] = useState<Record<string, number>>({})
   const [tasksMoved, setTasksMoved] = useState(0)
   const [motherSuggestion, setMotherSuggestion] = useState<Suggestion | null>(null)
   const [ready, setReady] = useState(false)
@@ -382,6 +389,19 @@ export function AppProvider({
       })
       .catch(() => null)
 
+  /** What every agent in the open project has said that nobody has read. Nowhere to work is
+   *  nobody, which is an empty answer rather than a failure — and the badge is then absent, the
+   *  way it is when nobody has said anything. */
+  const loadAgentsUnseen = () =>
+    client
+      .request('GET /api/agents', null)
+      .then((result) =>
+        setAgentsUnseen(
+          Object.fromEntries(result.agents.map((one) => [one.id, one.unseen])),
+        ),
+      )
+      .catch(() => setAgentsUnseen({}))
+
   const loadGit = () =>
     client
       .request('GET /api/git', null)
@@ -400,6 +420,7 @@ export function AppProvider({
     const projectPath = config?.projectPath ?? null
     return Promise.all([
       loadProjects(),
+      loadAgentsUnseen(),
       loadTree(),
       loadGit(),
       loadRepos(projectPath).then((list) =>
@@ -446,6 +467,7 @@ export function AppProvider({
             break
           case 'agent':
             setAgentsWorking((held) => ({ ...held, [message.id]: message.working }))
+            setAgentsUnseen((held) => ({ ...held, [message.id]: message.unseen }))
             break
           case 'task':
             setTasksMoved((count) => count + 1)
@@ -478,6 +500,7 @@ export function AppProvider({
           .then((result) => setActivity(result.activity))
           .catch(() => null)
         void loadMother()
+        void loadAgentsUnseen()
       },
     )
     return () => {
@@ -537,6 +560,7 @@ export function AppProvider({
     sync,
     activity,
     agentsWorking,
+    agentsUnseen,
     tasksMoved,
     motherSuggestion,
     ready,
@@ -599,6 +623,12 @@ export function AppProvider({
     clearConflict: () =>
       run(async () => {
         setSync(await client.request('POST /api/sync/clear-conflict', null))
+      }),
+
+    seeAgent: (agent) =>
+      run(async () => {
+        const result = await client.request('POST /api/agent/seen', { agent })
+        setAgentsUnseen((held) => ({ ...held, [agent]: result.agent.unseen }))
       }),
 
     answerMother: (suggestion, verdict) =>

@@ -63,6 +63,20 @@ var agentsTable = Table{
 		return map[string]any{"ok": true}, nil
 	},
 
+	/* Their thread read up to where it stands now. The body names the agent and not the message:
+	   which one was last is the store's to say, and a page's idea of it is a paint behind. */
+	"POST /api/agent/seen": func(_ http.ResponseWriter, r *http.Request, ctx *app.Context) (any, error) {
+		id, err := parse(r, named("agent"))
+		if err != nil {
+			return nil, err
+		}
+		seen, err := ctx.SeeAgent(id)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"agent": seen}, nil
+	},
+
 	"POST /api/agent/model": func(_ http.ResponseWriter, r *http.Request, ctx *app.Context) (any, error) {
 		input, err := parse(r, agentModelBody)
 		if err != nil {

@@ -6180,6 +6180,20 @@ p.palette-label {
   color: inherit;
 }
 
+/* How much has been said that nobody has read, in the pill the tree's counts already wear,
+   at the far end of the row where a change count sits. */
+.explorer-tab .unseen-count {
+  flex: none;
+  margin-left: auto;
+  padding: 0.1rem 0.34rem;
+  border-radius: var(--row-radius);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  line-height: 1.2;
+}
+
 /* ---- Entities ----------------------------------------------------------------------------- */
 
 /* The kinds beside the records, the way the people stand beside the conversation: the rail is

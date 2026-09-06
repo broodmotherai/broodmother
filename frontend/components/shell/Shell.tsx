@@ -392,6 +392,10 @@ export function Shell({ children }: { children: ReactNode }) {
   // answer is in, or a profile that exists gets asked for anyway on the way past.
   const needsProfile = app.ready && !app.profile
 
+  // The agents' unread as one number. There is a row for all of them rather than one row
+  // each, so what the badge on it counts is the project's unread, not any one agent's.
+  const unseen = Object.values(app.agentsUnseen).reduce((all, one) => all + one, 0)
+
   return (
     <div className="shell" style={{ '--sidebar': `${sidebar}px` } as CSSProperties}>
       <Explorer
@@ -435,6 +439,19 @@ export function Shell({ children }: { children: ReactNode }) {
             >
               <Icon name="users" />
               <span className="name">Agents</span>
+              {/* What agents have said that nobody has read. A thread goes on being written
+                  into while you are somewhere else — a reply landing twenty minutes after you
+                  asked, or one agent messaging another — and this is the only thing on screen
+                  that says so. */}
+              {unseen > 0 && (
+                <span
+                  className="unseen-count"
+                  data-tip={`${unseen} unread from agents`}
+                  aria-label={`${unseen} unread from agents`}
+                >
+                  {unseen > 99 ? '99+' : unseen}
+                </span>
+              )}
             </button>
             {/* Beside them, for the same reason: talking to a model is about the app rather
                 than about any one document in it. */}

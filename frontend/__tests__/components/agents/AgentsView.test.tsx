@@ -142,13 +142,13 @@ it('shows an agent at work when the app says so', async () => {
   const client = await show()
   const people = screen.getByRole('complementary', { name: 'Agents' })
   expect(within(people).getByRole('img', { name: 'Priya Rao' })).toBeInTheDocument()
-  act(() => client.emit({ type: 'agent', id: 'agent-1', working: true }))
+  act(() => client.emit({ type: 'agent', id: 'agent-1', working: true, unseen: 0 }))
   expect(within(people).getByRole('img', { name: 'Priya Rao, working' })).toBeInTheDocument()
 
   await userEvent.click(within(people).getByRole('button', { name: 'Priya Rao' }))
   await screen.findByRole('region', { name: 'Conversation with Priya Rao' })
   expect(screen.getByRole('banner')).toHaveTextContent('working…')
-  act(() => client.emit({ type: 'agent', id: 'agent-1', working: false }))
+  act(() => client.emit({ type: 'agent', id: 'agent-1', working: false, unseen: 0 }))
   expect(screen.getByRole('banner')).toHaveTextContent('available')
 })
 

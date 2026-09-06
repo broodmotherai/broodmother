@@ -229,7 +229,7 @@ it('shows an agent at work when the app says so', async () => {
   )
   await screen.findByRole('group', { name: 'Sam' })
   expect(screen.getByRole('img', { name: 'Sam' })).toBeInTheDocument()
-  act(() => mock.emit({ type: 'agent', id: 'agent-1', working: true }))
+  act(() => mock.emit({ type: 'agent', id: 'agent-1', working: true, unseen: 0 }))
   expect(screen.getByRole('img', { name: 'Sam, working' })).toBeInTheDocument()
 })
 

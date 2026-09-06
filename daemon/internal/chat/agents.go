@@ -120,6 +120,34 @@ func (s *Store) LastSaidAt(chat string) *int64 {
 	return &held
 }
 
+// Unseen is how much of an agent's thread the person has not read: what the agent said, and what
+// another agent delivered into it, past the mark. Never what the person typed, and never a row
+// with nothing in it — an answer that only ran tools is not something to come back for, and the
+// row a reply is being written into is empty until it lands, which is what keeps a badge from
+// appearing the moment somebody starts talking rather than when they have finished.
+func (s *Store) Unseen(id string) int {
+	var count int
+	err := s.db.QueryRow(
+		`SELECT COUNT(*) FROM messages
+		 WHERE chat = (SELECT chat FROM agents WHERE id = ?)
+		   AND id > COALESCE((SELECT seen FROM agents WHERE id = ?), 0)
+		   AND text != '' AND (role = 'assistant' OR from_agent IS NOT NULL)`,
+		rowID(id), rowID(id)).Scan(&count)
+	if err != nil {
+		return 0
+	}
+	return count
+}
+
+// MarkSeen is the thread read up to where it stands now. The mark is the store's own idea of the
+// last message rather than the caller's: a page's is a paint behind, and the difference is a badge
+// of one that clicking does not clear.
+func (s *Store) MarkSeen(id string) {
+	s.db.Exec(`UPDATE agents SET seen =
+		COALESCE((SELECT MAX(id) FROM messages WHERE messages.chat = agents.chat), 0)
+		WHERE id = ?`, rowID(id))
+}
+
 // Org is every agent in the project, with who they report to and where they stand. One query
 // rather than one per agent, because a board draws all of it or none.
 func (s *Store) Org(project string) []Placed {
@@ -176,10 +204,13 @@ func (s *Store) PlaceAgent(agent string, x, y float64) {
 	s.db.Exec(`UPDATE agents SET x = ?, y = ? WHERE id = ?`, int64(x), int64(y), rowID(agent))
 }
 
-// Clear takes what was said; the conversation stays to be said into again.
+// Clear takes what was said; the conversation stays to be said into again. The read mark goes with
+// the messages: an empty thread has nothing unread in it, and a mark left pointing at a row that
+// no longer exists is only waiting to be wrong.
 func (s *Store) Clear(id string) {
 	s.db.Exec(`DELETE FROM messages WHERE chat = ?`, rowID(id))
 	s.db.Exec(`UPDATE chats SET updated_at = ? WHERE id = ?`, s.now(), rowID(id))
+	s.db.Exec(`UPDATE agents SET seen = 0 WHERE chat = ?`, rowID(id))
 }
 
 func agentID(row int64) string { return "agent-" + strconv.FormatInt(row, 10) }

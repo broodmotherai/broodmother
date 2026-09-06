@@ -29,6 +29,9 @@ export interface AgentSummary extends Agent {
   working: boolean
   /** When the last thing was said in their thread, or null when nothing has been. */
   lastAt: number | null
+  /** How much of their thread has not been read: what the agent said and what another agent
+   *  delivered into it, past the mark. The number the badge wears. */
+  unseen: number
 }
 
 /** Where an agent stands on the org chart: who they report to, and where they stand.
@@ -69,6 +72,15 @@ export interface PostAgents {
 export interface DeleteAgent {
   request: { agent: string }
   response: { ok: true }
+}
+
+/** Their thread read up to where it stands now, which is what takes the badge off. The body names
+ *  the agent and not the message: which one was last is the daemon's to say, and a page's idea of
+ *  it is a paint behind. Answers with them as they now are, so one row can be redrawn without
+ *  listing everybody again. */
+export interface PostAgentSeen {
+  request: { agent: string }
+  response: { agent: AgentSummary }
 }
 
 /** The conversation emptied, the agent kept. */

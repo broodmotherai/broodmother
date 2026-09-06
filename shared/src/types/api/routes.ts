@@ -24,6 +24,7 @@ import type {
   PostAgentModel,
   PostAgentPlace,
   PostAgents,
+  PostAgentSeen,
 } from './agents'
 import type { GetDiagrams } from './canvas'
 import type { GetActivity } from './activity'
@@ -136,6 +137,7 @@ interface ApiRoutes {
   'POST /api/agents': PostAgents
   'DELETE /api/agent': DeleteAgent
   'POST /api/agent/clear': PostAgentClear
+  'POST /api/agent/seen': PostAgentSeen
   'POST /api/agent/model': PostAgentModel
   'GET /api/agents/org': GetAgentOrg
   'POST /api/agent/lead': PostAgentLead

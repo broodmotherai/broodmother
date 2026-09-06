@@ -47,7 +47,9 @@ import (
 //	                            mid-sentence. The org chart is the exception and is below: who
 //	                            reports to whom is worth an agent knowing, while POST
 //	                            /api/agent/lead and /api/agent/place are a decision about the
-//	                            team, which the person makes
+//	                            team, which the person makes. POST /api/agent/seen is denied for
+//	                            a plainer reason: an agent clearing the badge on a thread is an
+//	                            agent deciding what the person has read
 //	GET /api/file               bytes rather than JSON; nothing a model can read
 var allowed = []string{
 	// Reading: the trees, the documents, and what the app knows about itself.

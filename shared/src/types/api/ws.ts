@@ -11,9 +11,11 @@ export type ServerMessage =
   /** The whole picture each time, not a delta: it is a handful of paths, and a client that
    *  missed one message would otherwise carry a state nothing corrects. */
   | { type: 'activity'; activity: ActivityStates }
-  /** An agent's reply starting or landing, so the rail's presence dot moves while you are
-   *  in some other thread. */
-  | { type: 'agent'; id: string; working: boolean }
+  /** How an agent stands: a reply of theirs starting or landing, so the rail's presence dot
+   *  moves while you are in some other thread, and how much of their thread nobody has read.
+   *  The two travel together because they move at the same moments — a turn starting, a turn
+   *  landing, a thread being read. */
+  | { type: 'agent'; id: string; working: boolean; unseen: number }
   | TaskNotice
   /** Mother has something to say: the one suggestion the popup shows, newest wins. */
   | { type: 'mother'; suggestion: Suggestion }

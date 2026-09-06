@@ -192,7 +192,7 @@ func New(options Options) (*Context, error) {
 			Turn:    ctx.turn,
 			OnLive: func(id string, working bool) {
 				if agent, mine := ctx.Chats.AgentOfChat(id); mine {
-					ctx.Broadcast(relay.AgentWorking(agent.ID, working))
+					ctx.Broadcast(relay.AgentState(agent.ID, working, ctx.Chats.Unseen(agent.ID)))
 				}
 			},
 		})

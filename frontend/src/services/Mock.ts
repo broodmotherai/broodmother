@@ -197,6 +197,10 @@ export function createMockClient(
       persona: string
       color?: string
       working?: boolean
+      /** How much of their thread nobody has read. Counted from the seeded messages the way the
+       *  daemon counts it — what they said, and what another agent delivered — unless a seed
+       *  says otherwise. */
+      unseen?: number
       lead?: string
       place?: { x: number; y: number }
       messages?: Pick<ChatMessage, 'role' | 'text' | 'from'>[]
@@ -358,6 +362,10 @@ export function createMockClient(
       createdAt: 1500 + index,
       working: one.working ?? false,
       lastAt: one.messages?.length ? 1500 + one.messages.length - 1 : null,
+      unseen:
+        one.unseen ??
+        (one.messages ?? []).filter((message) => message.text && (message.role === 'assistant' || message.from))
+          .length,
       lead: null,
       place: one.place ?? null,
     }
@@ -1035,11 +1043,12 @@ export function createMockClient(
           createdAt: 2000 + agents.length,
           working: false,
           lastAt: null,
+          unseen: 0,
           lead: null,
           place: null,
         }
         agents.push(agent)
-        const { working: _working, lastAt: _lastAt, lead: _lead, place: _place, ...made } = agent
+        const { working: _working, lastAt: _lastAt, unseen: _unseen, lead: _lead, place: _place, ...made } = agent
         return { agent: made }
       },
       'DELETE /api/agent': async ({ agent }) => {
@@ -1051,14 +1060,22 @@ export function createMockClient(
         return { ok: true } as const
       },
       'POST /api/agent/clear': async ({ agent }) => {
-        chatOf(agentOf(agent).chat).messages = []
+        const held = agentOf(agent)
+        chatOf(held.chat).messages = []
+        held.unseen = 0
         return { ok: true } as const
+      },
+      'POST /api/agent/seen': async ({ agent }) => {
+        const held = agentOf(agent)
+        held.unseen = 0
+        const { lead: _lead, place: _place, ...seen } = held
+        return { agent: seen }
       },
       'POST /api/agent/model': async ({ agent, model }) => {
         const held = agentOf(agent)
         held.model = model
         chatOf(held.chat).model = model
-        const { working: _working, lastAt: _lastAt, lead: _lead, place: _place, ...changed } = held
+        const { working: _working, lastAt: _lastAt, unseen: _unseen, lead: _lead, place: _place, ...changed } = held
         return { agent: changed }
       },
       'POST /api/chats': async ({ model }) => {
