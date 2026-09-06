@@ -1,0 +1,234 @@
+[
+  {
+    "name": "an https remote",
+    "source": "slug\u0001https://github.com/broodmotherai/broodmother.git",
+    "parsed": {
+      "slug": "broodmotherai/broodmother"
+    },
+    "serialized": "{\n  \"slug\": \"broodmotherai/broodmother\"\n}\n"
+  },
+  {
+    "name": "an https remote without the suffix",
+    "source": "slug\u0001https://github.com/broodmotherai/broodmother",
+    "parsed": {
+      "slug": "broodmotherai/broodmother"
+    },
+    "serialized": "{\n  \"slug\": \"broodmotherai/broodmother\"\n}\n"
+  },
+  {
+    "name": "http rather than https",
+    "source": "slug\u0001http://github.com/owner/name.git",
+    "parsed": {
+      "slug": "owner/name"
+    },
+    "serialized": "{\n  \"slug\": \"owner/name\"\n}\n"
+  },
+  {
+    "name": "an ssh remote",
+    "source": "slug\u0001git@github.com:broodmotherai/broodmother.git",
+    "parsed": {
+      "slug": "broodmotherai/broodmother"
+    },
+    "serialized": "{\n  \"slug\": \"broodmotherai/broodmother\"\n}\n"
+  },
+  {
+    "name": "an ssh remote without the suffix",
+    "source": "slug\u0001git@github.com:owner/name",
+    "parsed": {
+      "slug": "owner/name"
+    },
+    "serialized": "{\n  \"slug\": \"owner/name\"\n}\n"
+  },
+  {
+    "name": "an ssh url",
+    "source": "slug\u0001ssh://git@github.com/owner/name.git",
+    "parsed": {
+      "slug": "owner/name"
+    },
+    "serialized": "{\n  \"slug\": \"owner/name\"\n}\n"
+  },
+  {
+    "name": "an https remote carrying a token",
+    "source": "slug\u0001https://x-access-token:abc@github.com/owner/name.git",
+    "parsed": {
+      "slug": "owner/name"
+    },
+    "serialized": "{\n  \"slug\": \"owner/name\"\n}\n"
+  },
+  {
+    "name": "whitespace around it",
+    "source": "slug\u0001  git@github.com:owner/name.git  ",
+    "parsed": {
+      "slug": "owner/name"
+    },
+    "serialized": "{\n  \"slug\": \"owner/name\"\n}\n"
+  },
+  {
+    "name": "a name with a dot in it",
+    "source": "slug\u0001git@github.com:owner/my.repo.git",
+    "parsed": {
+      "slug": "owner/my.repo"
+    },
+    "serialized": "{\n  \"slug\": \"owner/my.repo\"\n}\n"
+  },
+  {
+    "name": "a name that is only a dot suffix",
+    "source": "slug\u0001git@github.com:owner/.git",
+    "parsed": {
+      "slug": null
+    },
+    "serialized": "{\n  \"slug\": null\n}\n"
+  },
+  {
+    "name": "an ssh remote with a path under it",
+    "source": "slug\u0001git@github.com:owner/group/name.git",
+    "parsed": {
+      "slug": "owner/group/name"
+    },
+    "serialized": "{\n  \"slug\": \"owner/group/name\"\n}\n"
+  },
+  {
+    "name": "an https remote with a path under it",
+    "source": "slug\u0001https://github.com/owner/group/name.git",
+    "parsed": {
+      "slug": null
+    },
+    "serialized": "{\n  \"slug\": null\n}\n"
+  },
+  {
+    "name": "somewhere that is not GitHub",
+    "source": "slug\u0001git@gitlab.com:owner/name.git",
+    "parsed": {
+      "slug": null
+    },
+    "serialized": "{\n  \"slug\": null\n}\n"
+  },
+  {
+    "name": "an https remote somewhere else",
+    "source": "slug\u0001https://gitlab.com/owner/name.git",
+    "parsed": {
+      "slug": null
+    },
+    "serialized": "{\n  \"slug\": null\n}\n"
+  },
+  {
+    "name": "a host that merely ends in github.com",
+    "source": "slug\u0001https://notgithub.com/owner/name.git",
+    "parsed": {
+      "slug": null
+    },
+    "serialized": "{\n  \"slug\": null\n}\n"
+  },
+  {
+    "name": "no remote at all",
+    "source": "slug\u0001",
+    "parsed": {
+      "slug": null
+    },
+    "serialized": "{\n  \"slug\": null\n}\n"
+  },
+  {
+    "name": "a local path",
+    "source": "slug\u0001/Users/someone/code/thing",
+    "parsed": {
+      "slug": null
+    },
+    "serialized": "{\n  \"slug\": null\n}\n"
+  },
+  {
+    "name": "a file url",
+    "source": "slug\u0001file:///Users/someone/code/thing",
+    "parsed": {
+      "slug": null
+    },
+    "serialized": "{\n  \"slug\": null\n}\n"
+  },
+  {
+    "name": "an owner but no name",
+    "source": "slug\u0001https://github.com/owner",
+    "parsed": {
+      "slug": null
+    },
+    "serialized": "{\n  \"slug\": null\n}\n"
+  },
+  {
+    "name": "the host alone",
+    "source": "slug\u0001https://github.com/",
+    "parsed": {
+      "slug": null
+    },
+    "serialized": "{\n  \"slug\": null\n}\n"
+  },
+  {
+    "name": "an ordinary one",
+    "source": "is-slug\u0001owner/name",
+    "parsed": {
+      "slug": true
+    },
+    "serialized": "{\n  \"slug\": true\n}\n"
+  },
+  {
+    "name": "dots and dashes",
+    "source": "is-slug\u0001my-org/my.repo_2",
+    "parsed": {
+      "slug": true
+    },
+    "serialized": "{\n  \"slug\": true\n}\n"
+  },
+  {
+    "name": "no slash",
+    "source": "is-slug\u0001name",
+    "parsed": {
+      "slug": false
+    },
+    "serialized": "{\n  \"slug\": false\n}\n"
+  },
+  {
+    "name": "two slashes",
+    "source": "is-slug\u0001owner/group/name",
+    "parsed": {
+      "slug": false
+    },
+    "serialized": "{\n  \"slug\": false\n}\n"
+  },
+  {
+    "name": "an empty owner",
+    "source": "is-slug\u0001/name",
+    "parsed": {
+      "slug": false
+    },
+    "serialized": "{\n  \"slug\": false\n}\n"
+  },
+  {
+    "name": "an empty name",
+    "source": "is-slug\u0001owner/",
+    "parsed": {
+      "slug": false
+    },
+    "serialized": "{\n  \"slug\": false\n}\n"
+  },
+  {
+    "name": "nothing at all",
+    "source": "is-slug\u0001",
+    "parsed": {
+      "slug": false
+    },
+    "serialized": "{\n  \"slug\": false\n}\n"
+  },
+  {
+    "name": "a space in it",
+    "source": "is-slug\u0001owner/my name",
+    "parsed": {
+      "slug": false
+    },
+    "serialized": "{\n  \"slug\": false\n}\n"
+  },
+  {
+    "name": "a url rather than a slug",
+    "source": "is-slug\u0001https://github.com/owner/name",
+    "parsed": {
+      "slug": false
+    },
+    "serialized": "{\n  \"slug\": false\n}\n"
+  }
+]

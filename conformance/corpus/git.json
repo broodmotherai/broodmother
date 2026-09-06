@@ -1,0 +1,678 @@
+[
+  {
+    "name": "status: nothing at all",
+    "source": "status\u0001",
+    "parsed": {
+      "changed": [],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: one modified file",
+    "source": "status\u00011 .M N... 100644 100644 100644 abc123 def456 notes/sync.md\u0000",
+    "parsed": {
+      "changed": [
+        "notes/sync.md"
+      ],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [\n    \"notes/sync.md\"\n  ],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: staged and unstaged together",
+    "source": "status\u00011 M. N... 100644 100644 100644 abc123 def456 a.md\u00001 .M N... 100644 100644 100644 abc123 def456 b.md\u00001 MM N... 100644 100644 100644 abc123 def456 c.md\u0000",
+    "parsed": {
+      "changed": [
+        "a.md",
+        "b.md",
+        "c.md"
+      ],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [\n    \"a.md\",\n    \"b.md\",\n    \"c.md\"\n  ],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: a deletion either side",
+    "source": "status\u00011 D. N... 100644 100644 100644 abc123 def456 gone.md\u00001 .D N... 100644 100644 100644 abc123 def456 went.md\u0000",
+    "parsed": {
+      "changed": [
+        "gone.md",
+        "went.md"
+      ],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [\n    \"gone.md\",\n    \"went.md\"\n  ],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: an addition",
+    "source": "status\u00011 A. N... 100644 100644 100644 abc123 def456 new.md\u0000",
+    "parsed": {
+      "changed": [
+        "new.md"
+      ],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [\n    \"new.md\"\n  ],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: a rename carries its old name in a record of its own",
+    "source": "status\u00012 R. N... 100644 100644 100644 abc123 def456 R100 after.md\u0000before.md\u0000",
+    "parsed": {
+      "changed": [
+        "after.md"
+      ],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [\n    \"after.md\"\n  ],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: a conflict",
+    "source": "status\u0001u UU N... 100644 100644 100644 100644 a1 a2 a3 clash.md\u0000",
+    "parsed": {
+      "changed": [],
+      "conflicted": [
+        "clash.md"
+      ],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [],\n  \"conflicted\": [\n    \"clash.md\"\n  ]\n}\n"
+  },
+  {
+    "name": "status: untracked",
+    "source": "status\u0001? scratch.md\u0000",
+    "parsed": {
+      "changed": [
+        "scratch.md"
+      ],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [\n    \"scratch.md\"\n  ],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: a path with spaces in it",
+    "source": "status\u00011 .M N... 100644 100644 100644 abc123 def456 notes/a file with spaces.md\u0000",
+    "parsed": {
+      "changed": [
+        "notes/a file with spaces.md"
+      ],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [\n    \"notes/a file with spaces.md\"\n  ],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: a path with a unicode name",
+    "source": "status\u00011 .M N... 100644 100644 100644 abc123 def456 notes/日本語 — ✅.md\u0000",
+    "parsed": {
+      "changed": [
+        "notes/日本語 — ✅.md"
+      ],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [\n    \"notes/日本語 — ✅.md\"\n  ],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: every kind at once",
+    "source": "status\u0001# branch.oid abc\u0000# branch.head refactor\u0000# branch.upstream origin/refactor\u0000# branch.ab +3 -2\u00001 .M N... 100644 100644 100644 abc123 def456 a.md\u00002 R. N... 100644 100644 100644 abc123 def456 R100 b.md\u0000b-old.md\u0000u UU N... 100644 100644 100644 100644 a1 a2 a3 c.md\u0000? d.md\u0000",
+    "parsed": {
+      "changed": [
+        "a.md",
+        "b.md",
+        "d.md"
+      ],
+      "conflicted": [
+        "c.md"
+      ],
+      "ahead": 3,
+      "behind": 2
+    },
+    "serialized": "{\n  \"ahead\": 3,\n  \"behind\": 2,\n  \"changed\": [\n    \"a.md\",\n    \"b.md\",\n    \"d.md\"\n  ],\n  \"conflicted\": [\n    \"c.md\"\n  ]\n}\n"
+  },
+  {
+    "name": "status: a record too short to be one",
+    "source": "status\u00011\u0000?\u0000x\u0000",
+    "parsed": {
+      "changed": [
+        "",
+        ""
+      ],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [\n    \"\",\n    \"\"\n  ],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: a record with no path",
+    "source": "status\u00011 .M N... 100644\u0000",
+    "parsed": {
+      "changed": [
+        ""
+      ],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [\n    \"\"\n  ],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "changes: nothing at all",
+    "source": "changes\u0001",
+    "parsed": {},
+    "serialized": "{}\n"
+  },
+  {
+    "name": "changes: one modified file",
+    "source": "changes\u00011 .M N... 100644 100644 100644 abc123 def456 notes/sync.md\u0000",
+    "parsed": {
+      "notes/sync.md": "modified"
+    },
+    "serialized": "{\n  \"notes/sync.md\": \"modified\"\n}\n"
+  },
+  {
+    "name": "changes: staged and unstaged together",
+    "source": "changes\u00011 M. N... 100644 100644 100644 abc123 def456 a.md\u00001 .M N... 100644 100644 100644 abc123 def456 b.md\u00001 MM N... 100644 100644 100644 abc123 def456 c.md\u0000",
+    "parsed": {
+      "a.md": "modified",
+      "b.md": "modified",
+      "c.md": "modified"
+    },
+    "serialized": "{\n  \"a.md\": \"modified\",\n  \"b.md\": \"modified\",\n  \"c.md\": \"modified\"\n}\n"
+  },
+  {
+    "name": "changes: a deletion either side",
+    "source": "changes\u00011 D. N... 100644 100644 100644 abc123 def456 gone.md\u00001 .D N... 100644 100644 100644 abc123 def456 went.md\u0000",
+    "parsed": {
+      "gone.md": "removed",
+      "went.md": "removed"
+    },
+    "serialized": "{\n  \"gone.md\": \"removed\",\n  \"went.md\": \"removed\"\n}\n"
+  },
+  {
+    "name": "changes: an addition",
+    "source": "changes\u00011 A. N... 100644 100644 100644 abc123 def456 new.md\u0000",
+    "parsed": {
+      "new.md": "added"
+    },
+    "serialized": "{\n  \"new.md\": \"added\"\n}\n"
+  },
+  {
+    "name": "changes: a rename carries its old name in a record of its own",
+    "source": "changes\u00012 R. N... 100644 100644 100644 abc123 def456 R100 after.md\u0000before.md\u0000",
+    "parsed": {
+      "after.md": "renamed"
+    },
+    "serialized": "{\n  \"after.md\": \"renamed\"\n}\n"
+  },
+  {
+    "name": "changes: a conflict",
+    "source": "changes\u0001u UU N... 100644 100644 100644 100644 a1 a2 a3 clash.md\u0000",
+    "parsed": {
+      "clash.md": "conflicted"
+    },
+    "serialized": "{\n  \"clash.md\": \"conflicted\"\n}\n"
+  },
+  {
+    "name": "changes: untracked",
+    "source": "changes\u0001? scratch.md\u0000",
+    "parsed": {
+      "scratch.md": "added"
+    },
+    "serialized": "{\n  \"scratch.md\": \"added\"\n}\n"
+  },
+  {
+    "name": "changes: a path with spaces in it",
+    "source": "changes\u00011 .M N... 100644 100644 100644 abc123 def456 notes/a file with spaces.md\u0000",
+    "parsed": {
+      "notes/a file with spaces.md": "modified"
+    },
+    "serialized": "{\n  \"notes/a file with spaces.md\": \"modified\"\n}\n"
+  },
+  {
+    "name": "changes: a path with a unicode name",
+    "source": "changes\u00011 .M N... 100644 100644 100644 abc123 def456 notes/日本語 — ✅.md\u0000",
+    "parsed": {
+      "notes/日本語 — ✅.md": "modified"
+    },
+    "serialized": "{\n  \"notes/日本語 — ✅.md\": \"modified\"\n}\n"
+  },
+  {
+    "name": "changes: every kind at once",
+    "source": "changes\u0001# branch.oid abc\u0000# branch.head refactor\u0000# branch.upstream origin/refactor\u0000# branch.ab +3 -2\u00001 .M N... 100644 100644 100644 abc123 def456 a.md\u00002 R. N... 100644 100644 100644 abc123 def456 R100 b.md\u0000b-old.md\u0000u UU N... 100644 100644 100644 100644 a1 a2 a3 c.md\u0000? d.md\u0000",
+    "parsed": {
+      "a.md": "modified",
+      "b.md": "renamed",
+      "c.md": "conflicted",
+      "d.md": "added"
+    },
+    "serialized": "{\n  \"a.md\": \"modified\",\n  \"b.md\": \"renamed\",\n  \"c.md\": \"conflicted\",\n  \"d.md\": \"added\"\n}\n"
+  },
+  {
+    "name": "changes: a record too short to be one",
+    "source": "changes\u00011\u0000?\u0000x\u0000",
+    "parsed": {
+      "": "added"
+    },
+    "serialized": "{\n  \"\": \"added\"\n}\n"
+  },
+  {
+    "name": "changes: a record with no path",
+    "source": "changes\u00011 .M N... 100644\u0000",
+    "parsed": {
+      "": "modified"
+    },
+    "serialized": "{\n  \"\": \"modified\"\n}\n"
+  },
+  {
+    "name": "status: ahead and behind",
+    "source": "status\u0001# branch.ab +12 -0\u0000",
+    "parsed": {
+      "changed": [],
+      "conflicted": [],
+      "ahead": 12,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 12,\n  \"behind\": 0,\n  \"changed\": [],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: level with the remote",
+    "source": "status\u0001# branch.ab +0 -0\u0000",
+    "parsed": {
+      "changed": [],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: a branch line that is not the count",
+    "source": "status\u0001# branch.head main\u0000",
+    "parsed": {
+      "changed": [],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "status: an ab line that will not parse",
+    "source": "status\u0001# branch.ab +x -y\u0000",
+    "parsed": {
+      "changed": [],
+      "conflicted": [],
+      "ahead": 0,
+      "behind": 0
+    },
+    "serialized": "{\n  \"ahead\": 0,\n  \"behind\": 0,\n  \"changed\": [],\n  \"conflicted\": []\n}\n"
+  },
+  {
+    "name": "changes: the last write to a path wins",
+    "source": "changes\u00011 A. N... 100644 100644 100644 abc123 def456 a.md\u00001 .D N... 100644 100644 100644 abc123 def456 a.md\u0000",
+    "parsed": {
+      "a.md": "removed"
+    },
+    "serialized": "{\n  \"a.md\": \"removed\"\n}\n"
+  },
+  {
+    "name": "name-status: nothing",
+    "source": "name-status\u0001",
+    "parsed": [],
+    "serialized": "[]\n"
+  },
+  {
+    "name": "name-status: one modified",
+    "source": "name-status\u0001M\u0000a.md\u0000",
+    "parsed": [
+      {
+        "path": "a.md",
+        "change": "modified",
+        "from": null
+      }
+    ],
+    "serialized": "[\n  {\n    \"change\": \"modified\",\n    \"from\": null,\n    \"path\": \"a.md\"\n  }\n]\n"
+  },
+  {
+    "name": "name-status: added and removed",
+    "source": "name-status\u0001A\u0000new.md\u0000D\u0000gone.md\u0000",
+    "parsed": [
+      {
+        "path": "new.md",
+        "change": "added",
+        "from": null
+      },
+      {
+        "path": "gone.md",
+        "change": "removed",
+        "from": null
+      }
+    ],
+    "serialized": "[\n  {\n    \"change\": \"added\",\n    \"from\": null,\n    \"path\": \"new.md\"\n  },\n  {\n    \"change\": \"removed\",\n    \"from\": null,\n    \"path\": \"gone.md\"\n  }\n]\n"
+  },
+  {
+    "name": "name-status: a rename is three fields",
+    "source": "name-status\u0001R100\u0000before.md\u0000after.md\u0000",
+    "parsed": [
+      {
+        "path": "after.md",
+        "change": "renamed",
+        "from": "before.md"
+      }
+    ],
+    "serialized": "[\n  {\n    \"change\": \"renamed\",\n    \"from\": \"before.md\",\n    \"path\": \"after.md\"\n  }\n]\n"
+  },
+  {
+    "name": "name-status: renames among the rest",
+    "source": "name-status\u0001M\u0000a.md\u0000R090\u0000b-old.md\u0000b.md\u0000A\u0000c.md\u0000",
+    "parsed": [
+      {
+        "path": "a.md",
+        "change": "modified",
+        "from": null
+      },
+      {
+        "path": "b.md",
+        "change": "renamed",
+        "from": "b-old.md"
+      },
+      {
+        "path": "c.md",
+        "change": "added",
+        "from": null
+      }
+    ],
+    "serialized": "[\n  {\n    \"change\": \"modified\",\n    \"from\": null,\n    \"path\": \"a.md\"\n  },\n  {\n    \"change\": \"renamed\",\n    \"from\": \"b-old.md\",\n    \"path\": \"b.md\"\n  },\n  {\n    \"change\": \"added\",\n    \"from\": null,\n    \"path\": \"c.md\"\n  }\n]\n"
+  },
+  {
+    "name": "name-status: a letter nobody knows",
+    "source": "name-status\u0001T\u0000link.md\u0000",
+    "parsed": [
+      {
+        "path": "link.md",
+        "change": "modified",
+        "from": null
+      }
+    ],
+    "serialized": "[\n  {\n    \"change\": \"modified\",\n    \"from\": null,\n    \"path\": \"link.md\"\n  }\n]\n"
+  },
+  {
+    "name": "name-status: a rename with its new name missing",
+    "source": "name-status\u0001R100\u0000before.md\u0000",
+    "parsed": [],
+    "serialized": "[]\n"
+  },
+  {
+    "name": "name-status: a status with no path after it",
+    "source": "name-status\u0001M\u0000",
+    "parsed": [],
+    "serialized": "[]\n"
+  },
+  {
+    "name": "name-status: paths with spaces",
+    "source": "name-status\u0001R100\u0000a file.md\u0000another file.md\u0000",
+    "parsed": [
+      {
+        "path": "another file.md",
+        "change": "renamed",
+        "from": "a file.md"
+      }
+    ],
+    "serialized": "[\n  {\n    \"change\": \"renamed\",\n    \"from\": \"a file.md\",\n    \"path\": \"another file.md\"\n  }\n]\n"
+  },
+  {
+    "name": "classify: nothing said",
+    "source": "classify\u0001",
+    "parsed": "other",
+    "serialized": "\"other\"\n"
+  },
+  {
+    "name": "classify: host will not resolve",
+    "source": "classify\u0001fatal: unable to access 'https://x/': Could not resolve host: x",
+    "parsed": "offline",
+    "serialized": "\"offline\"\n"
+  },
+  {
+    "name": "classify: connection refused",
+    "source": "classify\u0001ssh: connect to host x port 22: Connection refused",
+    "parsed": "offline",
+    "serialized": "\"offline\"\n"
+  },
+  {
+    "name": "classify: network unreachable",
+    "source": "classify\u0001Network is unreachable",
+    "parsed": "offline",
+    "serialized": "\"offline\"\n"
+  },
+  {
+    "name": "classify: timed out",
+    "source": "classify\u0001Operation timed out after 5000 milliseconds",
+    "parsed": "offline",
+    "serialized": "\"offline\"\n"
+  },
+  {
+    "name": "classify: non fast forward",
+    "source": "classify\u0001! [rejected] main -> main (non-fast-forward)",
+    "parsed": "diverged",
+    "serialized": "\"diverged\"\n"
+  },
+  {
+    "name": "classify: updates were rejected",
+    "source": "classify\u0001Updates were rejected because the remote contains work",
+    "parsed": "diverged",
+    "serialized": "\"diverged\"\n"
+  },
+  {
+    "name": "classify: auth failed",
+    "source": "classify\u0001fatal: Authentication failed for 'https://x/'",
+    "parsed": "auth",
+    "serialized": "\"auth\"\n"
+  },
+  {
+    "name": "classify: permission denied",
+    "source": "classify\u0001git@github.com: Permission denied (publickey).",
+    "parsed": "auth",
+    "serialized": "\"auth\"\n"
+  },
+  {
+    "name": "classify: could not read from remote",
+    "source": "classify\u0001fatal: Could not read from remote repository.",
+    "parsed": "auth",
+    "serialized": "\"auth\"\n"
+  },
+  {
+    "name": "classify: prompts disabled",
+    "source": "classify\u0001fatal: could not read Username: terminal prompts disabled",
+    "parsed": "auth",
+    "serialized": "\"auth\"\n"
+  },
+  {
+    "name": "classify: something else entirely",
+    "source": "classify\u0001fatal: the remote end hung up unexpectedly",
+    "parsed": "other",
+    "serialized": "\"other\"\n"
+  },
+  {
+    "name": "classify: offline beats auth when both appear",
+    "source": "classify\u0001Could not resolve host: x\nAuthentication failed",
+    "parsed": "offline",
+    "serialized": "\"offline\"\n"
+  },
+  {
+    "name": "classify: shouted",
+    "source": "classify\u0001FATAL: AUTHENTICATION FAILED",
+    "parsed": "auth",
+    "serialized": "\"auth\"\n"
+  },
+  {
+    "name": "destructive: a status",
+    "source": "destructive\u0001[\"status\", \"--porcelain=v2\"]",
+    "parsed": {
+      "refused": null
+    },
+    "serialized": "{\n  \"refused\": null\n}\n"
+  },
+  {
+    "name": "destructive: a commit with config ahead of it",
+    "source": "destructive\u0001[\"-c\", \"user.name=A\", \"-c\", \"user.email=b@c\", \"commit\", \"-m\", \"x\"]",
+    "parsed": {
+      "refused": null
+    },
+    "serialized": "{\n  \"refused\": null\n}\n"
+  },
+  {
+    "name": "destructive: a reset",
+    "source": "destructive\u0001[\"reset\", \"--hard\"]",
+    "parsed": {
+      "refused": "refusing to run destructive git reset"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run destructive git reset\"\n}\n"
+  },
+  {
+    "name": "destructive: a clean",
+    "source": "destructive\u0001[\"clean\", \"-fd\"]",
+    "parsed": {
+      "refused": "refusing to run destructive git clean"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run destructive git clean\"\n}\n"
+  },
+  {
+    "name": "destructive: a checkout",
+    "source": "destructive\u0001[\"checkout\", \"main\"]",
+    "parsed": {
+      "refused": "refusing to run destructive git checkout"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run destructive git checkout\"\n}\n"
+  },
+  {
+    "name": "destructive: a restore",
+    "source": "destructive\u0001[\"restore\", \".\"]",
+    "parsed": {
+      "refused": "refusing to run destructive git restore"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run destructive git restore\"\n}\n"
+  },
+  {
+    "name": "destructive: an rm",
+    "source": "destructive\u0001[\"rm\", \"a.md\"]",
+    "parsed": {
+      "refused": "refusing to run destructive git rm"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run destructive git rm\"\n}\n"
+  },
+  {
+    "name": "destructive: a stash",
+    "source": "destructive\u0001[\"stash\", \"push\"]",
+    "parsed": {
+      "refused": "refusing to run destructive git stash"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run destructive git stash\"\n}\n"
+  },
+  {
+    "name": "destructive: a gc",
+    "source": "destructive\u0001[\"gc\"]",
+    "parsed": {
+      "refused": "refusing to run destructive git gc"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run destructive git gc\"\n}\n"
+  },
+  {
+    "name": "destructive: a prune",
+    "source": "destructive\u0001[\"prune\"]",
+    "parsed": {
+      "refused": "refusing to run destructive git prune"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run destructive git prune\"\n}\n"
+  },
+  {
+    "name": "destructive: a filter-branch",
+    "source": "destructive\u0001[\"filter-branch\"]",
+    "parsed": {
+      "refused": "refusing to run destructive git filter-branch"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run destructive git filter-branch\"\n}\n"
+  },
+  {
+    "name": "destructive: a forced push",
+    "source": "destructive\u0001[\"push\", \"--force\", \"origin\", \"main\"]",
+    "parsed": {
+      "refused": "refusing to run a forced git command"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run a forced git command\"\n}\n"
+  },
+  {
+    "name": "destructive: a force with lease",
+    "source": "destructive\u0001[\"push\", \"--force-with-lease\"]",
+    "parsed": {
+      "refused": "refusing to run a forced git command"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run a forced git command\"\n}\n"
+  },
+  {
+    "name": "destructive: a short force flag",
+    "source": "destructive\u0001[\"push\", \"-f\"]",
+    "parsed": {
+      "refused": "refusing to run a forced git command"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run a forced git command\"\n}\n"
+  },
+  {
+    "name": "destructive: a reset hidden behind a config flag",
+    "source": "destructive\u0001[\"-c\", \"core.x=1\", \"reset\"]",
+    "parsed": {
+      "refused": "refusing to run destructive git reset"
+    },
+    "serialized": "{\n  \"refused\": \"refusing to run destructive git reset\"\n}\n"
+  },
+  {
+    "name": "destructive: a subcommand that only starts like a destructive one",
+    "source": "destructive\u0001[\"reset-nothing\"]",
+    "parsed": {
+      "refused": null
+    },
+    "serialized": "{\n  \"refused\": null\n}\n"
+  },
+  {
+    "name": "destructive: nothing at all",
+    "source": "destructive\u0001[]",
+    "parsed": {
+      "refused": null
+    },
+    "serialized": "{\n  \"refused\": null\n}\n"
+  },
+  {
+    "name": "destructive: only flags",
+    "source": "destructive\u0001[\"--version\"]",
+    "parsed": {
+      "refused": null
+    },
+    "serialized": "{\n  \"refused\": null\n}\n"
+  },
+  {
+    "name": "destructive: a word that is a destructive name but is the value of -c",
+    "source": "destructive\u0001[\"-c\", \"reset\", \"status\"]",
+    "parsed": {
+      "refused": null
+    },
+    "serialized": "{\n  \"refused\": null\n}\n"
+  }
+]

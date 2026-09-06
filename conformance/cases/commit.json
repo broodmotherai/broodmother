@@ -1,0 +1,66 @@
+[
+  {
+    "name": "nothing",
+    "source": "[]"
+  },
+  {
+    "name": "one document",
+    "source": "[\"notes/sync.md\"]"
+  },
+  {
+    "name": "one document at the root",
+    "source": "[\"sync.md\"]"
+  },
+  {
+    "name": "one document, uppercase extension",
+    "source": "[\"notes/Sync.MD\"]"
+  },
+  {
+    "name": "one that is not markdown",
+    "source": "[\"logo.png\"]"
+  },
+  {
+    "name": "two in the same folder",
+    "source": "[\"notes/a.md\", \"notes/b.md\"]"
+  },
+  {
+    "name": "two in nested folders sharing a stem",
+    "source": "[\"notes/deep/a.md\", \"notes/deep/b.md\"]"
+  },
+  {
+    "name": "two sharing only the first folder",
+    "source": "[\"notes/a/x.md\", \"notes/b/y.md\"]"
+  },
+  {
+    "name": "two sharing nothing",
+    "source": "[\"a.md\", \"b.md\"]"
+  },
+  {
+    "name": "two, one at the root",
+    "source": "[\"notes/a.md\", \"b.md\"]"
+  },
+  {
+    "name": "many in one folder",
+    "source": "[\"docs/a.md\", \"docs/b.md\", \"docs/c.md\", \"docs/d.md\"]"
+  },
+  {
+    "name": "many sharing nothing",
+    "source": "[\"a.md\", \"b.md\", \"c.md\", \"d.md\", \"e.md\"]"
+  },
+  {
+    "name": "a deep shared path",
+    "source": "[\"a/b/c/one.md\", \"a/b/c/two.md\"]"
+  },
+  {
+    "name": "one path is the prefix of the other's folder",
+    "source": "[\"a/b/one.md\", \"a/b/c/two.md\"]"
+  },
+  {
+    "name": "unicode paths",
+    "source": "[\"notes/\\u65e5\\u672c\\u8a9e/a.md\", \"notes/\\u65e5\\u672c\\u8a9e/b.md\"]"
+  },
+  {
+    "name": "a path with spaces",
+    "source": "[\"notes/a file.md\"]"
+  }
+]

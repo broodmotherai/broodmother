@@ -1,0 +1,280 @@
+[
+  {
+    "name": "an interval trigger wired to a step",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every 30 minutes\", \"x\": 80, \"y\": 120, \"minutes\": 30}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "an interval trigger wired to nothing writes no line",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every 30 minutes\", \"x\": 80, \"y\": 120, \"minutes\": 30}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": []}",
+    "parsed": {
+      "lines": []
+    },
+    "serialized": "{\n  \"lines\": []\n}\n"
+  },
+  {
+    "name": "an interval trigger switched off writes no line",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every 30 minutes\", \"x\": 80, \"y\": 120, \"minutes\": 30, \"off\": true}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": []
+    },
+    "serialized": "{\n  \"lines\": []\n}\n"
+  },
+  {
+    "name": "an interval of one minute",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every minute\", \"x\": 80, \"y\": 120, \"minutes\": 1}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "*/1 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"*/1 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "fifty-nine minutes is still minutes",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every 59 minutes\", \"x\": 80, \"y\": 120, \"minutes\": 59}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "*/59 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"*/59 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "sixty minutes becomes an hour",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Hourly\", \"x\": 80, \"y\": 120, \"minutes\": 60}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "0 */1 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"0 */1 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "ninety minutes rounds to the nearest whole hours",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every 90 minutes\", \"x\": 80, \"y\": 120, \"minutes\": 90}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "0 */2 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"0 */2 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "a day and a half is capped at twenty-three hours",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every 2160 minutes\", \"x\": 80, \"y\": 120, \"minutes\": 2160}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "0 */23 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"0 */23 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "a fractional interval is written as it was given",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every 2.5 minutes\", \"x\": 80, \"y\": 120, \"minutes\": 2.5}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "*/2.5 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"*/2.5 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "a time trigger every day",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.time\", \"name\": \"At 09:00\", \"x\": 80, \"y\": 120, \"at\": \"09:00\"}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "0 9 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"0 9 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "a time trigger with a leading zero on the minutes",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.time\", \"name\": \"At 07:05\", \"x\": 80, \"y\": 120, \"at\": \"07:05\"}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "5 7 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"5 7 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "a time trigger at midnight",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.time\", \"name\": \"At midnight\", \"x\": 80, \"y\": 120, \"at\": \"00:00\"}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "0 0 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"0 0 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "a time trigger on named days",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.time\", \"name\": \"Weekdays at 09:30\", \"x\": 80, \"y\": 120, \"at\": \"09:30\", \"days\": [\"mon\", \"tue\", \"wed\", \"thu\", \"fri\"]}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "30 9 * * mon,tue,wed,thu,fri /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"30 9 * * mon,tue,wed,thu,fri /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "a time trigger on one day",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.time\", \"name\": \"Sunday\", \"x\": 80, \"y\": 120, \"at\": \"18:00\", \"days\": [\"sun\"]}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "0 18 * * sun /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"0 18 * * sun /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "a manual trigger is nobody's schedule",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.manual\", \"name\": \"Trigger manually\", \"x\": 80, \"y\": 120}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": []
+    },
+    "serialized": "{\n  \"lines\": []\n}\n"
+  },
+  {
+    "name": "a file trigger is a watch, not a schedule",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.file\", \"name\": \"When in.md changes\", \"x\": 80, \"y\": 120, \"path\": \"in.md\"}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": []
+    },
+    "serialized": "{\n  \"lines\": []\n}\n"
+  },
+  {
+    "name": "two schedules on one task are two lines",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every 15 minutes\", \"x\": 80, \"y\": 120, \"minutes\": 15}, {\"id\": \"u\", \"kind\": \"trigger.time\", \"name\": \"At 09:00\", \"x\": 80, \"y\": 240, \"at\": \"09:00\"}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}, {\"from\": \"u\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "*/15 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1",
+        "0 9 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"*/15 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\",\n    \"0 9 * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "a path with a quote in it is still one shell word",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001it's a task.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every 30 minutes\", \"x\": 80, \"y\": 120, \"minutes\": 30}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"it'\\''s a task.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"it'\\\\''s a task.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "a path with a percent in it is not a newline to cron",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001100%.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every 30 minutes\", \"x\": 80, \"y\": 120, \"minutes\": 30}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"100\\%.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"100\\\\%.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "a repo root names itself",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001repo:dodgson\u0001.tasks/nightly.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every 30 minutes\", \"x\": 80, \"y\": 120, \"minutes\": 30}, {\"id\": \"step\", \"kind\": \"agent.shell\", \"name\": \"Do it\", \"x\": 240, \"y\": 120, \"command\": \"echo hi\"}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "parsed": {
+      "lines": [
+        "*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"repo:dodgson\",\"path\":\".tasks/nightly.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1"
+      ]
+    },
+    "serialized": "{\n  \"lines\": [\n    \"*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"repo:dodgson\\\",\\\"path\\\":\\\".tasks/nightly.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"\n  ]\n}\n"
+  },
+  {
+    "name": "a task that will not parse",
+    "source": "lines\u0001http://127.0.0.1:58293\u0001project\u0001a.task\u0001{\"version\": 1, \"nodes\": [{\"id\": \"t\", \"kind\": \"trigger.interval\", \"name\": \"Every 30 minutes\", \"x\": 80, \"y\": 120}], \"edges\": [{\"from\": \"t\", \"to\": \"step\"}]}",
+    "error": "t minutes is not a number"
+  },
+  {
+    "name": "a first block into an empty crontab",
+    "source": "merge\u0001[\"*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"]\u0001",
+    "parsed": {
+      "crontab": "# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\n# BROODMOTHER END\n"
+    },
+    "serialized": "{\n  \"crontab\": \"# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\\n# BROODMOTHER END\\n\"\n}\n"
+  },
+  {
+    "name": "no schedules into an empty crontab",
+    "source": "merge\u0001[]\u0001",
+    "parsed": {
+      "crontab": ""
+    },
+    "serialized": "{\n  \"crontab\": \"\"\n}\n"
+  },
+  {
+    "name": "a block beside lines somebody wrote by hand",
+    "source": "merge\u0001[\"*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"]\u0001MAILTO=me@example.com\n0 4 * * * /usr/local/bin/backup\n",
+    "parsed": {
+      "crontab": "MAILTO=me@example.com\n0 4 * * * /usr/local/bin/backup\n\n# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\n# BROODMOTHER END\n"
+    },
+    "serialized": "{\n  \"crontab\": \"MAILTO=me@example.com\\n0 4 * * * /usr/local/bin/backup\\n\\n# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\\n# BROODMOTHER END\\n\"\n}\n"
+  },
+  {
+    "name": "the last block is replaced, not added to",
+    "source": "merge\u0001[\"*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"]\u0001# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\n0 9 * * * /usr/bin/curl old\n# BROODMOTHER END\n",
+    "parsed": {
+      "crontab": "# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\n# BROODMOTHER END\n"
+    },
+    "serialized": "{\n  \"crontab\": \"# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\\n# BROODMOTHER END\\n\"\n}\n"
+  },
+  {
+    "name": "dropping every schedule takes the block away",
+    "source": "merge\u0001[]\u00010 4 * * * /usr/local/bin/backup\n\n# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\n0 9 * * * old\n# BROODMOTHER END\n",
+    "parsed": {
+      "crontab": "0 4 * * * /usr/local/bin/backup\n"
+    },
+    "serialized": "{\n  \"crontab\": \"0 4 * * * /usr/local/bin/backup\\n\"\n}\n"
+  },
+  {
+    "name": "dropping every schedule from a crontab that is only a block",
+    "source": "merge\u0001[]\u0001# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\n0 9 * * * old\n# BROODMOTHER END\n",
+    "parsed": {
+      "crontab": ""
+    },
+    "serialized": "{\n  \"crontab\": \"\"\n}\n"
+  },
+  {
+    "name": "what is written after the block is kept too",
+    "source": "merge\u0001[\"*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"]\u0001# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\n0 9 * * * old\n# BROODMOTHER END\n0 4 * * * /usr/local/bin/backup\n",
+    "parsed": {
+      "crontab": "0 4 * * * /usr/local/bin/backup\n\n# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\n# BROODMOTHER END\n"
+    },
+    "serialized": "{\n  \"crontab\": \"0 4 * * * /usr/local/bin/backup\\n\\n# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\\n# BROODMOTHER END\\n\"\n}\n"
+  },
+  {
+    "name": "an unterminated block eats to the end of the file",
+    "source": "merge\u0001[\"*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"]\u00010 4 * * * mine\n# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\n0 9 * * * old\n",
+    "parsed": {
+      "crontab": "0 4 * * * mine\n\n# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\n# BROODMOTHER END\n"
+    },
+    "serialized": "{\n  \"crontab\": \"0 4 * * * mine\\n\\n# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\\n# BROODMOTHER END\\n\"\n}\n"
+  },
+  {
+    "name": "two lines",
+    "source": "merge\u0001[\"*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\", \"0 9 * * * /usr/bin/curl second\"]\u0001",
+    "parsed": {
+      "crontab": "# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\n0 9 * * * /usr/bin/curl second\n# BROODMOTHER END\n"
+    },
+    "serialized": "{\n  \"crontab\": \"# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\\n0 9 * * * /usr/bin/curl second\\n# BROODMOTHER END\\n\"\n}\n"
+  },
+  {
+    "name": "a crontab with no trailing newline",
+    "source": "merge\u0001[\"*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\"]\u00010 4 * * * /usr/local/bin/backup",
+    "parsed": {
+      "crontab": "0 4 * * * /usr/local/bin/backup\n\n# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\"root\":\"project\",\"path\":\"a.task\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\n# BROODMOTHER END\n"
+    },
+    "serialized": "{\n  \"crontab\": \"0 4 * * * /usr/local/bin/backup\\n\\n# BROODMOTHER BEGIN — schedules managed by broodmother, edits here are overwritten\\n*/30 * * * * /usr/bin/curl -fsS -m 600 -X POST -H 'content-type: application/json' -d '{\\\"root\\\":\\\"project\\\",\\\"path\\\":\\\"a.task\\\"}' 'http://127.0.0.1:58293/api/task/run' >/dev/null 2>&1\\n# BROODMOTHER END\\n\"\n}\n"
+  }
+]

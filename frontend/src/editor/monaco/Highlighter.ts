@@ -85,8 +85,25 @@ function highlighter(): Promise<Highlighter> {
     themes: SYNTAX,
     langs: SEED,
     engine: createJavaScriptRegexEngine({ forgiving: true }),
-  })
+  }).then(named)
   return starting
+}
+
+/**
+ * The syntax themes again, under the app's names for them. `@shikijs/monaco` routes
+ * `monaco.editor.setTheme` through Shiki so that the tokenizer's colours follow the editor's,
+ * which means a name Monaco can be set to has to be a name Shiki knows — and Monaco is set to
+ * a theme's id, which is `ink`, not the `dark-plus` underneath it. Without this, opening any
+ * document throws `Theme \`ink\` not found` out of the promise the editor is created in, and
+ * the pane stays empty.
+ *
+ * The same colours under a second name rather than a copy: Shiki holds themes by name, so
+ * `ink` and `dark-plus` resolve to the one palette.
+ */
+function named(shiki: Highlighter): Highlighter {
+  for (const { id, editor } of THEMES)
+    shiki.loadThemeSync({ ...shiki.getTheme(editor.syntax), name: id })
+  return shiki
 }
 
 /**
