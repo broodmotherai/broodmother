@@ -130,6 +130,24 @@ func connectionsOf(source map[string]json.RawMessage) map[string]Account {
 	return held
 }
 
+// appearanceOf is how the app looks to whoever this is. A file written before the app had themes
+// has no such key, and a file that names a theme nobody ships still reads: what a theme id means
+// is settled in the frontend, so anything non-empty is carried through and `themeOf` there
+// decides what it draws.
+func appearanceOf(source map[string]json.RawMessage) Appearance {
+	held := Appearance{Theme: defaultTheme}
+	var raw struct {
+		Theme json.RawMessage `json:"theme"`
+	}
+	if json.Unmarshal(orNull(source["appearance"]), &raw) != nil {
+		return held
+	}
+	if theme, ok := text(raw.Theme); ok {
+		held.Theme = theme
+	}
+	return held
+}
+
 // logins is what the browser is told: who each connection is as, and never what it speaks with.
 func logins(connections map[string]Account) map[string]string {
 	named := make(map[string]string, len(connections))

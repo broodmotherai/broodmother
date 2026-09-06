@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { themesCss } from '@/styles/themes/Generate'
+import { themesCss, themesTs } from '@/styles/themes/Generate'
 import { THEMES, themeOf } from '@/styles/themes/Themes'
 
 /** `styles/themes.css` is generated from the theme files and checked in, so the dev server
@@ -11,6 +11,13 @@ it('keeps the generated stylesheet in step with the theme files', async () => {
 
 /** A theme missing a slot is a hole somebody finds on a screen. The type catches an absent
  *  block; this catches a theme that has drifted a key. */
+/** The Electron main process is its own package and cannot import a theme file, so its share
+ *  is generated the same way and guarded by the same test — the window's ground and the
+ *  page's ground drifting apart is a flash of the wrong colour on every launch. */
+it('keeps the window\u2019s copy in step with the theme files', async () => {
+  await expect(themesTs(THEMES)).toMatchFileSnapshot('../../../desktop/src/themes.ts')
+})
+
 it('gives every theme the same slots as the default', () => {
   const shape = (value: unknown): unknown =>
     value && typeof value === 'object' && !Array.isArray(value)

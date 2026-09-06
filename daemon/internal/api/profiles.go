@@ -75,6 +75,21 @@ var profilesTable = Table{
 		return map[string]any{"profile": saved}, nil
 	},
 
+	/* How the app looks, switched. Its own route rather than a field on `PUT /api/profiles`: that
+	   one takes the whole identity, and a click on a swatch has no business carrying the page's
+	   copy of who you commit as back with it. */
+	"PUT /api/appearance": func(_ http.ResponseWriter, r *http.Request, ctx *app.Context) (any, error) {
+		appearance, err := parse(r, appearanceBody)
+		if err != nil {
+			return nil, err
+		}
+		saved, err := ctx.Profiles.SetAppearance(appearance)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"profile": saved}, nil
+	},
+
 	"GET /api/profiles/key": func(_ http.ResponseWriter, _ *http.Request, ctx *app.Context) (any, error) {
 		return map[string]any{"publicKey": nullIfEmpty(ctx.Profiles.PublicKey())}, nil
 	},
@@ -173,6 +188,19 @@ func newProfileBody(raw json.RawMessage) (profile.New, error) {
 		return profile.New{}, err
 	}
 	return profile.New{Name: body.Name, Identity: identity}, nil
+}
+
+// appearanceBody is a theme id and nothing else. What ids there are is the frontend's — it ships
+// the themes and falls back to its own default for one it does not know — so this proves the
+// shape and leaves the meaning where it lives.
+func appearanceBody(raw json.RawMessage) (profile.Appearance, error) {
+	var body struct {
+		Theme string `json:"theme"`
+	}
+	if json.Unmarshal(raw, &body) != nil || body.Theme == "" {
+		return profile.Appearance{}, apperr.BadRequestf("body must name a theme")
+	}
+	return profile.Appearance{Theme: body.Theme}, nil
 }
 
 var colorPattern = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)

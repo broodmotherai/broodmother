@@ -169,6 +169,21 @@ func (p *Profiles) SetIdentity(identity profile.Identity) (profile.Profile, erro
 	return saved, nil
 }
 
+// SetAppearance writes how the app looks to whoever is open. Nothing is reopened: a theme changes
+// what is drawn and not what git offers, so the project behind it goes on as it was.
+func (p *Profiles) SetAppearance(appearance profile.Appearance) (profile.Profile, error) {
+	held, err := p.Require()
+	if err != nil {
+		return profile.Profile{}, err
+	}
+	saved, err := profile.WriteAppearance(*held, appearance)
+	if err != nil {
+		return profile.Profile{}, err
+	}
+	p.hold(&saved)
+	return saved, nil
+}
+
 // PublicKey is the open profile's, or empty where it has none yet.
 func (p *Profiles) PublicKey() string {
 	held := p.Active()

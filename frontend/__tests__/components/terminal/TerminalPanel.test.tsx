@@ -15,6 +15,10 @@ vi.mock('@xterm/xterm', () => ({
   Terminal: class {
     cols = 100
     rows = 30
+    /* Real xterm carries its settings here and the panel repaints by setting one of them
+       rather than by building a second terminal — a terminal made again is a pty let go
+       of. The double needs somewhere to be repainted into. */
+    options: Record<string, unknown> = {}
     loadAddon() {}
     open() {}
     write(data: string) {

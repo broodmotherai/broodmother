@@ -7,6 +7,7 @@ import { Icon, type IconName } from '@/components/core/Icons'
 import { Row } from '@/components/core/Row'
 import { ProfilePanel } from './ProfilePanel'
 import { SoulPanel } from './SoulPanel'
+import { AppearancePanel } from './AppearancePanel'
 import { AgentsPanel } from './AgentsPanel'
 import { IntegrationsPanel } from './IntegrationsPanel'
 import { GitPanel } from './GitPanel'
@@ -51,6 +52,16 @@ const SECTIONS: Section[] = [
     group: 'General',
     open: (app) => Boolean(app.profile),
     panel: SoulPanel,
+  },
+  {
+    id: 'appearance',
+    label: 'Appearance',
+    icon: 'image',
+    group: 'General',
+    // The theme is the profile's, so the section is there while one is — the same rule the
+    // two above it follow.
+    open: (app) => Boolean(app.profile),
+    panel: AppearancePanel,
   },
   {
     id: 'agents',

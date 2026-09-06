@@ -1,4 +1,5 @@
 import { app, BrowserWindow, shell } from 'electron'
+import { windowPaint } from './appearance.js'
 import { holding } from './holding.js'
 import { BLANK, isBrowsable } from './loopback.js'
 import { serve, stopServing, SITE_PORT } from './serve.js'
@@ -70,7 +71,11 @@ async function open() {
     height: 900,
     minWidth: 720,
     minHeight: 480,
-    backgroundColor: '#f6f0e4',
+    /* The frame paints before the site does, so it takes the colour off disk rather than
+       waiting to be told over the wire — a dark app opening sand for a frame is the flash
+       this whole feature exists to have none of. Read once, here: changing the theme
+       repaints the page under the same frame, and the next launch reads it again. */
+    backgroundColor: windowPaint().background,
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: TRAFFIC_LIGHTS,
     // `webviewTag` lets the browser tab hold a real Chromium view. An iframe cannot browse

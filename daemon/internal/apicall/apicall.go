@@ -39,6 +39,10 @@ import (
 //	POST /api/scope             moves the ground under the person you are talking to
 //	/api/projects, /api/repos   creating, opening and deleting where somebody works
 //	/api/profiles, /api/model-keys   a conversation that could rewrite the key it speaks with
+//	PUT /api/appearance         harmless beside the rest of that line, and denied all the same:
+//	                            how the app looks is the person's, and an agent repainting the
+//	                            window somebody is reading is an agent answering a question
+//	                            nobody asked
 //	/api/github                 device-flow auth, and making repositories on a host
 //	DELETE /api/terminal        ends somebody's shell
 //	/api/chat, /api/chats       a conversation reading or deleting conversations, its own

@@ -132,7 +132,11 @@ it('stands the rail in named bands', async () => {
   expect(screen.getByRole('heading', { name: 'Organization' })).toBeVisible()
   // The soul is who you are showing up as rather than how the work runs, so it stands with
   // the account it belongs to.
-  expect(within(general).getAllByRole('tab').map(named)).toEqual(['Account', 'Soul'])
+  expect(within(general).getAllByRole('tab').map(named)).toEqual([
+    'Account',
+    'Soul',
+    'Appearance',
+  ])
   expect(within(workflow).getAllByRole('tab').map(named)).toEqual([
     'Agents',
     'Integrations',
@@ -659,4 +663,29 @@ it('points at where a provider’s keys are made', async () => {
     'href',
     'https://console.anthropic.com/settings/keys',
   )
+})
+
+/* The theme is picked by looking at it, so the rows carry a window rather than a name and the
+   click is the whole of the control — there is no Save under this the way there is under the
+   account. */
+it('switches the theme off the row, and remembers which one is on', async () => {
+  const client = await show()
+  await open('Appearance')
+
+  const themes = screen.getAllByRole('button', { name: /Sand|Ink/ })
+  expect(themes.map((row) => row.textContent)).toEqual(['Sand', 'Ink'])
+  expect(themes[0]).toHaveAttribute('aria-selected', 'true')
+  expect(themes[1]).toHaveAttribute('aria-selected', 'false')
+
+  await userEvent.click(themes[1])
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: 'Ink' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    ),
+  )
+  // Stored on the profile rather than in the browser, which is what makes it survive a
+  // restart and follow you to another machine.
+  const listed = await client.request('GET /api/profiles', null)
+  expect(listed.active?.appearance.theme).toBe('ink')
 })

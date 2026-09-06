@@ -239,3 +239,52 @@ func TestRefusesToWriteAProfileThatIsNotThere(t *testing.T) {
 		}
 	}
 }
+
+// Switching a theme is a click, not a form: it carries a theme id and nothing else, and what it
+// answers with is the profile so that whatever is on screen takes the new appearance from the
+// same reply that saved it.
+func TestSwitchesTheThemeWithoutCarryingTheRestOfTheProfile(t *testing.T) {
+	server := serving(t, "")
+	made := sent(t, server, http.MethodPost, "/api/profiles", `{"name":"Ada",`+anIdentity+`}`)
+	held, _ := made["profile"].(map[string]any)
+	appearance, _ := held["appearance"].(map[string]any)
+	if appearance == nil || appearance["theme"] != "sand" {
+		t.Fatalf("a new profile opened on %+v", held["appearance"])
+	}
+
+	saved := sent(t, server, http.MethodPut, "/api/appearance", `{"theme":"ink"}`)
+	held, _ = saved["profile"].(map[string]any)
+	appearance, _ = held["appearance"].(map[string]any)
+	if appearance["theme"] != "ink" {
+		t.Fatalf("answered with %+v", held["appearance"])
+	}
+	// The colour it was made with is still the colour it has: a theme is not an identity.
+	if held["color"] != "#8fb8d8" {
+		t.Errorf("the switch touched the identity: %+v", held)
+	}
+
+	// It survives a restart, which is the whole reason it is on disk rather than in the browser.
+	listed := sent(t, server, http.MethodGet, "/api/profiles", "")
+	active, _ := listed["active"].(map[string]any)
+	appearance, _ = active["appearance"].(map[string]any)
+	if appearance["theme"] != "ink" {
+		t.Errorf("came back as %+v", active["appearance"])
+	}
+	body, err := os.ReadFile(filepath.Join(server.Context.Home, "Ada", "profile.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(body), `"theme": "ink"`) {
+		t.Errorf("is not on disk:\n%s", body)
+	}
+}
+
+// What a theme id means is settled in the frontend, so the route proves the shape and leaves the
+// meaning alone — a name it has never heard of is saved, and no name at all is refused.
+func TestRefusesARequestThatNamesNoTheme(t *testing.T) {
+	server := serving(t, "")
+	sent(t, server, http.MethodPost, "/api/profiles", `{"name":"Ada",`+anIdentity+`}`)
+	sent(t, server, http.MethodPut, "/api/appearance", `{"theme":"midnight"}`)
+	refused(t, server, http.MethodPut, "/api/appearance", `{"theme":""}`)
+	refused(t, server, http.MethodPut, "/api/appearance", `{}`)
+}

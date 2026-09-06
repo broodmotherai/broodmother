@@ -152,9 +152,24 @@ func Create(input New, home string) (Profile, error) {
 		Name:        input.Name,
 		Path:        file(home, input.Name),
 		Identity:    input.Identity,
+		Appearance:  Appearance{Theme: defaultTheme},
 		Connections: map[string]string{},
 		Models:      []string{},
 	}, input.Identity)
+}
+
+// WriteAppearance writes how the app looks and touches nothing else. Its own write rather than a
+// field on [WriteIdentity]: the identity is a form being submitted and this is a click, and a
+// theme switched while the account page holds an older copy of the identity must not save that
+// copy back over what is on disk.
+func WriteAppearance(p Profile, appearance Appearance) (Profile, error) {
+	held := object(p.Path)
+	held.Set("appearance", valueOf(appearance))
+	if err := save(p.Path, held); err != nil {
+		return Profile{}, err
+	}
+	p.Appearance = appearance
+	return p, nil
 }
 
 // keptModels is the credentials the file holds, in the order it holds them — and nothing at all

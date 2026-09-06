@@ -41,6 +41,14 @@ const grounded = (ground: string, line: string): Record<string, string> => ({
   'scrollbar.shadow': '#00000000',
 })
 
+/** The measure lines down a source file. Set on the theme rather than in the construction
+ *  options beside the columns they stand at: the options are a module constant, fixed when
+ *  the bundle loads, and a ruler that cannot follow a theme switch is a pink line left on a
+ *  dark editor. Monaco reads this key the way VS Code does. */
+const ruled = (ruler: string): Record<string, string> => ({
+  'editorRuler.foreground': ruler,
+})
+
 /**
  * Where a difference is said. Monaco paints a changed line end to end, which on a file that
  * differs everywhere — the ordinary case for a branch you have been working on — is a page
@@ -128,6 +136,7 @@ function paintGround(monaco: MonacoApi, shiki: Highlighter): void {
       colors: {
         ...syntax.colors,
         ...grounded(editor.ground, editor.caretLine),
+        ...ruled(editor.ruler),
         ...diffed(editor),
       },
     })

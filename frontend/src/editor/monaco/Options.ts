@@ -30,8 +30,7 @@ export const CODE: Monaco.editor.IStandaloneEditorConstructionOptions = {
   // `--page-top`, in the pixels Monaco pads in: a source file opens on the same line every
   // other page does.
   padding: { top: 72, bottom: 96 },
-  rulers: [
-    { column: 80, color: '#ffc1cc' },
-    { column: 100, color: '#ffc1cc' },
-  ],
+  // Where they stand, and not what colour they are: the colour is `editorRuler.foreground`
+  // on each theme, so a ruler follows a switch that this constant could never see.
+  rulers: [80, 100],
 }

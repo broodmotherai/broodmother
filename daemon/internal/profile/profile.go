@@ -27,6 +27,19 @@ import (
 
 const defaultColor = "#8fb8d8"
 
+// defaultTheme is the id of the theme the app ships on. The daemon knows the name and nothing
+// else about it: which themes exist is the frontend's, and `themeOf` there answers with its own
+// default for an id it has never heard of, so a theme renamed or dropped never strands a profile.
+const defaultTheme = "sand"
+
+// Appearance is how the app looks to this person. Its own key rather than a field on the
+// identity: it is not typed on the account page, it is switched, and a switch should not have to
+// carry every other thing about a profile back to the server to be saved.
+type Appearance struct {
+	// Theme is the id of a theme in the frontend's `styles/themes/`.
+	Theme string `json:"theme"`
+}
+
 // Identity is the half of a profile a person edits. The connections and the model keys are not
 // in it — they are made and broken by their own routes, not by typing.
 type Identity struct {
@@ -49,6 +62,7 @@ type Profile struct {
 	// Path is the profile's file, `~/.broodmother/<name>/profile.json`.
 	Path string `json:"path"`
 	Identity
+	Appearance Appearance `json:"appearance"`
 	// Connections are the services this profile is connected to, by provider id, and who it is
 	// each of them as — `github` to a login, and whatever comes after it.
 	Connections map[string]string `json:"connections"`
@@ -142,6 +156,7 @@ func read(path, name string) Profile {
 		Name:        name,
 		Path:        path,
 		Identity:    identityOf(source, name),
+		Appearance:  appearanceOf(source),
 		Connections: logins(connectionsOf(source)),
 		Models:      modelProviders(source),
 	}

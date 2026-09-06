@@ -175,3 +175,66 @@ func TestReadsTheTokenOutOfEitherPlaceAConnectionIsKept(t *testing.T) {
 		t.Errorf("read a connection nobody made: %+v", account)
 	}
 }
+
+// A theme is switched by its own write, so it goes into the file beside everything else rather
+// than over any of it — and the keys the file already had keep the order they had.
+func TestWritesTheAppearanceAndLeavesEveryOtherLineWhereItWas(t *testing.T) {
+	p := written(t, `{"zzz":1,"color":"#000000"}`+"\n")
+	saved, err := WriteAppearance(p, Appearance{Theme: "ink"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if saved.Appearance.Theme != "ink" {
+		t.Errorf("came back as %+v", saved.Appearance)
+	}
+	want := `{
+  "zzz": 1,
+  "color": "#000000",
+  "appearance": {
+    "theme": "ink"
+  }
+}
+`
+	if got := onDisk(t, p); got != want {
+		t.Errorf("wrote:\n%s\nwant:\n%s", got, want)
+	}
+}
+
+// The one way these two writes could ruin each other: the account page holds a copy of the
+// identity from before a theme was switched, and saving it must not carry that copy over the
+// switch. `WriteIdentity` writes the keys it names and no others, and this is what says so.
+func TestSavingTheIdentityLeavesTheAppearanceWhereItWas(t *testing.T) {
+	p := written(t, `{"appearance":{"theme":"ink"}}`+"\n")
+	if _, err := WriteIdentity(p, anIdentity()); err != nil {
+		t.Fatal(err)
+	}
+	if got := onDisk(t, p); !strings.Contains(got, `"theme": "ink"`) {
+		t.Errorf("lost the theme:\n%s", got)
+	}
+	if again := read(p.Path, "ada"); again.Appearance.Theme != "ink" {
+		t.Errorf("reads back as %+v", again.Appearance)
+	}
+}
+
+// A file written before the app had themes is every file on disk today, and it opens on the one
+// the app ships rather than on nothing.
+func TestAProfileThatSaysNothingAboutThemesOpensOnTheDefault(t *testing.T) {
+	p := written(t, `{"color":"#000000"}`+"\n")
+	if held := read(p.Path, "ada"); held.Appearance.Theme != defaultTheme {
+		t.Errorf("opened on %q", held.Appearance.Theme)
+	}
+	broken := written(t, `{"appearance":{"theme":42}}`+"\n")
+	if held := read(broken.Path, "ada"); held.Appearance.Theme != defaultTheme {
+		t.Errorf("a theme that is not a name opened on %q", held.Appearance.Theme)
+	}
+}
+
+// Which themes exist is the frontend's, so a name the daemon has never heard of is carried rather
+// than corrected — the app falls back to its own default for one it cannot draw, and a theme
+// renamed and renamed back finds the profile still pointing at it.
+func TestCarriesAThemeItHasNeverHeardOf(t *testing.T) {
+	p := written(t, `{"appearance":{"theme":"midnight"}}`+"\n")
+	if held := read(p.Path, "ada"); held.Appearance.Theme != "midnight" {
+		t.Errorf("read back as %q", held.Appearance.Theme)
+	}
+}
