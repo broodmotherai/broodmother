@@ -45,7 +45,9 @@ make test           # cd daemon && go test ./... ; cd frontend && npm run typech
 
 Each tree also runs on its own: `daemon/` has `make dev`, `make vet` and `make test`; `frontend/` has `npm run dev`, `typecheck`, `lint`, `test` and `fmt`; `desktop/` has `npm run dev`, `compile` and `package`.
 
-`make test` does not pass today. `conformance/` was deleted in `25d24e4` and nothing has regenerated it, so every case in `daemon/tests/conformance/` fails on a missing file and `make corpus` writes into a directory that is not there. Do not read those failures as something you broke, and do not "fix" them by deleting the tests.
+`conformance/` holds the cases and the frozen answers the TypeScript daemon gave for them, and `daemon/tests/conformance/` reads them. That suite is the port's real proof, and it is worth more than the unit tests beside it.
+
+Never regenerate the corpus to make a test pass. `make corpus` rewrites the answers from what the code says today, which is the opposite of what they are for: an answer that moves to match a change proves nothing. Regenerating changes what the app accepts, so read the diff before you keep it.
 
 ## The thing to understand before changing a format
 
