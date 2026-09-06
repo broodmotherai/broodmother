@@ -1,13 +1,9 @@
 <p align="center">
-  <img src=".github/assets/logo.png" alt="broodmother" width="50%">
+  <img src=".github/assets/logo.png" alt="broodmother" width="28%">
 </p>
 
 <p align="center">
-  <a href="LICENSE.md"><img alt="License: PolyForm Noncommercial 1.0.0" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-dda72a?style=flat-square"></a>
-  <img alt="Go 1.26" src="https://img.shields.io/badge/go-1.26-dda72a?style=flat-square&logo=go&logoColor=white">
-  <img alt="Next.js 16" src="https://img.shields.io/badge/next.js-16-dda72a?style=flat-square&logo=nextdotjs&logoColor=white">
-  <img alt="Electron 43" src="https://img.shields.io/badge/electron-43-dda72a?style=flat-square&logo=electron&logoColor=white">
-  <img alt="Platform: macOS" src="https://img.shields.io/badge/platform-macOS-dda72a?style=flat-square&logo=apple&logoColor=white">
+  <a href="LICENSE.md"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-dda72a?style=flat-square"></a>
 </p>
 
 # broodmother
