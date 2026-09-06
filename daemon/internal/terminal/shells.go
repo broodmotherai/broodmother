@@ -22,6 +22,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"github.com/creack/pty"
 	"golang.org/x/sys/unix"
@@ -405,16 +406,32 @@ func (s *Shells) spawn(root, id string, wide, high int) *shell {
 // not: what a shell said while the lid was shut is the thing somebody is coming back to read.
 func (s *Shells) pump(one *shell) {
 	buffer := make([]byte, 32*1024)
+	// A read ends where the kernel had bytes to hand over, which is not where a character ends: a
+	// pty splits a box-drawing rune's three bytes across two reads often enough to be the ordinary
+	// case rather than the corner. Passed on as it stands, neither half is UTF-8, and the JSON
+	// frame carrying it writes a replacement character for every stray byte — so one cell of the
+	// screen becomes three, and everything after it on the row is pushed along. That is a TUI
+	// drawn with holes in it and its columns out of true. Whatever is not yet a whole character
+	// waits here for the rest of itself.
+	var partial []byte
 	for {
 		read, err := one.pty.Read(buffer)
 		if read > 0 {
-			data := string(buffer[:read])
-			one.mutex.Lock()
-			one.buffer = tail(append(one.buffer, buffer[:read]...))
-			watcher := one.watcher
-			one.mutex.Unlock()
-			if watcher != nil {
-				watcher.Output(data)
+			said := buffer[:read]
+			if len(partial) > 0 {
+				said = append(partial, said...)
+			}
+			whole, rest := characters(said)
+			partial = append(partial[:0:0], rest...)
+			if len(whole) > 0 {
+				data := string(whole)
+				one.mutex.Lock()
+				one.buffer = tail(append(one.buffer, whole...))
+				watcher := one.watcher
+				one.mutex.Unlock()
+				if watcher != nil {
+					watcher.Output(data)
+				}
 			}
 		}
 		if err != nil {
@@ -509,9 +526,36 @@ func tail(buffer []byte) []byte {
 	cut := len(buffer) - scrollback
 	line := indexFrom(buffer, cut, '\n')
 	if line == -1 || line-cut > 4096 {
-		return buffer[cut:]
+		return buffer[boundary(buffer, cut):]
 	}
 	return buffer[line+1:]
+}
+
+// characters splits what has been read into the part that is whole characters and the part that is
+// the beginning of one. A trailing byte that begins nothing valid counts as whole: no byte after it
+// will make it UTF-8, and holding it back would stall everything queued behind it.
+func characters(data []byte) (whole, partial []byte) {
+	for at := len(data) - 1; at >= 0 && len(data)-at < utf8.UTFMax; at-- {
+		if !utf8.RuneStart(data[at]) {
+			continue
+		}
+		if utf8.FullRune(data[at:]) {
+			break
+		}
+		return data[:at], data[at:]
+	}
+	return data, nil
+}
+
+// boundary is the first byte at or after `cut` that begins a character, so that a backlog cut to
+// length does not open on the tail of one.
+func boundary(buffer []byte, cut int) int {
+	for at := cut; at < len(buffer) && at-cut < utf8.UTFMax; at++ {
+		if utf8.RuneStart(buffer[at]) {
+			return at
+		}
+	}
+	return cut
 }
 
 func indexFrom(buffer []byte, from int, want byte) int {

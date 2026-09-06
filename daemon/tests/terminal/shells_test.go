@@ -6,10 +6,12 @@ package terminal_test
 import (
 	. "github.com/broodmotherai/broodmother/daemon/internal/terminal"
 
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+	"unicode/utf8"
 )
 
 // pane is a watcher that only remembers, so a test can read what a socket would have been sent.
@@ -18,11 +20,18 @@ type pane struct {
 	output strings.Builder
 	exited *int
 	closed bool
+	// broken is the first thing it was handed that was not UTF-8 on its own. Read one chunk at a
+	// time, because that is how a socket sends them: two halves of a character that make sense
+	// once they are written down beside each other are still two broken frames on the way there.
+	broken string
 }
 
 func (p *pane) Output(data string) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
+	if p.broken == "" && !utf8.ValidString(data) {
+		p.broken = data
+	}
 	p.output.WriteString(data)
 }
 
@@ -42,6 +51,12 @@ func (p *pane) said() string {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 	return p.output.String()
+}
+
+func (p *pane) half() string {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	return p.broken
 }
 
 func (p *pane) ended() (int, bool) {
@@ -287,5 +302,32 @@ func TestTheSessionMarksDoNotReachAShell(t *testing.T) {
 	// Everything else is the user's own shell environment, and a login shell here is still theirs.
 	if held["CLAUDE_CONFIG_DIR"] != "/somewhere" {
 		t.Error("CLAUDE_CONFIG_DIR did not survive")
+	}
+}
+
+// A character split across two reads of the pty is still one character by the time it reaches the
+// pane. A read ends where the kernel had bytes to hand over, and the box-drawing runes a TUI is
+// framed in are three bytes each: sent as two invalid halves they arrive as replacement glyphs,
+// three cells where one was, and every row they are on comes out shifted.
+func TestACharacterSplitAcrossReadsArrivesWhole(t *testing.T) {
+	shells, _ := standing(t)
+	watching := &pane{}
+	id, _, _ := shells.Attach(watching, Request{Cols: 100, Rows: 30})
+
+	// Drawn by the shell rather than typed at it: a line long enough to split on every read is
+	// longer than a tty will take as input in one go.
+	const rows, doublings = 2000, 5
+	const wide = 4 << doublings
+	shells.Write(id, "awk 'BEGIN{s=\"────\";"+
+		"for(i=0;i<"+strconv.Itoa(doublings)+";i++)s=s s;"+
+		// Quoted so that the echo of the line typed is not itself the word being waited for.
+		"for(i=0;i<"+strconv.Itoa(rows)+";i++)print s}'; echo dr'awn'\n")
+	said := until(t, watching, "\r\ndrawn")
+
+	if half := watching.half(); half != "" {
+		t.Errorf("the pane was sent %q, which is not UTF-8 on its own", half[max(0, len(half)-16):])
+	}
+	if drawn := strings.Count(said, "─"); drawn < rows*wide {
+		t.Errorf("%d box characters reached the pane, want at least %d", drawn, rows*wide)
 	}
 }
