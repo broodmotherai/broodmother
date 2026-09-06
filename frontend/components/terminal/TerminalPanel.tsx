@@ -4,6 +4,8 @@ import '@xterm/xterm/css/xterm.css'
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { DocRoot } from '@broodmother/types/doc'
 import { useApp } from '@/State'
+import { useTheme } from '@/components/appearance/Theme'
+import type { Theme } from '@/styles/themes/Theme'
 import { Icon } from '@/components/core/Icons'
 import { Resizer } from '@/components/core/Resizer'
 import { agentCommand, TERMINAL_KINDS, type TerminalKind, TERMINALS } from './Kinds'
@@ -19,44 +21,6 @@ import {
   type Layout,
   type Seam,
 } from './Layout'
-
-/**
- * The ground and the palette, so a shell looks like the rest of the app. The app reads on
- * sand now, so this does too: the ground is the same step every floating surface takes and
- * the text is the same ink the page is set in.
- *
- * The ANSI colours are the opal hues held against a light ground rather than the hues
- * themselves — opal is drawn to sit on black, and at those values on sand a warning reads
- * as a highlight. These are the same six, darkened until each clears 5:1 on the ground:
- * red 6.2, green 5.5, yellow 5.2, blue 7.2, magenta 6.7, cyan 6.0.
- */
-const GROUND = '#fefcf8'
-const INK = '#2b2419'
-
-const THEME = {
-  background: GROUND,
-  foreground: INK,
-  cursor: '#7340ad',
-  cursorAccent: GROUND,
-  selectionBackground: 'rgba(43, 36, 25, 0.14)',
-  black: INK,
-  brightBlack: '#6e624e',
-  red: '#a33a52',
-  brightRed: '#a33a52',
-  green: '#2e7355',
-  brightGreen: '#2e7355',
-  yellow: '#8a6410',
-  brightYellow: '#8a6410',
-  blue: '#4048b8',
-  brightBlue: '#4048b8',
-  magenta: '#7340ad',
-  brightMagenta: '#7340ad',
-  cyan: '#136b7d',
-  brightCyan: '#136b7d',
-  /* On a light ground these are the pale end of the scale, not the bright end. */
-  white: '#dfd2bb',
-  brightWhite: GROUND,
-}
 
 export function TerminalPanel({
   root,
@@ -339,6 +303,11 @@ function Session({
   onEnd: () => void
 }) {
   const app = useApp()
+  /* Not taken once: unlike the line and the root, the palette is what the shell is being
+     read on right now, and it follows the app the moment somebody switches theme. */
+  const theme = useTheme()
+  const paint = useRef(theme.terminal)
+  paint.current = theme.terminal
   // Taken once, like the root below: the line is what this shell was opened to run, and
   // rewriting the setting afterwards is not a reason to type into a pty already running one.
   const run = useRef(agentCommand(kind, app.profile?.agentCommands))
@@ -346,7 +315,11 @@ function Session({
   // the scope moving afterwards is not a reason to move a folder out from under it.
   const where = useRef(root)
   const host = useRef<HTMLDivElement>(null)
-  const shell = useRef<{ fit: () => void; focus: () => void } | null>(null)
+  const shell = useRef<{
+    fit: () => void
+    focus: () => void
+    paint: (colors: Theme['terminal']) => void
+  } | null>(null)
   const [lost, setLost] = useState(false)
   const end = useRef(onEnd)
   end.current = onEnd
@@ -365,7 +338,7 @@ function Session({
       if (gone) return
 
       const terminal = new Terminal({
-        theme: THEME,
+        theme: paint.current,
         // Resolved, not `var(--mono)`: a renderer measuring on canvas can't read the var.
         fontFamily: getComputedStyle(document.documentElement).getPropertyValue('--mono'),
         fontSize: 12,
@@ -463,7 +436,16 @@ function Session({
          would ever reach again — now the tab comes back and asks for it by name, and a
          reload that killed the shell first would be the one thing standing in the way. */
 
-      shell.current = { fit: resize, focus: () => terminal.focus() }
+      shell.current = {
+        fit: resize,
+        focus: () => terminal.focus(),
+        /* Set rather than rebuilt: a terminal made again is a pty let go of, and switching
+           theme should not close what you were running in it. */
+        paint: (colors) => {
+          terminal.options.theme = colors
+        },
+      }
+      shell.current.paint(paint.current)
       /* Unmounting lets go of the shell rather than ending it. This pane goes when its tab
          is closed — and equally when you move to another repo, when the panel is put
          away, when the window is reloaded — and only the first of those is anybody saying
@@ -481,6 +463,10 @@ function Session({
       stop?.()
     }
   }, [app.client])
+
+  useEffect(() => {
+    shell.current?.paint(theme.terminal)
+  }, [theme])
 
   useEffect(() => {
     if (focused) shell.current?.focus()

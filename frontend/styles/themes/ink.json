@@ -1,0 +1,108 @@
+{
+  "id": "ink",
+  "name": "Ink",
+  "scheme": "dark",
+  "scale": {
+    "sand-50": "#221e17",
+    "sand-100": "#1b1813",
+    "sand-200": "#15130f",
+    "sand-300": "#2c2720",
+    "sand-400": "#3b352b",
+    "sand-500": "#6b6252",
+    "sand-600": "#d8cbb0",
+    "ink": "#ece4d3",
+    "ink-soft": "#c9c0ad",
+    "ink-faint": "#9a917e"
+  },
+  "hue": {
+    "violet": "#c084fc",
+    "indigo": "#818cf8",
+    "cyan": "#22d3ee",
+    "mint": "#34d399",
+    "gold": "#fbbf24",
+    "rose": "#f472b6",
+    "navy": "#94a3b8",
+    "red": "#f87171"
+  },
+  "paint": {
+    "black": "#1f1f1f",
+    "danger": "#f85149",
+    "scrim": "#000000",
+    "paper": "#ffffff",
+    "shadow": "#000000"
+  },
+  "terminal": {
+    "background": "#221e17",
+    "foreground": "#ece4d3",
+    "cursor": "#c084fc",
+    "cursorAccent": "#221e17",
+    "selectionBackground": "rgba(236, 228, 211, 0.16)",
+    "black": "#5c5445",
+    "red": "#f87171",
+    "green": "#34d399",
+    "yellow": "#fbbf24",
+    "blue": "#818cf8",
+    "magenta": "#c084fc",
+    "cyan": "#22d3ee",
+    "white": "#c9c0ad",
+    "brightBlack": "#8b8272",
+    "brightRed": "#fca5a5",
+    "brightGreen": "#6ee7b7",
+    "brightYellow": "#fcd34d",
+    "brightBlue": "#a5b4fc",
+    "brightMagenta": "#d8b4fe",
+    "brightCyan": "#67e8f9",
+    "brightWhite": "#ece4d3"
+  },
+  "ansi": {
+    "black": "#5c5445",
+    "red": "#f87171",
+    "green": "#34d399",
+    "yellow": "#fbbf24",
+    "blue": "#818cf8",
+    "magenta": "#c084fc",
+    "cyan": "#22d3ee",
+    "white": "#c9c0ad",
+    "bright-black": "#8b8272",
+    "bright-red": "#fca5a5",
+    "bright-green": "#6ee7b7",
+    "bright-yellow": "#fcd34d",
+    "bright-blue": "#a5b4fc",
+    "bright-magenta": "#d8b4fe",
+    "bright-cyan": "#67e8f9",
+    "bright-white": "#ece4d3"
+  },
+  "editor": {
+    "syntax": "dark-plus",
+    "ground": "#15130f",
+    "caretLine": "#ece4d30a",
+    "insertedText": "#34d3991f",
+    "removedText": "#f851491f",
+    "insertedGutter": "#34d399b3",
+    "removedGutter": "#f85149b3",
+    "ruler": "#553f45"
+  },
+  "graph": {
+    "person": "#22d3ee",
+    "org": "#818cf8",
+    "source": "#d4a373",
+    "term": "#34d399",
+    "decision": "#c084fc",
+    "finding": "#eab308",
+    "question": "#f472b6",
+    "artifact": "#94a3b8"
+  },
+  "canvas": {
+    "fill": "#221e17",
+    "border": "#6b6252",
+    "ink": "#ece4d3",
+    "line": "#6b6252",
+    "presets": ["#f472b6", "#d4a373", "#eab308", "#34d399", "#22d3ee", "#c084fc"]
+  },
+  "window": {
+    "background": "#15130f",
+    "holdingGround": "#15130f",
+    "holdingInk": "#ece4d3"
+  },
+  "profile": "#8fb8d8"
+}

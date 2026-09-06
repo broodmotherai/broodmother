@@ -4,10 +4,13 @@ import { bundledLanguages, createHighlighter, type Highlighter } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import type { MonacoApi } from './Monaco'
 import { PLAIN, shikiIdFor } from './Languages'
+import type { EditorPaint } from '@/styles/themes/Theme'
+import { THEMES } from '@/styles/themes/Themes'
 
-/** VS Code's own default themes, so the editor looks like the one being imitated. */
-export const DARK = 'dark-plus'
-export const LIGHT = 'light-plus'
+/** VS Code's own default themes, so the editor looks like the one being imitated. A theme
+ *  picks one of these to sit under its own ground: a syntax theme is hundreds of colours,
+ *  and authoring one is a different job from choosing a palette. */
+const SYNTAX = [...new Set(THEMES.map((theme) => theme.editor.syntax))]
 
 /**
  * The one ground under every document. It is stated as a colour rather than left
@@ -15,22 +18,15 @@ export const LIGHT = 'light-plus'
  * the gutter, the sticky header — and a transparent editor over an opaque app leaves those
  * showing VS Code's own background against the app's.
  *
- * Both are the app's `--editor-ground`, which is what `.monaco-host` paints behind this and
- * so is where the two have to agree — a seam between them is visible at the gutter. That
- * token is `var(--ground)`, resolved here because Monaco takes a hex and not a token: the
- * sandy scheme's `--color-sand-200`. Changing one changes the other.
+ * It is the app's `--editor-ground`, which is what `.monaco-host` paints behind this and so
+ * is where the two have to agree — a seam between them is visible at the gutter. The theme
+ * carries it as a hex because Monaco takes a hex and not a token, and the theme file is
+ * where the two are held to the same value.
  *
  * This is the ground of a document, which is the pane's. A field is not a document: the
  * inline editor carries the `input` ground instead, and turns both this and `.monaco-host`
  * transparent so that it shows — see `.inline-editor` in globals.css.
  */
-const GROUND_DARK = '#0A0A0A'
-const GROUND_LIGHT = '#F6F0E4'
-
-/** The caret line, as a wash of the ink over the ground at the weight each can carry. */
-const LINE_DARK = '#FFFEEE0A'
-const LINE_LIGHT = '#1F1F1F0A'
-
 const grounded = (ground: string, line: string): Record<string, string> => ({
   'editor.background': ground,
   'editorGutter.background': ground,
@@ -53,16 +49,16 @@ const grounded = (ground: string, line: string): Record<string, string> => ({
  * line keeps a wash faint enough to read through so that a word changed mid-line still has
  * somewhere to show.
  *
- * The app's own `--danger` and `--opal-mint`, because a diff is not a different palette.
+ * The theme's own mint and danger, because a diff is not a different palette.
  */
-const DIFF: Record<string, string> = {
+const diffed = (paint: EditorPaint): Record<string, string> => ({
   'diffEditor.insertedLineBackground': '#00000000',
   'diffEditor.removedLineBackground': '#00000000',
-  'diffEditor.insertedTextBackground': '#34D3991F',
-  'diffEditor.removedTextBackground': '#F851491F',
-  'diffEditorGutter.insertedLineBackground': '#34D399B3',
-  'diffEditorGutter.removedLineBackground': '#F85149B3',
-}
+  'diffEditor.insertedTextBackground': paint.insertedText,
+  'diffEditor.removedTextBackground': paint.removedText,
+  'diffEditorGutter.insertedLineBackground': paint.insertedGutter,
+  'diffEditorGutter.removedLineBackground': paint.removedGutter,
+})
 
 /** Loaded up front because they are what a project holds, and what a code fence usually is. */
 const SEED = ['markdown', 'json', 'typescript', 'javascript', 'bash', 'python']
@@ -78,7 +74,7 @@ const loaded = new Set<string>(SEED)
  */
 function highlighter(): Promise<Highlighter> {
   starting ??= createHighlighter({
-    themes: [DARK, LIGHT],
+    themes: SYNTAX,
     langs: SEED,
     engine: createJavaScriptRegexEngine({ forgiving: true }),
   })
@@ -115,22 +111,25 @@ export async function useLanguage(
   return known
 }
 
-/** Redefines both themes with the app's ground under Shiki's colours. The light one used to
- *  be left as VS Code has it, because a dark ground under it would have been the bug this
- *  prevents; the app reads on cream now, so it is the one that has to agree. */
+/**
+ * One Monaco theme per app theme, named by its id, so setting the editor's theme is setting
+ * the app's. Each is Shiki's grammar colours with the app's own ground, caret line and diff
+ * over the top — the syntax comes from VS Code, and everything around the words is ours.
+ */
 function paintGround(monaco: MonacoApi, shiki: Highlighter): void {
-  for (const [name, ground, line] of [
-    [DARK, GROUND_DARK, LINE_DARK],
-    [LIGHT, GROUND_LIGHT, LINE_LIGHT],
-  ] as const) {
+  for (const { id, editor } of THEMES) {
     // `@shikijs/monaco` types against `monaco-editor-core`, which is the same shape under a
     // different name.
-    const theme = textmateThemeToMonacoTheme(
-      shiki.getTheme(name),
+    const syntax = textmateThemeToMonacoTheme(
+      shiki.getTheme(editor.syntax),
     ) as unknown as Monaco.editor.IStandaloneThemeData
-    monaco.editor.defineTheme(name, {
-      ...theme,
-      colors: { ...theme.colors, ...grounded(ground, line), ...DIFF },
+    monaco.editor.defineTheme(id, {
+      ...syntax,
+      colors: {
+        ...syntax.colors,
+        ...grounded(editor.ground, editor.caretLine),
+        ...diffed(editor),
+      },
     })
   }
 }

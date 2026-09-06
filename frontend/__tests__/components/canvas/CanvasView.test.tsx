@@ -288,7 +288,7 @@ it('fills a shape and lines it from the colour pickers', async () => {
   await waitFor(async () => expect(await saved(client)).toContain('"color": "#f472b6"'), settles)
 
   // Words over a light fill are dark, so nothing a shape is filled with hides them.
-  expect(screen.getByRole('group', { name: 'Order' })).toHaveStyle({ '--ink': '#111111' })
+  expect(screen.getByRole('group', { name: 'Order' })).toHaveStyle({ '--shape-ink': '#111111' })
 })
 
 /* One button, wearing the colour it holds — the palette every other picker in the app

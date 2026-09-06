@@ -19,7 +19,8 @@ import { useApp } from '@/State'
 import { createForce, type Tuning } from '@/src/surface/Force'
 import { track } from '@/src/surface/Track'
 import { trimmed, useViewport } from '@/src/surface/Viewport'
-import { graphOf, KIND_HEX, type GraphNode } from './Graph'
+import { graphOf, type GraphNode } from './Graph'
+import { useTheme } from '@/components/appearance/Theme'
 
 /** The radius of a node, and how far outside it a line has to stop. World units, and the CSS
  *  pins the mark to the same number so a world unit and a pixel mean the same thing here. */
@@ -67,6 +68,10 @@ interface Spot extends GraphNode {
  */
 export function EntityGraphView() {
   const app = useApp()
+  /* What each kind is drawn in. A drawing decision, so it comes from the theme rather than
+     from beside the schema: the daemon has no opinion about what a finding looks like, and
+     giving it one would make a colour change a change to the domain. */
+  const { graph: kindHex } = useTheme()
   const router = useRouter()
   const project = app.project?.path ?? null
   const [entities, setEntities] = useState<EntitySummary[] | null>(null)
@@ -333,7 +338,7 @@ export function EntityGraphView() {
                 className="graph-chip"
                 title={one.note}
                 aria-pressed={!off.has(one.kind)}
-                style={{ '--hex': KIND_HEX[one.kind] } as CSSProperties}
+                style={{ '--hex': kindHex[one.kind] } as CSSProperties}
                 onClick={() => toggle(one.kind)}
               >
                 {one.kind}
@@ -365,6 +370,7 @@ function EntityNode({
   onNear: (over: boolean) => void
   onGrab: (event: ReactPointerEvent) => void
 }) {
+  const { graph: kindHex } = useTheme()
   return (
     <div
       className="graph-node"
@@ -378,7 +384,7 @@ function EntityNode({
         {
           left: spot.x - NODE_R,
           top: spot.y - NODE_R,
-          '--hex': spot.entity ? KIND_HEX[spot.entity] : undefined,
+          '--hex': spot.entity ? kindHex[spot.entity] : undefined,
         } as CSSProperties
       }
       onPointerDown={onGrab}

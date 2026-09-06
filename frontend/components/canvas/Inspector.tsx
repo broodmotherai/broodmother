@@ -2,23 +2,19 @@
 
 import type { ReactNode } from 'react'
 import {
-  BORDER_DEFAULT,
-  FILL_DEFAULT,
-  INK_DEFAULT,
   MIN_H,
   MIN_W,
   SHAPES,
   SHAPE_LABEL,
-  borderOf,
   classBox,
   classParts,
-  fillOf,
-  lineOf,
   shapeOf,
   withClassPart,
   type CanvasEdge,
   type CanvasNode,
 } from '@broodmother/types/canvas/schema'
+import { borderOf, fillOf, lineOf } from './Paint'
+import { useTheme } from '@/components/appearance/Theme'
 import { ColorField } from '@/components/core/ColorField'
 import { Icon } from '@/components/core/Icons'
 import { GRID } from '@/src/surface/Viewport'
@@ -61,6 +57,7 @@ export function NodeInspector({
   nodes: CanvasNode[]
   onChange: (change: Partial<CanvasNode>) => void
 }) {
+  const { canvas: paint } = useTheme()
   const onClass = (node: CanvasNode, index: number, part: string) => {
     const text = withClassPart(node.text, index, part)
     onChange({ text, height: classBox(text) })
@@ -97,19 +94,19 @@ export function NodeInspector({
       {ofText ? (
         <Swatch
           label="Ink"
-          value={agreed(borderOf) ?? INK_DEFAULT}
+          value={agreed((node) => borderOf(node, paint)) ?? paint.ink}
           onChange={(color) => onChange({ color })}
         />
       ) : (
         <>
           <Swatch
             label="Fill"
-            value={agreed(fillOf) ?? FILL_DEFAULT}
+            value={agreed((node) => fillOf(node, paint)) ?? paint.fill}
             onChange={(fill) => onChange({ fill })}
           />
           <Swatch
             label="Border"
-            value={agreed(borderOf) ?? BORDER_DEFAULT}
+            value={agreed((node) => borderOf(node, paint)) ?? paint.border}
             onChange={(color) => onChange({ color })}
           />
         </>
@@ -179,6 +176,7 @@ export function EdgeInspector({
   edge: CanvasEdge
   onChange: (change: Partial<CanvasEdge>) => void
 }) {
+  const { canvas: paint } = useTheme()
   const ends = { from: edge.fromEnd ?? 'none', to: edge.toEnd ?? 'arrow' }
   return (
     <aside className="canvas-inspector" aria-label="configure line">
@@ -216,7 +214,7 @@ export function EdgeInspector({
       </div>
       <Swatch
         label="Colour"
-        value={lineOf(edge)}
+        value={lineOf(edge, paint)}
         onChange={(color) => onChange({ color })}
       />
     </aside>

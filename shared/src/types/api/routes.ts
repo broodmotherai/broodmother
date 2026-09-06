@@ -78,6 +78,7 @@ import type {
   GetProfiles,
   PostProfileKey,
   PostProfiles,
+  PutAppearance,
   PutModelKey,
   PutProfiles,
 } from './profiles'
@@ -99,6 +100,7 @@ interface ApiRoutes {
   'GET /api/profiles/key': GetProfileKey
   'POST /api/profiles/key': PostProfileKey
   'PUT /api/model-keys': PutModelKey
+  'PUT /api/appearance': PutAppearance
   'DELETE /api/model-keys': DeleteModelKey
   'GET /api/integrations': GetIntegrations
   'POST /api/github/device': PostGithubDevice

@@ -51,6 +51,7 @@ const profile = (name: string): Profile => ({
   name,
   path: `/Users/you/.broodmother/${name}/profile.json`,
   color: '#c084fc',
+  appearance: { theme: 'sand' },
   gitAuthor: { name, email: `${name}@example.com` },
   sshKeyPath: null,
   agentCommands: {},

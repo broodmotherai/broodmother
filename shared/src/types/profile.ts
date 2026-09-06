@@ -6,10 +6,18 @@
 import type { AgentCommands } from './terminal'
 import type { GitAuthor } from './git'
 
+/** How the app looks to this person. Its own key rather than a field on the identity: it is
+ *  not typed on the account page, it is switched, and a switch should not have to carry
+ *  every other thing about a profile back to the server to be saved. */
+export interface Appearance {
+  theme: string // the id of a theme in the frontend's `styles/themes/`
+}
+
 export interface Profile {
   name: string // the profile's folder name
   path: string // the profile's file, `~/.broodmother/<name>/profile.json`
   color: string // the profile's colour, as #rrggbb
+  appearance: Appearance
   gitAuthor: GitAuthor
   sshKeyPath: string | null // git SSH key in this profile's projects, null reverts to default
   /** The line each terminal agent is handed here, by kind, where this profile has written
@@ -26,6 +34,9 @@ export interface Profile {
   models: string[]
 }
 
-// The half a person edits. The connections and the model keys are not in it — they are made
-// and broken by their own routes, not by typing.
-export type Identity = Omit<Profile, 'name' | 'path' | 'connections' | 'models'>
+// The half a person edits. The connections, the model keys and the appearance are not in it
+// — they are made, broken and switched by their own routes, not by typing.
+export type Identity = Omit<
+  Profile,
+  'name' | 'path' | 'connections' | 'models' | 'appearance'
+>

@@ -1,5 +1,5 @@
 import type { GitAuthor } from '@shared/types/git'
-import type { Identity, Profile } from '@shared/types/profile'
+import type { Appearance, Identity, Profile } from '@shared/types/profile'
 import type { ProjectSummary } from '@shared/types/project'
 
 export interface GetProfiles {
@@ -34,6 +34,13 @@ export interface PutProfiles {
  *  GitHub connection makes. */
 export interface PutModelKey {
   request: { provider: string; key: string }
+  response: { profile: Profile }
+}
+
+/** Switches how the app looks for the open profile. Answers with the profile, so whatever
+ *  is on screen takes the new appearance from the same reply that saved it. */
+export interface PutAppearance {
+  request: Appearance
   response: { profile: Profile }
 }
 

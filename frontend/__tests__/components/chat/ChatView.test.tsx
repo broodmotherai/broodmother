@@ -19,6 +19,7 @@ const unconnected: Profile = {
   name: 'you',
   path: '/Users/you/.broodmother/you/profile.json',
   color: '#c084fc',
+  appearance: { theme: 'sand' },
   gitAuthor: { name: 'You', email: 'you@example.com' },
   sshKeyPath: null,
   agentCommands: {},

@@ -3,7 +3,8 @@
 import { useEffect, useRef } from 'react'
 import type * as Monaco from 'monaco-editor'
 import { loadMonaco, type MonacoApi } from '@/src/editor/monaco/Monaco'
-import { DARK, LIGHT, useLanguage } from '@/src/editor/monaco/Highlighter'
+import { useLanguage } from '@/src/editor/monaco/Highlighter'
+import { useTheme } from '@/components/appearance/Theme'
 import { languageForPath } from '@/src/editor/monaco/Languages'
 import { CODE } from '@/src/editor/monaco/Options'
 
@@ -35,7 +36,6 @@ export function DiffEditor({
   against,
   current,
   path,
-  theme = 'dark',
 }: {
   /** The branch being compared against, as the left-hand side. */
   against: string
@@ -43,8 +43,8 @@ export function DiffEditor({
   current: string
   /** The file's path, which is what decides the language. */
   path: string
-  theme?: 'dark' | 'light'
 }) {
+  const theme = useTheme()
   const host = useRef<HTMLDivElement>(null)
   const editor = useRef<Monaco.editor.IStandaloneDiffEditor | null>(null)
   const api = useRef<MonacoApi | null>(null)
@@ -62,7 +62,7 @@ export function DiffEditor({
       api.current = monaco
       created = monaco.editor.createDiffEditor(host.current, {
         ...OPTIONS,
-        theme: theme === 'dark' ? DARK : LIGHT,
+        theme: theme.id,
       })
       editor.current = created
       await models(monaco, created, sides.current)
@@ -87,7 +87,7 @@ export function DiffEditor({
   }, [against, current, path])
 
   useEffect(() => {
-    api.current?.editor.setTheme(theme === 'dark' ? DARK : LIGHT)
+    api.current?.editor.setTheme(theme.id)
   }, [theme])
 
   return (

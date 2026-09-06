@@ -9,6 +9,7 @@ const existing: Profile[] = [
     name: 'Work',
     path: '/Users/you/.broodmother/profiles/Work.json',
     color: '#c084fc',
+    appearance: { theme: 'sand' },
     gitAuthor: { name: 'Ada Lovelace', email: 'ada@example.com' },
     sshKeyPath: null,
     agentCommands: {},

@@ -157,6 +157,10 @@ export interface App {
   /** One ask for the answer. True once the profile is connected, false while still waiting. */
   connectGithub(deviceCode: string): Promise<boolean | string>
   disconnectGithub(): Promise<Failure>
+  /** Switches how the app looks. It is the profile's rather than the window's, so opening
+   *  the app as the same person opens it the same way — and every window already open as
+   *  them follows, because they all read the profile. */
+  setAppearance(theme: string): Promise<Failure>
   /** Holds the key a profile speaks to one model provider with. It crosses the wire once, on
    *  the way in: what comes back says which providers are connected and nothing more. */
   saveModelKey(provider: string, key: string): Promise<Failure>
@@ -819,6 +823,13 @@ export function AppProvider({
         setProfile(result.profile)
         await loadProfiles()
         return 'disconnected from GitHub'
+      }),
+
+    setAppearance: (theme) =>
+      run(async () => {
+        const result = await client.request('PUT /api/appearance', { theme })
+        setProfile(result.profile)
+        await loadProfiles()
       }),
 
     saveModelKey: (provider, key) =>

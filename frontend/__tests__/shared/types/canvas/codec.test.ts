@@ -1,15 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { CanvasError, parseCanvas, serializeCanvas } from '@shared/types/canvas/codec'
 import {
-  BORDER_DEFAULT,
-  FILL_DEFAULT,
-  INK_DEFAULT,
   CLASS_LINE,
-  borderOf,
   classHeight,
   classParts,
   emptyCanvas,
-  fillOf,
   withClassPart,
   type Canvas,
 } from '@shared/types/canvas/schema'
@@ -128,17 +123,6 @@ it('carries a fill and a border through the file', () => {
   expect(() =>
     parseCanvas('{"nodes":[{"id":"a","type":"text","text":"x","x":0,"y":0,"width":10,"height":10,"fill":"puce"}]}'),
   ).toThrow('a fill is not a preset 1–6 or a #rrggbb colour')
-})
-
-it('answers for the colours a plain shape never named', () => {
-  const plain = box('a')
-  expect(fillOf(plain)).toBe(FILL_DEFAULT)
-  expect(borderOf(plain)).toBe(BORDER_DEFAULT)
-  // A text box is words on the board, so its colour is ink and starts light.
-  expect(borderOf({ ...plain, shape: 'text' })).toBe(INK_DEFAULT)
-  // What the format names by number, resolved to something that can be drawn with.
-  expect(borderOf({ ...plain, color: '4' })).toBe('#34d399')
-  expect(fillOf({ ...plain, fill: '#123456' })).toBe('#123456')
 })
 
 /* The rectangle was drawn twice for a while, square-cornered and rounded, and is now drawn

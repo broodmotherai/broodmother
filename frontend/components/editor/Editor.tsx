@@ -6,7 +6,8 @@ import { COMMANDS, toggleWrap, triggerAt, type Command, type Trigger } from '@/s
 import { INDENT } from '@/src/editor/lists/Lists'
 import { installLists } from '@/src/editor/lists/MonacoLists'
 import { loadMonaco, type MonacoApi } from '@/src/editor/monaco/Monaco'
-import { DARK, LIGHT, useLanguage } from '@/src/editor/monaco/Highlighter'
+import { useLanguage } from '@/src/editor/monaco/Highlighter'
+import { useTheme } from '@/components/appearance/Theme'
 import { languageForPath } from '@/src/editor/monaco/Languages'
 import { CODE, SHARED } from '@/src/editor/monaco/Options'
 import { LivePreview } from '@/src/editor/preview/LivePreview'
@@ -19,7 +20,6 @@ interface EditorProps {
   mode?: EditMode
   /** The document's path, which is what decides the language. Markdown when nothing is given. */
   path?: string
-  theme?: 'dark' | 'light'
   /** A field rather than a page. Prose is given room to be read in, and a box a few lines
    *  tall does not have it to give. */
   compact?: boolean
@@ -94,9 +94,11 @@ export function Editor({
   onChange,
   mode = 'live',
   path = 'untitled.md',
-  theme = 'light',
   compact = false,
 }: EditorProps) {
+  /* Monaco is told the app's theme by name: `paintGround` defines one under each theme's id,
+     so the editor's ground is the page's rather than VS Code's. */
+  const theme = useTheme()
   const host = useRef<HTMLDivElement>(null)
   const editor = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const preview = useRef<LivePreview | null>(null)
@@ -130,7 +132,7 @@ export function Editor({
         ...optionsFor(language, compact),
         value: emitted.current,
         language,
-        theme: theme === 'dark' ? DARK : LIGHT,
+        theme: theme.id,
       })
       setProse(isProse(language))
       editor.current = created
@@ -258,7 +260,7 @@ export function Editor({
 
   useEffect(() => {
     const monaco = api.current
-    if (monaco) monaco.editor.setTheme(theme === 'dark' ? DARK : LIGHT)
+    if (monaco) monaco.editor.setTheme(theme.id)
   }, [theme])
 
   // Opening another document is a new language, possibly a grammar nobody has loaded, and

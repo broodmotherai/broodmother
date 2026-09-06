@@ -2,11 +2,8 @@
 
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react'
 import {
-  FILL_DEFAULT,
   SIDES,
-  borderOf,
   classParts,
-  fillOf,
   shapeOf,
   type CanvasNode,
   type Shape,
@@ -21,10 +18,13 @@ import {
   type Magnet,
 } from '@broodmother/types/canvas/geometry'
 import { normalizeHex } from '@/Colors'
+import { borderOf, fillOf } from './Paint'
+import { useTheme } from '@/components/appearance/Theme'
+import type { CanvasPaint } from '@/styles/themes/Theme'
 import { CORNER, CORNERS, nameOf, type Corner } from './Model'
 
-function inkOver(hex: string): string {
-  const normal = normalizeHex(hex) ?? FILL_DEFAULT
+function inkOver(hex: string, fallback: string): string {
+  const normal = normalizeHex(hex) ?? fallback
   const channel = (at: number) => {
     const part = parseInt(normal.slice(at, at + 2), 16) / 255
     return part <= 0.04045 ? part / 12.92 : ((part + 0.055) / 1.055) ** 2.4
@@ -33,13 +33,15 @@ function inkOver(hex: string): string {
   return light > 0.4 ? '#111111' : '#ffffff'
 }
 
-function paint(node: CanvasNode): CSSProperties {
-  const fill = fillOf(node)
-  const border = borderOf(node)
+/* `--shape-ink` rather than `--ink`: the app's own ink is a theme leaf on the document root,
+   and a shape that named its words the same thing would shadow it for everything inside. */
+function painted(node: CanvasNode, paint: CanvasPaint): CSSProperties {
+  const fill = fillOf(node, paint)
+  const border = borderOf(node, paint)
   return {
     '--fill': fill,
     '--stroke': border,
-    '--ink': shapeOf(node) === 'text' ? border : inkOver(fill),
+    '--shape-ink': shapeOf(node) === 'text' ? border : inkOver(fill, paint.fill),
   } as CSSProperties
 }
 
@@ -62,6 +64,7 @@ export function ShapeCard({
   onResize: (event: ReactPointerEvent, corner: Corner) => void
   onConnect: (event: ReactPointerEvent, side: Side) => void
 }) {
+  const { canvas: paint } = useTheme()
   const shape = shapeOf(node)
   return (
     <div
@@ -76,7 +79,7 @@ export function ShapeCard({
         top: node.y,
         width: node.width,
         height: node.height,
-        ...paint(node),
+        ...painted(node, paint),
       }}
       onPointerDown={onGrab}
     >

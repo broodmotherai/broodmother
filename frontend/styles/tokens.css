@@ -12,17 +12,24 @@
    door in console.css.
 --------------------------------------------------------------------------- */
 @theme {
-  --color-black: #1f1f1f;
+  --color-black: var(--black);
 
   /* The opalescent hues. console.css draws the accent, link and state colours
-     from these, so a rename here is a rename there. */
-  --color-opal-violet: #c084fc;
-  --color-opal-indigo: #818cf8;
-  --color-opal-cyan: #22d3ee;
-  --color-opal-mint: #34d399;
-  --color-opal-gold: #fbbf24;
-  --color-opal-rose: #f472b6;
-  --color-opal-red: #f87171;
+     from these, so a rename here is a rename there.
+
+     In broodmother these are aliases rather than values: the hues themselves are
+     the active theme's, in styles/themes.css, so the console chrome follows a
+     theme without knowing there is one. An app importing this file without a
+     theme is the case the fallbacks answer, and they are proprium's own values —
+     except the gold, which was #fbbf24 here and #b39051 in the app that draws
+     with it, and is now the one colour under both names. */
+  --color-opal-violet: var(--opal-violet, #c084fc);
+  --color-opal-indigo: var(--opal-indigo, #818cf8);
+  --color-opal-cyan: var(--opal-cyan, #22d3ee);
+  --color-opal-mint: var(--opal-mint, #34d399);
+  --color-opal-gold: var(--opal-gold, #b39051);
+  --color-opal-rose: var(--opal-rose, #f472b6);
+  --color-opal-red: var(--opal-red, #f87171);
 
   /* radii: rounded-md is the app-wide radius, shared by surfaces, sidebar rows
      and the controls that sit beside them; rounded-sm is the small one, for

@@ -1,12 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
-import {
-  lineOf,
-  makeShape,
-  type Canvas,
-  type Shape,
-} from '@broodmother/types/canvas/schema'
+import { makeShape, type Canvas, type Shape } from '@broodmother/types/canvas/schema'
 import { parseCanvas, serializeCanvas } from '@broodmother/types/canvas/codec'
 import {
   pathOf,
@@ -23,6 +18,8 @@ import { useViewport } from '@/src/surface/Viewport'
 import { addSections, curveFor, nameOf, takenPorts, type Picked } from './Model'
 import { useGestures } from './Gestures'
 import { useClipboard } from './Clipboard'
+import { lineOf } from './Paint'
+import { useTheme } from '@/components/appearance/Theme'
 import { ShapeCard } from './ShapeCard'
 import { EdgeInspector, NodeInspector } from './Inspector'
 
@@ -34,6 +31,7 @@ export function CanvasView({
   value: string
   onChange: (next: string) => void
 }) {
+  const { canvas: paint } = useTheme()
   const [canvas, setCanvas] = useState<Canvas | null>(null)
   const [broken, setBroken] = useState<string | null>(null)
   const [picked, setPicked] = useState<Picked | null>(null)
@@ -205,7 +203,7 @@ export function CanvasView({
                     <path
                       className="canvas-edge"
                       data-picked={picked?.kind === 'edge' && picked.id === edge.id}
-                      style={{ '--tint': lineOf(edge) } as CSSProperties}
+                      style={{ '--tint': lineOf(edge, paint) } as CSSProperties}
                       markerStart={ends.from === 'arrow' ? 'url(#canvas-arrow)' : undefined}
                       markerEnd={ends.to === 'arrow' ? 'url(#canvas-arrow)' : undefined}
                       d={d}

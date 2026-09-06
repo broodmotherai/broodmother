@@ -3,7 +3,8 @@
 import { useEffect, useRef } from 'react'
 import type * as Monaco from 'monaco-editor'
 import { loadMonaco } from '@/src/editor/monaco/Monaco'
-import { DARK, useLanguage } from '@/src/editor/monaco/Highlighter'
+import { useLanguage } from '@/src/editor/monaco/Highlighter'
+import { useTheme } from '@/components/appearance/Theme'
 import { CODE } from '@/src/editor/monaco/Options'
 
 interface CellEditorProps {
@@ -43,6 +44,7 @@ export function CellEditor({
   onShiftEnter,
   autoFocus = false,
 }: CellEditorProps) {
+  const theme = useTheme()
   const host = useRef<HTMLDivElement>(null)
   const editor = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const emit = useRef(onChange)
@@ -65,7 +67,7 @@ export function CellEditor({
         ...CELL,
         value: emitted.current,
         language,
-        theme: DARK,
+        theme: theme.id,
       })
       editor.current = created
 
@@ -99,6 +101,13 @@ export function CellEditor({
     // that changes type is a different cell component, mounted fresh.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  /* Monaco's theme is one setting for every editor it has made, so a cell does not need its
+     own — but a notebook may be the only editor on screen, and then this is the one that
+     puts the new theme on. `loadMonaco` hands back the same instance it made above. */
+  useEffect(() => {
+    void loadMonaco().then((monaco) => monaco.editor.setTheme(theme.id))
+  }, [theme])
 
   // Entering edit mode from the keyboard happens long after mount, so the flag is watched
   // rather than read once.

@@ -117,6 +117,7 @@ const seedProfile: Profile = {
   name: 'you',
   path: '/Users/you/.broodmother/profiles/you.json',
   color: '#c084fc',
+  appearance: { theme: 'sand' },
   gitAuthor: { name: 'You', email: 'you@example.com' },
   sshKeyPath: null,
   agentCommands: {},
@@ -579,6 +580,7 @@ export function createMockClient(
           path: `${home}/${name}/profile.json`,
           connections: {},
           models: [],
+          appearance: { theme: 'sand' },
           ...identity,
         }
         profiles.push(profile)
@@ -588,6 +590,13 @@ export function createMockClient(
         const current = profileOf()
         if (!current) throw new Error('no profile yet')
         const profile = { ...current, ...identity }
+        profiles.splice(profiles.indexOf(current), 1, profile)
+        return { profile }
+      },
+      'PUT /api/appearance': async (appearance) => {
+        const current = profileOf()
+        if (!current) throw new Error('no profile yet')
+        const profile = { ...current, appearance }
         profiles.splice(profiles.indexOf(current), 1, profile)
         return { profile }
       },

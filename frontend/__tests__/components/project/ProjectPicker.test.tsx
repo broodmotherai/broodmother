@@ -24,6 +24,7 @@ async function connected(seed: Parameters<typeof createMockClient>[0] = {}) {
         name: 'you',
         path: '/Users/you/.broodmother/profiles/you.json',
         color: '#c084fc',
+        appearance: { theme: 'sand' },
         gitAuthor: { name: 'You', email: 'you@example.com' },
         sshKeyPath: null,
         agentCommands: {},

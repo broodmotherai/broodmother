@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------------------
-   Two layers, in this order on purpose.
+   Three layers, in this order on purpose.
 
    1. Tailwind's theme and utilities, then proprium's tokens — what
       `components/core/` is written against. Preflight is deliberately NOT
@@ -7,11 +7,16 @@
       below this header is a 5,460-line stylesheet that was written without one.
       Theme + utilities is all the kit needs.
 
-   2. broodmother's own stylesheet, unchanged, last — so where the two ever name
+   2. the themes, which are the only place a colour is stated. Generated from
+      `styles/themes/*.json`; unlayered, so a `[data-theme]` block wins over the
+      `:root` Tailwind emits for its own theme however that is layered.
+
+   3. broodmother's own stylesheet, last — so where any of the three ever name
       the same thing, the app's own rule is the one that wins.
 
-   The two token sets do not collide: proprium's 37 custom properties and
-   broodmother's 42 share no name.
+   Proprium's names survive as aliases of the scale below rather than as a second
+   palette: `bg-background`, `text-charcoal` and `border-edge` all resolve to a
+   theme leaf, so the kit follows a theme without being written against one.
 --------------------------------------------------------------------------- */
 @import 'tailwindcss/theme.css';
 @import 'tailwindcss/utilities.css';
@@ -19,33 +24,43 @@
 
 @import '../styles/tokens.css';
 @import '../styles/console.css';
+@import '../styles/themes.css';
 
 /* ---------------------------------------------------------------------------
-   The sandy scheme. One scale, and both token systems point at it — proprium's
-   `@theme` colours (what `components/core/` is written against) and broodmother's
-   own (what the stylesheet below is written against). Change a step here and
-   both move together.
+   The scheme. Every colour the app draws with is a slot in a theme file under
+   `styles/themes/`, and `themes.css` above is those files as custom properties —
+   `--sand-200`, `--ink`, `--opal-violet` — switched by `data-theme` on <html>.
+   Nothing below this line states a colour; it names one.
 
-   Semi-high contrast by design, measured: ink on the page ground is 13.5:1,
-   secondary ink 8.7:1, muted 5.3:1; on a floating surface ink is 15.0:1. The
-   warmth is what keeps that off the glare of near-black on near-white — the hue
-   carries the character, and the lightness carries the contrast.
+   What is here is the semantic layer over those leaves, and it does not vary by
+   theme: both token systems point at the same scale — proprium's `@theme`
+   colours (what `components/core/` is written against) and broodmother's own
+   (what the stylesheet below is written against) — so a step changes in one
+   place and everything moves with it.
 
-   The page sits at 200 and every floating surface above it at 50, so a menu, the
-   tree and the account centre lift off the page rather than sinking into it.
+   The number in the scale is a role rather than a lightness. The page sits at
+   200 and every floating surface above it at 50, so a menu, the tree and the
+   account centre lift off the page rather than sinking into it; 400 is the edge
+   between them and 600 is the shade the translucent surfaces are mixed from. A
+   dark theme keeps the roles and lets the numbers run whichever way they must.
+
+   Sand is semi-high contrast by design, measured: ink on the page ground is
+   13.5:1, secondary ink 8.7:1, muted 5.3:1; on a floating surface ink is 15.0:1.
+   The warmth is what keeps that off the glare of near-black on near-white — the
+   hue carries the character, and the lightness carries the contrast.
 --------------------------------------------------------------------------- */
 @theme {
-  --color-sand-50: #fefcf8;
-  --color-sand-100: #fbf7ef;
-  --color-sand-200: #f6f0e4;
-  --color-sand-300: #ede4d3;
-  --color-sand-400: #dfd2bb;
-  --color-sand-500: #c4b394;
-  --color-sand-600: #8c7a5c;
+  --color-sand-50: var(--sand-50);
+  --color-sand-100: var(--sand-100);
+  --color-sand-200: var(--sand-200);
+  --color-sand-300: var(--sand-300);
+  --color-sand-400: var(--sand-400);
+  --color-sand-500: var(--sand-500);
+  --color-sand-600: var(--sand-600);
 
-  --color-ink: #2b2419;
-  --color-ink-soft: #4c4234;
-  --color-ink-faint: #6e624e;
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
 
   /* proprium's semantics, re-pointed. The names stay so `bg-background`,
      `text-charcoal`, `border-edge` and the rest keep working unchanged. */
@@ -153,22 +168,11 @@
 }
 
 :root {
-  /* The ink. Was `--white` at #fffeee, over a black ground; the app reads on proprium's
-     cream now, so it is proprium's foreground and the name says which role it plays. Every
-     `color-mix(… var(--ink) N%, transparent)` below derives from it and flips with it. */
-  --ink: var(--color-ink);
-  --black: #1f1f1f;
-  --opal-violet: #c084fc;
-  --opal-indigo: #818cf8;
-  --opal-cyan: #22d3ee;
-  --opal-mint: #34d399;
-  --opal-gold: #b39051;
-  --opal-rose: #f472b6;
-  --opal-navy: #051e39;
-
-  /* Red is not one of the opals, and nothing in the palette stands in for it: it is the one
-     colour that only ever means what is about to happen cannot be undone. */
-  --danger: #f85149;
+  /* `--ink`, `--black`, `--danger`, the seven opals and the rest of the leaves are the
+     theme's, set in `styles/themes.css` from `styles/themes/*.json`. What is stated here is
+     what is derived from them, which is the same in every theme: every
+     `color-mix(… var(--ink) N%, transparent)` below flips with the ink rather than being
+     restated per scheme. */
 
   /* Not ours — Anthropic's, and the mark is only itself in it. */
   --claude: #d97757;
@@ -186,8 +190,6 @@
   --raised-bg: color-mix(in srgb, var(--color-sand-50) 88%, transparent);
   --raised-blur: blur(16px);
   --panel: var(--color-sand-100);
-  /* One ground under every document, prose or source: switching between a note and a
-     source file must not change the colour of the page. */
   /* One ground under every document, prose or source — and the same one the app is on, so
      opening a file does not change the colour of the page. */
   --editor-ground: var(--ground);
@@ -221,7 +223,9 @@
      kept as names for the places that read as one, and both resolve to it. */
   --surface-radius: var(--row-radius);
   --field-radius: var(--row-radius);
-  --surface-shadow: 0 8px 24px -4px rgb(31 31 31 / 10%), 0 2px 6px rgb(31 31 31 / 6%);
+  --surface-shadow:
+    0 8px 24px -4px color-mix(in srgb, var(--shadow) 10%, transparent),
+    0 2px 6px color-mix(in srgb, var(--shadow) 6%, transparent);
   /* Where a page's content starts below the tab bar — the same line for a note, a source
      file, the settings and the tasks, so moving between them does not move your eye. The
      prose editor states the same distance in pixels, since Monaco pads in them. */
@@ -234,8 +238,10 @@
   --measure: 54rem;
   --pad: 0.625rem;
 
-  color-scheme: dark;
-  accent-color: var(--opal-violet);
+  /* `color-scheme` is the theme's — it is what native controls, the scrollbars and the
+     caret read, so a scheme that says one thing and paints another is a light app with dark
+     select menus in it. Set in `themes.css` beside the colours it belongs with. */
+  accent-color: var(--accent);
 }
 
 * {
@@ -2641,7 +2647,7 @@ button.doc-line-who:hover {
   height: 24rem;
   border: 0;
   /* Paper, not the ink: this frame renders documents' own HTML, which assumes a white page. */
-  background: #ffffff;
+  background: var(--paper);
   border-radius: var(--row-radius);
 }
 
@@ -2663,55 +2669,57 @@ button.doc-line-who:hover {
   border-radius: var(--field-radius);
 }
 
-/* The ANSI a kernel speaks: VS Code's dark-theme terminal palette, because the traceback
-   being read here is the one it would print. */
+/* The ANSI a kernel speaks. These render on the page's own ground rather than inside the
+   sandboxed frame, so they are the terminal's palette and not a terminal emulator's — the
+   same sixteen the app's own shells use, held against the ground the app is on. Was VS
+   Code's *dark* palette, which is what it had been printing on cream. */
 .ansi-black {
-  color: #666666;
+  color: var(--ansi-black);
 }
 .ansi-red {
-  color: #cd3131;
+  color: var(--ansi-red);
 }
 .ansi-green {
-  color: #0dbc79;
+  color: var(--ansi-green);
 }
 .ansi-yellow {
-  color: #e5e510;
+  color: var(--ansi-yellow);
 }
 .ansi-blue {
-  color: #2472c8;
+  color: var(--ansi-blue);
 }
 .ansi-magenta {
-  color: #bc3fbc;
+  color: var(--ansi-magenta);
 }
 .ansi-cyan {
-  color: #11a8cd;
+  color: var(--ansi-cyan);
 }
 .ansi-white {
-  color: #e5e5e5;
+  color: var(--ansi-white);
 }
 .ansi-bright-black {
-  color: #666666;
+  color: var(--ansi-bright-black);
 }
 .ansi-bright-red {
-  color: #f14c4c;
+  color: var(--ansi-bright-red);
 }
 .ansi-bright-green {
-  color: #23d18b;
+  color: var(--ansi-bright-green);
 }
 .ansi-bright-yellow {
-  color: #f5f543;
+  color: var(--ansi-bright-yellow);
 }
 .ansi-bright-blue {
-  color: #3b8eea;
+  color: var(--ansi-bright-blue);
 }
 .ansi-bright-magenta {
-  color: #d670d6;
+  color: var(--ansi-bright-magenta);
 }
 .ansi-bright-cyan {
-  color: #29b8db;
+  color: var(--ansi-bright-cyan);
 }
 .ansi-bright-white {
-  color: #fffeee;
+  color: var(--ansi-bright-white);
 }
 .ansi-bold {
   font-weight: 700;
@@ -2778,9 +2786,10 @@ button.doc-line-who:hover {
   overflow: hidden;
   border-radius: var(--surface-radius);
   /* No border, and the shell's own ground rather than the translucent one the other
-     surfaces float on: xterm paints an opaque `#fefcf8` — sand-50 — and anything else here
-     draws a second rectangle inside the panel, one edge for the panel and another for the
-     shell sitting in it. One ground and no outline is one surface, which is what it is. */
+     surfaces float on: xterm paints the theme's `terminal.background` opaquely, which is
+     sand-50, and anything else here draws a second rectangle inside the panel — one edge
+     for the panel and another for the shell sitting in it. One ground and no outline is one
+     surface, which is what it is. */
   background: var(--color-sand-50);
 }
 
@@ -2879,9 +2888,9 @@ button.doc-line-who:hover {
 }
 
 /* xterm rules a hairline across the top of its own surface. One pixel of the shell's own
-   ground, laid over it — cheaper than fighting the renderer for it. It has to be the
-   ground xterm actually paints, which is the theme's `#fefcf8` — sand-50 — and is now the
-   panel's own, so the cover cannot be seen against either. */
+   ground, laid over it — cheaper than fighting the renderer for it. It has to be the ground
+   xterm actually paints, which is the theme's `terminal.background` — sand-50 — and is also
+   the panel's own, so the cover cannot be seen against either. */
 .terminal-body::before {
   content: '';
   position: absolute;
@@ -2974,7 +2983,7 @@ button.doc-line-who:hover {
   display: flex;
   justify-content: center;
   padding-top: 14vh;
-  background: color-mix(in srgb, #000 55%, transparent);
+  background: color-mix(in srgb, var(--scrim) 55%, transparent);
   backdrop-filter: blur(3px);
 }
 
@@ -3457,7 +3466,7 @@ p.palette-label {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: color-mix(in srgb, #000 55%, transparent);
+  background: color-mix(in srgb, var(--scrim) 55%, transparent);
   backdrop-filter: blur(3px);
   animation: fade-in 150ms ease-out;
 }
@@ -4625,7 +4634,7 @@ p.palette-label {
 
 .canvas-edge {
   fill: none;
-  stroke: var(--tint, #b4b4b4);
+  stroke: var(--tint, var(--canvas-line));
   stroke-width: 2;
   pointer-events: none;
 }
@@ -4675,8 +4684,8 @@ p.palette-label {
 .canvas-outline {
   position: absolute;
   inset: 0;
-  fill: var(--fill, #ffffff);
-  stroke: var(--stroke, #000000);
+  fill: var(--fill, var(--canvas-fill));
+  stroke: var(--stroke, var(--canvas-border));
   stroke-width: 2;
 }
 
@@ -4689,7 +4698,7 @@ p.palette-label {
 }
 
 .canvas-node[data-shape='text'] {
-  color: var(--ink, #ffffff);
+  color: var(--shape-ink, var(--canvas-ink));
 }
 
 .canvas-node[data-shape='text']:not([data-picked]):hover {
@@ -4699,7 +4708,7 @@ p.palette-label {
 
 .canvas-text {
   position: relative;
-  color: var(--ink, #111111);
+  color: var(--shape-ink, var(--canvas-ink));
   overflow: hidden;
   max-width: 100%;
   max-height: 100%;
@@ -4720,7 +4729,7 @@ p.palette-label {
   flex-direction: column;
   width: 100%;
   height: 100%;
-  color: var(--ink, #111111);
+  color: var(--shape-ink, var(--canvas-ink));
   font-size: 0.78rem;
   line-height: 1.4;
   text-align: left;
@@ -4744,7 +4753,7 @@ p.palette-label {
   flex: none;
   min-height: 31px;
   padding: 6px 10px;
-  border-top: 1px solid var(--stroke, #9f9f9f);
+  border-top: 1px solid var(--stroke, var(--canvas-border));
   font-family: var(--mono);
   font-size: 0.72rem;
   line-height: 18px;
@@ -5659,7 +5668,7 @@ p.palette-label {
 }
 
 .agent-avatar[data-working='true'] .agent-presence {
-  background: #34d399;
+  background: var(--opal-mint);
   animation: chat-waiting 1.2s ease-in-out infinite;
 }
 
@@ -5709,7 +5718,7 @@ p.palette-label {
 }
 
 .agent-status [data-working='true'] {
-  color: #34d399;
+  color: var(--opal-mint);
 }
 
 /* A person's messages: a bubble on the left with a face and a name over the first of a run,
@@ -6403,7 +6412,7 @@ p.palette-label {
   min-height: 0;
   width: 100%;
   border: 0;
-  background: #fff;
+  background: var(--paper);
 }
 
 /* The bar of a browser tab, which unlike a preview's has somewhere to type. */

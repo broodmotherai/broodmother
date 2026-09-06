@@ -53,24 +53,6 @@ export interface Graph {
   edges: GraphEdge[]
 }
 
-/**
- * What each kind is drawn in. A drawing decision, so it lives here rather than beside the
- * schema: the daemon has no opinion about what a finding looks like, and giving it one would
- * make a colour change a change to the domain. Eight kinds, and the eight colours the app
- * already owns — the opal palette the profiles are drawn from, and the one from the diagram's
- * presets that it does not hold.
- */
-export const KIND_HEX: Record<EntityKind, string> = {
-  person: '#22d3ee',
-  org: '#818cf8',
-  source: '#b39051',
-  term: '#34d399',
-  decision: '#c084fc',
-  finding: '#eab308',
-  question: '#f472b6',
-  artifact: '#051e39',
-}
-
 /** A node that is nowhere is named by the link, so it cannot collide with a path. */
 const missingId = (target: string) => `[[${target}]]`
 

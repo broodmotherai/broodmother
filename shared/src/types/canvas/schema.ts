@@ -193,53 +193,10 @@ export function withClassPart(text: string, index: number, part: string): string
   return parts.map((was, at) => (at === index ? part : was)).join('\n---\n')
 }
 
-/** The six colours the format names by number, in its order, and what this canvas draws
- *  each of them in — the format says which colour, not which hex, so somebody has to. */
-export const PRESET_COLORS = ['1', '2', '3', '4', '5', '6'] as const
-
-export const PRESET_HEX: Record<string, string> = {
-  '1': '#f472b6',
-  '2': '#b39051',
-  '3': '#eab308',
-  '4': '#34d399',
-  '5': '#22d3ee',
-  '6': '#c084fc',
-}
-
-/** The line between two shapes, where the file does not name a colour: grey enough to read
- *  as drawing rather than as chrome, on a board this dark. */
-export const LINE_DEFAULT = '#b4b4b4'
-
-/** A shape is a white card with a black line round it until it is told otherwise — the
- *  paper a diagram has been drawn on since long before there were screens to draw it on. */
-export const FILL_DEFAULT = '#ffffff'
-export const BORDER_DEFAULT = '#9f9f9f'
-
-/** A text box has no card to sit on, so its words are on the board itself, and the board
- *  is dark. Its line colour is the ink rather than a border, and starts light for that. */
-export const INK_DEFAULT = '#ffffff'
-
-/** What the file says, as a colour anything can draw with: a preset resolved, a hex kept,
- *  and nothing at all answered with the default asked for. */
-export function paintOf(color: string | undefined, fallback: string): string {
-  if (!color) return fallback
-  return color.startsWith('#') ? color : (PRESET_HEX[color] ?? fallback)
-}
-
-/** What fills a shape. A text box is words on the board and is filled with nothing. */
-export function fillOf(node: CanvasNode): string {
-  return paintOf(node.fill, FILL_DEFAULT)
-}
-
-/** The line round a shape — or, on a text box, the ink the words are written in. */
-export function borderOf(node: CanvasNode): string {
-  return paintOf(node.color, shapeOf(node) === 'text' ? INK_DEFAULT : BORDER_DEFAULT)
-}
-
-/** What a line between two shapes is drawn in. */
-export function lineOf(edge: CanvasEdge): string {
-  return paintOf(edge.color, LINE_DEFAULT)
-}
+/* Which six colours the format's numbers stand for, and what a shape with no colour at all
+   is drawn as, are the theme's — see `frontend/components/canvas/Paint.ts`. The format says
+   which colour and not which hex, and a schema that answered that would make a change of
+   palette a change to the format. `codec.ts` is where a file is held to `1`–`6`. */
 
 /** How a node is drawn, with the default spelled out. */
 export function shapeOf(node: CanvasNode): Shape {

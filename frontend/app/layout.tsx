@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { Shell } from '@/components/shell/Shell'
 import { Tooltips } from '@/components/core/Tooltips'
+import { ThemeProvider, THEME_BOOT } from '@/components/appearance/Theme'
+import { DEFAULT_THEME } from '@/styles/themes/Themes'
 import { AppProvider } from '@/State'
 import './globals.css'
 
@@ -10,10 +12,16 @@ export const metadata = { title: 'broodmother' }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" data-theme="dark">
+    <html lang="en" data-theme={DEFAULT_THEME}>
       <body>
+        {/* First thing in the body and synchronous on purpose: it corrects the attribute
+            above from what was chosen last, before the rest of the document is parsed, so a
+            dark app never opens light for a frame. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
         <AppProvider>
-          <Shell>{children}</Shell>
+          <ThemeProvider>
+            <Shell>{children}</Shell>
+          </ThemeProvider>
         </AppProvider>
         <Tooltips />
       </body>

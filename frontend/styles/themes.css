@@ -1,0 +1,99 @@
+/* Generated from styles/themes/*.json by styles/themes/Generate.ts. Do not edit:
+   change the theme file and run `npx vitest run -u`. */
+
+/* Sand */
+:root,
+:root[data-theme='sand'] {
+  color-scheme: light;
+  --sand-50: #fefcf8;
+  --sand-100: #fbf7ef;
+  --sand-200: #f6f0e4;
+  --sand-300: #ede4d3;
+  --sand-400: #dfd2bb;
+  --sand-500: #c4b394;
+  --sand-600: #8c7a5c;
+  --ink: #2b2419;
+  --ink-soft: #4c4234;
+  --ink-faint: #6e624e;
+  --opal-violet: #c084fc;
+  --opal-indigo: #818cf8;
+  --opal-cyan: #22d3ee;
+  --opal-mint: #34d399;
+  --opal-gold: #b39051;
+  --opal-rose: #f472b6;
+  --opal-navy: #051e39;
+  --opal-red: #f87171;
+  --black: #1f1f1f;
+  --danger: #f85149;
+  --scrim: #000000;
+  --paper: #ffffff;
+  --shadow: #1f1f1f;
+  --ansi-black: #2b2419;
+  --ansi-red: #a33a52;
+  --ansi-green: #2e7355;
+  --ansi-yellow: #8a6410;
+  --ansi-blue: #4048b8;
+  --ansi-magenta: #7340ad;
+  --ansi-cyan: #136b7d;
+  --ansi-white: #6e624e;
+  --ansi-bright-black: #6e624e;
+  --ansi-bright-red: #a33a52;
+  --ansi-bright-green: #2e7355;
+  --ansi-bright-yellow: #8a6410;
+  --ansi-bright-blue: #4048b8;
+  --ansi-bright-magenta: #7340ad;
+  --ansi-bright-cyan: #136b7d;
+  --ansi-bright-white: #c4b394;
+  --canvas-fill: #ffffff;
+  --canvas-border: #9f9f9f;
+  --canvas-ink: #ffffff;
+  --canvas-line: #b4b4b4;
+}
+
+/* Ink */
+:root[data-theme='ink'] {
+  color-scheme: dark;
+  --sand-50: #221e17;
+  --sand-100: #1b1813;
+  --sand-200: #15130f;
+  --sand-300: #2c2720;
+  --sand-400: #3b352b;
+  --sand-500: #6b6252;
+  --sand-600: #d8cbb0;
+  --ink: #ece4d3;
+  --ink-soft: #c9c0ad;
+  --ink-faint: #9a917e;
+  --opal-violet: #c084fc;
+  --opal-indigo: #818cf8;
+  --opal-cyan: #22d3ee;
+  --opal-mint: #34d399;
+  --opal-gold: #fbbf24;
+  --opal-rose: #f472b6;
+  --opal-navy: #94a3b8;
+  --opal-red: #f87171;
+  --black: #1f1f1f;
+  --danger: #f85149;
+  --scrim: #000000;
+  --paper: #ffffff;
+  --shadow: #000000;
+  --ansi-black: #5c5445;
+  --ansi-red: #f87171;
+  --ansi-green: #34d399;
+  --ansi-yellow: #fbbf24;
+  --ansi-blue: #818cf8;
+  --ansi-magenta: #c084fc;
+  --ansi-cyan: #22d3ee;
+  --ansi-white: #c9c0ad;
+  --ansi-bright-black: #8b8272;
+  --ansi-bright-red: #fca5a5;
+  --ansi-bright-green: #6ee7b7;
+  --ansi-bright-yellow: #fcd34d;
+  --ansi-bright-blue: #a5b4fc;
+  --ansi-bright-magenta: #d8b4fe;
+  --ansi-bright-cyan: #67e8f9;
+  --ansi-bright-white: #ece4d3;
+  --canvas-fill: #221e17;
+  --canvas-border: #6b6252;
+  --canvas-ink: #ece4d3;
+  --canvas-line: #6b6252;
+}
