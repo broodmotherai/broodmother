@@ -67,6 +67,8 @@ Daemon tests live in `daemon/tests/<package>/` as external test packages with a 
 
 ## Prose
 
+Write documentation the way a person would explain it out loud. Lead with the point. Use short sentences and common words, active voice, and one name for one thing. Prefer a period to an em dash, and cut the words that carry no weight: `delve`, `leverage`, `robust`, `seamless`, `landscape`, `it's worth noting`, `in today's world`. No preambles, no cheerful sign-offs, no bold on every other phrase. Vary sentence length so the page has a pulse. Keep commands, paths, field names and quotations exactly as they are; plain language is about the prose around them, never about the facts inside them.
+
 Markdown in this repo is wrapped near 95 columns — `daemon/README.md`, the `Makefile` comments — except the newer sections of `README.md`, which are one line per paragraph. Match the file you are in rather than reflowing it; a rewrapped paragraph is a diff where every line moved.
 
 ## Boundaries
